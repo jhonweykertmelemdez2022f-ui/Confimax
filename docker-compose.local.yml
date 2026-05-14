@@ -1,0 +1,184 @@
+version: '3.8'
+
+# ============================================================================
+# DOCKER COMPOSE - DESARROLLO LOCAL
+# ============================================================================
+# Uso: docker compose -f docker-compose.local.yml up -d
+# ============================================================================
+
+services:
+  # ==========================================================================
+  # FRONTEND (Nginx + React)
+  # ==========================================================================
+  frontend:
+    image: reiastora/confimax-nginx:latest
+    container_name: confimax-frontend
+    ports:
+      - "3000:80"  # http://localhost:3000
+    environment:
+      - NODE_ENV=development
+      - REACT_APP_API_URL=http://localhost:3001  # Conexión al backend local
+    networks:
+      - confimax-local
+    restart: unless-stopped
+
+  # ==========================================================================
+  # BACKEND API (Auth Service como ejemplo principal)
+  # ==========================================================================
+  backend:
+    image: reiastora/confimax-auth:latest
+    container_name: confimax-backend
+    ports:
+      - "3001:3001"  # http://localhost:3001
+    environment:
+      # === Configuración del Servidor ===
+      - NODE_ENV=development
+      - PORT=3001
+      - JWT_SECRET=${JWT_SECRET:-dev-secret-key-change-in-prod}
+      
+      # === Conexión PostgreSQL Local ===
+      # Opción A: Por nombre de contenedor (dentro de Docker network)
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=confimax
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-Jackson1}
+      - POSTGRES_DB=confimax
+      - POSTGRES_SCHEMA=auth
+      
+      # Opción B: URL completa (para apps externas)
+      # DATABASE_URL=postgresql://confimax:Jackson1@localhost:5433/confimax?schema=auth
+      
+      # === Conexión Redis Local ===
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-Jackson1}
+      
+      # === Conexión MongoDB Local ===
+      - MONGO_HOST=mongo
+      - MONGO_PORT=27017
+      - MONGO_USER=confimax
+      - MONGO_PASSWORD=${MONGO_PASSWORD:-Jackson1}
+      - MONGO_DB=confimax_notifications
+      - MONGO_URI=mongodb://confimax:Jackson1@mongo:27017/confimax_notifications?authSource=admin
+    networks:
+      - confimax-local
+    depends_on:
+      - postgres
+      - redis
+      - mongo
+    restart: unless-stopped
+
+  # ==========================================================================
+  # POSTGRESQL - Base de datos principal
+  # ==========================================================================
+  postgres:
+    image: reiastora/confimax-postgres:latest
+    container_name: confimax-postgres
+    environment:
+      - POSTGRES_USER=confimax
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-Jackson1}
+      - POSTGRES_DB=confimax
+    ports:
+      - "5433:5432"  # Externo:5433 → Interno:5432
+    volumes:
+      - postgres-local-data:/var/lib/postgresql/data
+    networks:
+      - confimax-local
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U confimax"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ==========================================================================
+  # REDIS - Cache y sesiones
+  # ==========================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: confimax-redis
+    command: >
+      redis-server
+      --appendonly yes
+      --requirepass ${REDIS_PASSWORD:-Jackson1}
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+    ports:
+      - "6380:6379"  # Externo:6380 → Interno:6379
+    volumes:
+      - redis-local-data:/data
+    networks:
+      - confimax-local
+    restart: unless-stopped
+
+  # ==========================================================================
+  # MONGODB - Logs y notificaciones
+  # ==========================================================================
+  mongo:
+    image: mongo:7
+    container_name: confimax-mongo
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=confimax
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD:-Jackson1}
+    ports:
+      - "27018:27017"  # Externo:27018 → Interno:27017
+    volumes:
+      - mongo-local-data:/data/db
+    networks:
+      - confimax-local
+    restart: unless-stopped
+
+  # ==========================================================================
+  # HERRAMIENTAS DE DESARROLLO
+  # ==========================================================================
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: confimax-pgadmin
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@edulearn.com
+      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_PASSWORD:-Jackson1}
+      - PGADMIN_CONFIG_SERVER_MODE=False
+    ports:
+      - "5050:80"  # http://localhost:5050
+    networks:
+      - confimax-local
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: confimax-redis-commander
+    environment:
+      - REDIS_HOSTS=local:redis:6379:0:${REDIS_PASSWORD:-Jackson1}
+    ports:
+      - "8082:8081"  # http://localhost:8082
+    networks:
+      - confimax-local
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  mongo-express:
+    image: mongo-express:latest
+    container_name: confimax-mongo-express
+    environment:
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=confimax
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=${MONGO_PASSWORD:-Jackson1}
+      - ME_CONFIG_MONGODB_URL=mongodb://confimax:Jackson1@mongo:27017/?authSource=admin
+    ports:
+      - "8081:8081"  # http://localhost:8081
+    networks:
+      - confimax-local
+    depends_on:
+      - mongo
+    restart: unless-stopped
+
+volumes:
+  postgres-local-data:
+  redis-local-data:
+  mongo-local-data:
+
+networks:
+  confimax-local:
+    driver: bridge

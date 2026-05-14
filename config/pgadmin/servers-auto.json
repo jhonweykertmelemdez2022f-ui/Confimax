@@ -1,0 +1,15 @@
+{
+    "Servers": {
+        "1": {
+            "Name": "Confimax PostgreSQL (Producción)",
+            "Group": "Servers",
+            "Host": "147.93.177.143",
+            "Port": 5432,
+            "MaintenanceDB": "confimax_produccion",
+            "Username": "confimax_admin",
+            "SSLMode": "prefer",
+            "PassFile": "/pgadmin4/pgpass",
+            "Comment": "Conexión automática al servidor PostgreSQL de Confimax"
+        }
+    }
+}

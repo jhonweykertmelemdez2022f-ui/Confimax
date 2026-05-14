@@ -1,0 +1,22 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copiar package.json
+COPY package.json ./
+
+# Instalar TODAS las dependencias (incluyendo devDependencies para Jest)
+RUN npm install
+
+# Copiar código fuente
+COPY src/ ./src/
+COPY tests/ ./tests/
+COPY jest.config.js ./
+COPY jest.e2e.config.js ./
+
+# Variables de entorno para tests
+ENV NODE_ENV=test
+ENV JWT_SECRET=test_secret_key_for_testing
+
+# Comando por defecto: ejecutar tests
+CMD ["npm", "test"]

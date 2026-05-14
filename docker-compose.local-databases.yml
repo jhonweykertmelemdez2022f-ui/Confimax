@@ -1,0 +1,113 @@
+# ============================================================================
+# LOCAL - PostgreSQL + MongoDB + Redis
+# Para pruebas locales antes de subir a Coolify
+# ============================================================================
+
+services:
+  postgres:
+    image: reiastora/confimax-postgres:latest
+    container_name: confimax-postgres-local
+    environment:
+      - POSTGRES_USER=confimax_admin
+      - POSTGRES_PASSWORD=Jackson1
+      - POSTGRES_DB=confimax_produccion
+    volumes:
+      - postgres-local-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - confimax-local-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U confimax_admin -d confimax_produccion"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+
+  mongo:
+    image: reiastora/confimax-mongo:latest
+    container_name: confimax-mongo-local
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=confimax
+      - MONGO_INITDB_ROOT_PASSWORD=Jackson1
+      - MONGO_CACHE_SIZE=0.25
+    volumes:
+      - mongo-local-data:/data/db
+    ports:
+      - "27017:27017"
+    networks:
+      - confimax-local-network
+    restart: unless-stopped
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  redis:
+    image: reiastora/confimax-redis:latest
+    container_name: confimax-redis-local
+    environment:
+      - REDIS_PASSWORD=Jackson1
+      - REDIS_MAXMEMORY=256mb
+    volumes:
+      - redis-local-data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - confimax-local-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ============================================================================
+  # INTERFACES WEB DE ADMINISTRACIÓN
+  # ============================================================================
+
+  mongo-express:
+    image: mongo-express:latest
+    container_name: confimax-mongo-express-local
+    environment:
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=confimax
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=Jackson1
+      - ME_CONFIG_MONGODB_URL=mongodb://confimax:Jackson1@mongo:27017/?authSource=admin
+      - ME_CONFIG_BASICAUTH_USERNAME=admin
+      - ME_CONFIG_BASICAUTH_PASSWORD=Jackson1
+    ports:
+      - "8081:8081"
+    networks:
+      - confimax-local-network
+    restart: unless-stopped
+    depends_on:
+      - mongo
+
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: confimax-redis-commander-local
+    environment:
+      - REDIS_HOSTS=local:redis:6379:0:Jackson1
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=Jackson1
+    ports:
+      - "8082:8081"
+    networks:
+      - confimax-local-network
+    restart: unless-stopped
+    depends_on:
+      - redis
+
+volumes:
+  postgres-local-data:
+  mongo-local-data:
+  redis-local-data:
+
+networks:
+  confimax-local-network:
+    driver: bridge

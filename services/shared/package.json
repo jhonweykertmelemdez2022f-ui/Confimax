@@ -1,0 +1,14 @@
+{
+  "name": "@confimax/shared",
+  "version": "1.0.0",
+  "description": "Módulos compartidos entre microservicios",
+  "main": "database.js",
+  "dependencies": {
+    "pg": "^8.20.0"
+  },
+  "peerDependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "mongoose": "^8.0.0",
+    "redis": "^4.6.0"
+  }
+}

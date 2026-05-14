@@ -1,0 +1,405 @@
+version: '3.8'
+
+# ============================================================================
+# DOCKER COMPOSE - PRODUCCIÓN CON COOLIFY
+# ============================================================================
+# Uso: Coolify carga este archivo automáticamente
+# Variables de entorno configuradas en el panel de Coolify
+# ============================================================================
+
+services:
+  # ==========================================================================
+  # FRONTEND - confimax.bitforges.com
+  # ==========================================================================
+  frontend:
+    image: reiastora/confimax-nginx:latest
+    container_name: confimax-frontend
+    environment:
+      - NODE_ENV=production
+      # URL del backend en producción
+      - REACT_APP_API_URL=https://api-confimax.bitforges.com
+      - REACT_APP_API_BASE_URL=https://api-confimax.bitforges.com/api
+    # Coolify maneja automáticamente el dominio y SSL
+    # No necesitas ports aquí, Coolify los asigna
+    networks:
+      - confimax-prod
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+    # Coolify maneja las labels para traefik/nginx proxy
+    labels:
+      - "coolify.domain=confimax.bitforges.com"
+      - "coolify.port=80"
+      - "coolify.ssl=true"
+
+  # ==========================================================================
+  # BACKEND API - api-confimax.bitforges.com
+  # ==========================================================================
+  backend:
+    image: reiastora/confimax-auth:latest
+    container_name: confimax-backend
+    environment:
+      # === Configuración del Servidor ===
+      - NODE_ENV=production
+      - PORT=3001
+      - JWT_SECRET=${JWT_SECRET}  # Configurado en Coolify Secrets
+      
+      # === Conexión PostgreSQL (Red Interna) ===
+      # OPCIÓN A: Por nombre de contenedor (RECOMENDADO - más rápido)
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=confimax
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=confimax
+      - POSTGRES_SCHEMA=auth
+      
+      # OPCIÓN B: URL completa (si necesitas conectar fuera del compose)
+      # - DATABASE_URL=${DATABASE_URL}
+      
+      # === Conexión Redis (Red Interna) ===
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379
+      
+      # === Conexión MongoDB (Red Interna) ===
+      - MONGO_HOST=mongo
+      - MONGO_PORT=27017
+      - MONGO_USER=confimax
+      - MONGO_PASSWORD=${MONGO_PASSWORD}
+      - MONGO_DB=confimax_notifications
+      - MONGO_URI=mongodb://confimax:${MONGO_PASSWORD}@mongo:27017/confimax_notifications?authSource=admin
+      
+      # === URLs de Servicios (comunicación interna) ===
+      # El frontend se conecta vía dominio público
+      # Los microservicios se conectan entre sí por nombre de contenedor
+      - AUTH_SERVICE_URL=http://backend:3001
+      - INVENTORY_SERVICE_URL=http://inventory-service:3002
+      - SALES_SERVICE_URL=http://sales-service:3003
+      - CUSTOMERS_SERVICE_URL=http://customers-service:3004
+      - NOTIFICATIONS_SERVICE_URL=http://notifications-service:3005
+    networks:
+      - confimax-prod
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+    labels:
+      - "coolify.domain=api-confimax.bitforges.com"
+      - "coolify.port=3001"
+      - "coolify.ssl=true"
+
+  # ==========================================================================
+  # OTROS MICROSERVICIOS (Inventory, Sales, Customers, Notifications)
+  # ==========================================================================
+  inventory-service:
+    image: reiastora/confimax-inventory:latest
+    container_name: confimax-inventory
+    environment:
+      - NODE_ENV=production
+      - PORT=3002
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=confimax
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=confimax
+      - POSTGRES_SCHEMA=inventory
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    networks:
+      - confimax-prod
+    restart: unless-stopped
+    # Sin dominio público, solo comunicación interna
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  sales-service:
+    image: reiastora/confimax-sales:latest
+    container_name: confimax-sales
+    environment:
+      - NODE_ENV=production
+      - PORT=3003
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=confimax
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=confimax
+      - POSTGRES_SCHEMA=sales
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    networks:
+      - confimax-prod
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  customers-service:
+    image: reiastora/confimax-customers:latest
+    container_name: confimax-customers
+    environment:
+      - NODE_ENV=production
+      - PORT=3004
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=confimax
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=confimax
+      - POSTGRES_SCHEMA=customers
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    networks:
+      - confimax-prod
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  notifications-service:
+    image: reiastora/confimax-notifications:latest
+    container_name: confimax-notifications
+    environment:
+      - NODE_ENV=production
+      - PORT=3005
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - MONGO_HOST=mongo
+      - MONGO_PORT=27017
+      - MONGO_USER=confimax
+      - MONGO_PASSWORD=${MONGO_PASSWORD}
+      - MONGO_DB=confimax_notifications
+      - MONGO_URI=mongodb://confimax:${MONGO_PASSWORD}@mongo:27017/confimax_notifications?authSource=admin
+    networks:
+      - confimax-prod
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  # ==========================================================================
+  # POSTGRESQL - postgres.confimax.bitforges.com
+  # ==========================================================================
+  postgres:
+    image: reiastora/confimax-postgres:latest
+    container_name: confimax-postgres
+    environment:
+      - POSTGRES_USER=confimax
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=confimax
+      # Configuración de rendimiento
+      - POSTGRES_SHARED_BUFFERS=256MB
+      - POSTGRES_EFFECTIVE_CACHE_SIZE=512MB
+      - POSTGRES_MAX_CONNECTIONS=100
+    volumes:
+      - postgres-prod-data:/var/lib/postgresql/data
+    networks:
+      - confimax-prod
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 1G
+        reservations:
+          cpus: '1.0'
+          memory: 512M
+    # COOLIFY: Configurar dominio para pgAdmin o conexión externa
+    # Si necesitas conexión externa, descomenta y configura con cuidado:
+    # ports:
+    #   - "${POSTGRES_PORT:-5432}:5432"
+    labels:
+      - "coolify.domain=postgres.confimax.bitforges.com"
+      # Puerto 5432 no es HTTP, Coolify no puede proxy directo
+      # Usar SSH tunnel o VPN para conexión externa segura
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U confimax"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ==========================================================================
+  # REDIS - redis.confimax.bitforges.com
+  # ==========================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: confimax-redis
+    command: >
+      redis-server
+      --appendonly yes
+      --requirepass ${REDIS_PASSWORD}
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru
+      --save 60 1000
+      --loglevel warning
+      # Bind solo a la interfaz interna del contenedor
+      --bind 0.0.0.0
+    volumes:
+      - redis-prod-data:/data
+    sysctls:
+      - vm.overcommit_memory=1
+    networks:
+      - confimax-prod
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    # NO expongas Redis públicamente sin SSL y autenticación fuerte
+    # Para conexión externa usa VPN, SSH tunnel, o Redis Cloud
+    # ports:
+    #   - "${REDIS_PORT:-6379}:6379"
+    labels:
+      - "coolify.domain=redis.confimax.bitforges.com"
+
+  # ==========================================================================
+  # MONGODB - mongo.confimax.bitforges.com
+  # ==========================================================================
+  mongo:
+    image: mongo:7
+    container_name: confimax-mongo
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=confimax
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD}
+      - MONGODB_MEMORY_LIMIT=512M
+    command: >
+      mongod
+      --wiredTigerCacheSizeGB 0.5
+      --bind_ip_all
+      --auth
+    volumes:
+      - mongo-prod-data:/data/db
+    networks:
+      - confimax-prod
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    # NO expongas MongoDB públicamente sin protección
+    # Usar MongoDB Atlas o VPN para acceso externo
+    # ports:
+    #   - "${MONGO_PORT:-27017}:27017"
+    labels:
+      - "coolify.domain=mongo.confimax.bitforges.com"
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ==========================================================================
+  # MONITOREO Y ADMINISTRACIÓN (Opcional en producción)
+  # ==========================================================================
+  grafana:
+    image: grafana/grafana:10.2.0
+    container_name: confimax-grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SERVER_ROOT_URL=https://grafana-confimax.bitforges.com
+      - GF_SECURITY_COOKIE_SECURE=true
+      - GF_SECURITY_COOKIE_SAMESITE=strict
+    volumes:
+      - grafana-prod-data:/var/lib/grafana
+    networks:
+      - confimax-prod
+    restart: unless-stopped
+    labels:
+      - "coolify.domain=grafana-confimax.bitforges.com"
+      - "coolify.port=3000"
+      - "coolify.ssl=true"
+
+  # ==========================================================================
+  # PGADMIN - pg-confimax.bitforges.com
+  # ==========================================================================
+  pgadmin:
+    build: 
+      context: .
+      dockerfile: ./config/pgadmin/Dockerfile
+    image: reiastora/confimax-pgadmin:latest
+    container_name: confimax-pgadmin
+    environment:
+      - 'PGADMIN_DEFAULT_EMAIL=${PGADMIN_EMAIL:-admin@confimax.com}'
+      - 'PGADMIN_DEFAULT_PASSWORD=${PGADMIN_PASSWORD:-Jackson1}'
+      - PGADMIN_LISTEN_PORT=80
+      - PGADMIN_CONFIG_SERVER_MODE=True
+      - PGADMIN_CONFIG_ENHANCED_COOKIE_PROTECTION=False
+      - PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED=False
+      - PGADMIN_CONFIG_PROXY_WHITELIST_AS_HTTP_HOST=True
+      - PGADMIN_CONFIG_CSRF_TRUSTED_ORIGINS=https://pg-confimax.bitforges.com,http://pg-confimax.bitforges.com
+      - PGADMIN_CONFIG_CSRF_CHECK_REFERER=False
+      - PGADMIN_LISTEN_ADDRESS=0.0.0.0
+      - PGADMIN_CONFIG_FORCE_CANONICAL_URL=https://pg-confimax.bitforges.com
+      - PGADMIN_CONFIG_SESSION_COOKIE_SAMESITE=Lax
+    ports:
+      - '5050:80'
+    volumes:
+      - pgadmin-prod-data:/var/lib/pgadmin
+    networks:
+      - confimax-prod
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+    labels:
+      - "coolify.domain=pg-confimax.bitforges.com"
+      - "coolify.port=80"
+      - "coolify.ssl=true"
+      # Puerto 80 es el estándar, elimina confusiones en el proxy
+      - "caddy_port=80"
+
+volumes:
+  postgres-prod-data:
+    driver: local
+  redis-prod-data:
+    driver: local
+  mongo-prod-data:
+    driver: local
+  grafana-prod-data:
+    driver: local
+  pgadmin-prod-data:
+    driver: local
+
+networks:
+  confimax-prod:
+    driver: bridge
+    # En Coolify, esto es automáticamente aislado del host
+    # Los servicios solo se comunican entre sí dentro de esta red

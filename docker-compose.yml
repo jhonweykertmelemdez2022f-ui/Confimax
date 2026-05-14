@@ -1,0 +1,635 @@
+services:
+  web-nextjs:
+    build:
+      context: ./web-nextjs
+      dockerfile: Dockerfile
+    image: confimax/web-nextjs:latest
+    container_name: confimax-web-nextjs
+    ports:
+      - "${HTTP_PORT:-3000}:3000"
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+    networks:
+      - confimax-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+
+  # ==========================================================================
+  # API GATEWAY - Punto de entrada unico (Express + Proxy Inverso)
+  # ==========================================================================
+  api-gateway:
+    build:
+      context: ./services/api-gateway
+      dockerfile: Dockerfile
+    image: confimax/api-gateway:latest
+    container_name: confimax-api-gateway
+    ports:
+      - "${GATEWAY_PORT:-8080}:8080"
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+      - PORT=8080
+      - JWT_SECRET=${JWT_SECRET}
+      - CORS_ORIGIN=${CORS_ORIGIN:-*}
+      - RATE_LIMIT_WINDOW_MS=${RATE_LIMIT_WINDOW_MS:-900000}
+      - RATE_LIMIT_MAX=${RATE_LIMIT_MAX:-1000}
+      - AUTH_SERVICE_URL=http://auth-service:3001
+      - INVENTORY_SERVICE_URL=http://inventory-service:3002
+      - SALES_SERVICE_URL=http://sales-service:3003
+      - CUSTOMERS_SERVICE_URL=http://customers-service:3004
+      - NOTIFICATIONS_SERVICE_URL=http://notifications-service:3005
+      - BACKEND_SERVICE_URL=http://backend:3006
+    depends_on:
+      - auth-service
+      - inventory-service
+      - sales-service
+      - customers-service
+      - notifications-service
+      - backend
+    networks:
+      - confimax-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
+
+  auth-service:
+    build:
+      context: ./services/auth-service
+      dockerfile: Dockerfile
+    image: reiastora/confimax-auth-service:latest
+    container_name: confimax-auth-service
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - PORT=3001
+      - JWT_SECRET=${JWT_SECRET}
+      # PostgreSQL: Single DB con 4 schemas
+      # PostgreSQL (Supabase)
+      - POSTGRES_HOST=aws-1-us-west-2.pooler.supabase.com
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=postgres.tlrliqbgtdplwdvbxqxv
+      - POSTGRES_PASSWORD=Jackwell2019*2424
+      - POSTGRES_DB=postgres
+      - POSTGRES_SCHEMA=auth
+      - REDIS_URL=rediss://default:gQAAAAAAAdIgAAIgcDFhNDRkNmE3OTg5YjA0MDBlODE4MzQxMGY5NGVjNmU0Mg@good-iguana-119328.upstash.io:6379
+      - SHARED_MODULES_PATH=/shared
+      - NODE_PATH=/app/node_modules
+    volumes:
+      - ./services/shared:/shared:ro
+    depends_on:
+      - redis
+    networks:
+      - confimax-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
+
+  inventory-service:
+    build:
+      context: ./services/inventory-service
+      dockerfile: Dockerfile
+    image: reiastora/confimax-inventory-service:latest
+    container_name: confimax-inventory-service
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - PORT=3002
+      # PostgreSQL (Supabase)
+      - POSTGRES_HOST=aws-1-us-west-2.pooler.supabase.com
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=postgres.tlrliqbgtdplwdvbxqxv
+      - POSTGRES_PASSWORD=Jackwell2019*2424
+      - POSTGRES_DB=postgres
+      - POSTGRES_SCHEMA=inventory
+      - REDIS_URL=rediss://default:gQAAAAAAAdIgAAIgcDFhNDRkNmE3OTg5YjA0MDBlODE4MzQxMGY5NGVjNmU0Mg@good-iguana-119328.upstash.io:6379
+      - SHARED_MODULES_PATH=/shared
+      - NODE_PATH=/app/node_modules
+    volumes:
+      - ./services/shared:/shared:ro
+    depends_on:
+      - redis
+    networks:
+      - confimax-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
+
+  sales-service:
+    build:
+      context: ./services/sales-service
+      dockerfile: Dockerfile
+    image: reiastora/confimax-sales-service:latest
+    container_name: confimax-sales-service
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - PORT=3003
+      # PostgreSQL (Supabase)
+      - POSTGRES_HOST=aws-1-us-west-2.pooler.supabase.com
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=postgres.tlrliqbgtdplwdvbxqxv
+      - POSTGRES_PASSWORD=Jackwell2019*2424
+      - POSTGRES_DB=postgres
+      - POSTGRES_SCHEMA=sales
+      - REDIS_URL=rediss://default:gQAAAAAAAdIgAAIgcDFhNDRkNmE3OTg5YjA0MDBlODE4MzQxMGY5NGVjNmU0Mg@good-iguana-119328.upstash.io:6379
+      - SHARED_MODULES_PATH=/shared
+      - NODE_PATH=/app/node_modules
+    volumes:
+      - ./services/shared:/shared:ro
+    depends_on:
+      - redis
+    networks:
+      - confimax-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
+
+  customers-service:
+    build:
+      context: ./services/customers-service
+      dockerfile: Dockerfile
+    image: reiastora/confimax-customers-service:latest
+    container_name: confimax-customers-service
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - PORT=3004
+      # PostgreSQL (Supabase)
+      - POSTGRES_HOST=aws-1-us-west-2.pooler.supabase.com
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=postgres.tlrliqbgtdplwdvbxqxv
+      - POSTGRES_PASSWORD=Jackwell2019*2424
+      - POSTGRES_DB=postgres
+      - POSTGRES_SCHEMA=customers
+      - REDIS_URL=rediss://default:gQAAAAAAAdIgAAIgcDFhNDRkNmE3OTg5YjA0MDBlODE4MzQxMGY5NGVjNmU0Mg@good-iguana-119328.upstash.io:6379
+      - SHARED_MODULES_PATH=/shared
+      - NODE_PATH=/app/node_modules
+    volumes:
+      - ./services/shared:/shared:ro
+    depends_on:
+      - redis
+    networks:
+      - confimax-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
+
+  notifications-service:
+    build:
+      context: ./services/notifications-service
+      dockerfile: Dockerfile
+    image: reiastora/confimax-notifications-service:latest
+    container_name: confimax-notifications-service
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - PORT=3005
+      # Redis: usa EXTERNAL_* si está definido, sino usa el contenedor local
+      # Redis Upstash (Cloud)
+      - REDIS_URL=rediss://default:gQAAAAAAAdIgAAIgcDFhNDRkNmE3OTg5YjA0MDBlODE4MzQxMGY5NGVjNmU0Mg@good-iguana-119328.upstash.io:6379
+      # MongoDB Atlas
+      - MONGO_URL=mongodb://jak:jema2019@ac-s1gj562-shard-00-00.tedq2nv.mongodb.net:27017,ac-s1gj562-shard-00-01.tedq2nv.mongodb.net:27017,ac-s1gj562-shard-00-02.tedq2nv.mongodb.net:27017/confimax_logs?ssl=true&replicaSet=atlas-mrqwtn-shard-0&authSource=admin&appName=Confimax
+      - MONGO_DB=confimax_logs
+      - SHARED_MODULES_PATH=/shared
+      - NODE_PATH=/app/node_modules
+    volumes:
+      - ./services/shared:/shared:ro
+    depends_on:
+      - redis
+      - mongo
+    # Sin puertos expuestos: solo accesible via API Gateway
+    networks:
+      - confimax-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
+
+  # ==========================================================================
+  # BACKEND UNIFICADO - PostgreSQL + Redis + MongoDB
+  # ==========================================================================
+  backend:
+    build:
+      context: ./services/backend
+      dockerfile: Dockerfile
+    image: confimax/backend:latest
+    container_name: confimax-backend
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - PORT=3006
+      - JWT_SECRET=${JWT_SECRET}
+      # PostgreSQL (Supabase)
+      - POSTGRES_HOST=aws-1-us-west-2.pooler.supabase.com
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=postgres.tlrliqbgtdplwdvbxqxv
+      - POSTGRES_PASSWORD=Jackwell2019*2424
+      - POSTGRES_DB=postgres
+      - POSTGRES_SCHEMA=public
+      # Redis Upstash
+      - REDIS_URL=rediss://default:gQAAAAAAAdIgAAIgcDFhNDRkNmE3OTg5YjA0MDBlODE4MzQxMGY5NGVjNmU0Mg@good-iguana-119328.upstash.io:6379
+      # MongoDB Atlas
+      - MONGO_URL=mongodb://jak:jema2019@ac-s1gj562-shard-00-00.tedq2nv.mongodb.net:27017,ac-s1gj562-shard-00-01.tedq2nv.mongodb.net:27017,ac-s1gj562-shard-00-02.tedq2nv.mongodb.net:27017/confimax_logs?ssl=true&replicaSet=atlas-mrqwtn-shard-0&authSource=admin&appName=Confimax
+      - MONGO_DB=confimax_logs
+      - SHARED_MODULES_PATH=/shared
+      - NODE_PATH=/app/node_modules
+    volumes:
+      - ./services/shared:/shared:ro
+    ports:
+      - "${BACKEND_PORT:-3006}:3006"
+    depends_on:
+      - redis
+      - mongo
+    networks:
+      - confimax-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
+
+  mongo:
+    image: mongo:7
+    container_name: confimax-mongo
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=confimax
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD}
+      # Configuración de memoria de MongoDB
+      - MONGODB_MEMORY_LIMIT=${MONGO_MEMORY_LIMIT:-512M}
+    command: >
+      mongod
+      --wiredTigerCacheSizeGB ${MONGO_CACHE_SIZE:-0.25}
+      --bind_ip_all
+      --auth
+    volumes:
+      - mongo-data:/data/db
+      - ./config/mongo/mongod.conf:/etc/mongod.conf:ro
+    # NOTA: Puerto expuesto solo para desarrollo. En producción, eliminar o usar VPN
+    ports:
+      - "127.0.0.1:27018:27017"  # Solo localhost
+    networks:
+      - confimax-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: ${MONGO_MEMORY_LIMIT:-512M}
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  redis:
+    image: redis:7-alpine
+    container_name: confimax-redis
+    command: >
+      redis-server
+      --appendonly yes
+      --requirepass ${REDIS_PASSWORD}
+      --maxmemory ${REDIS_MAXMEMORY:-256mb}
+      --maxmemory-policy allkeys-lru
+      --save 60 1000
+      --loglevel warning
+    volumes:
+      - redis-data:/data
+      - ./config/redis/redis.conf:/etc/redis/redis.conf:ro
+    # sysctl no funciona en Windows Docker - omitido para desarrollo local
+    # NOTA: Puerto expuesto solo para desarrollo. En producción, eliminar
+    ports:
+      - "127.0.0.1:6380:6379"  # Solo localhost, puerto 6380 para evitar conflicto
+    networks:
+      - confimax-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: ${REDIS_MEMORY_LIMIT:-256M}
+        reservations:
+          cpus: '0.1'
+          memory: 128M
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # pgAdmin - Interfaz web para gestionar PostgreSQL
+  pgadmin:
+    build: 
+      context: .
+      dockerfile: ./config/pgadmin/Dockerfile
+    image: reiastora/confimax-pgadmin:latest
+    container_name: confimax-pgadmin
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_EMAIL:-admin@edulearn.com}
+      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_PASSWORD}
+      - PGADMIN_CONFIG_SERVER_MODE=True
+      - PGADMIN_CONFIG_REVERSE_PROXY_ADDRESSING=True
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+      - ./config/pgadmin/servers.json:/pgadmin4/servers.json:ro
+    networks:
+      - confimax-network
+    restart: unless-stopped
+    # PostgreSQL migrado a Supabase - sin depends_on
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
+
+  # Redis Commander - Interfaz web para Redis
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: confimax-redis-commander
+    environment:
+      - REDIS_HOST=good-iguana-119328.upstash.io
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=gQAAAAAAAdIgAAIgcDFhNDRkNmE3OTg5YjA0MDBlODE4MzQxMGY5NGVjNmU0Mg
+      - REDIS_TLS=true
+      - HTTP_USER=admin
+      - HTTP_PASSWORD=Jackson1
+    ports:
+      - "8082:8081"  # Interfaz web en http://localhost:8082
+    networks:
+      - confimax-network
+    restart: unless-stopped
+    depends_on:
+      - redis
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
+
+  # Mongo Express - Interfaz web para MongoDB Atlas
+  mongo-express:
+    image: mongo-express:latest
+    container_name: confimax-mongo-express
+    environment:
+      - ME_CONFIG_MONGODB_URL=mongodb://jak:jema2019@ac-s1gj562-shard-00-00.tedq2nv.mongodb.net:27017,ac-s1gj562-shard-00-01.tedq2nv.mongodb.net:27017,ac-s1gj562-shard-00-02.tedq2nv.mongodb.net:27017/confimax_logs?ssl=true&replicaSet=atlas-mrqwtn-shard-0&authSource=admin&appName=Confimax
+      - ME_CONFIG_MONGODB_SSL=true
+      - ME_CONFIG_MONGODB_ENABLE_ADMIN=true
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=jak
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=jema2019
+      - ME_CONFIG_BASICAUTH_USERNAME=admin
+      - ME_CONFIG_BASICAUTH_PASSWORD=Jackson1
+    ports:
+      - "8081:8081"
+    entrypoint: ["node", "app.js"]
+    networks:
+      - confimax-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
+
+  # Grafana - Monitoreo y Dashboards
+  grafana:
+    image: grafana/grafana:10.2.0
+    container_name: confimax-grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=Jackson1
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SERVER_ROOT_URL=http://localhost:3001
+    ports:
+      - "3001:3000"  # Interfaz web en http://localhost:3001
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./config/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./config/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    networks:
+      - confimax-network
+    restart: unless-stopped
+    depends_on:
+      - mongo
+      - redis
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+
+  # ==========================================================================
+  # TAILSCALE VPN - Conexion segura mesh VPN
+  # ==========================================================================
+  # Uso:
+  #   1. Genera authkey en https://login.tailscale.com/admin/settings/keys
+  #   2. Exporta TS_AUTHKEY=tskey-auth-xxx en tu .env
+  #   3. El API Gateway puede usar network_mode: service:tailscale si se desea
+  #      que todo el trafico salga por Tailscale.
+  # ==========================================================================
+  tailscale:
+    image: tailscale/tailscale:latest
+    container_name: confimax-tailscale
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    environment:
+      - TS_AUTHKEY=${TS_AUTHKEY}
+      - TS_HOSTNAME=${TS_HOSTNAME:-confimax-backend}
+      - TS_STATE_DIR=/var/lib/tailscale
+      - TS_USERSPACE=true
+      # Activa funnel si quieres exponer el gateway por Tailscale
+      # - TS_EXTRA_ARGS=--advertise-exit-node --accept-routes
+    volumes:
+      - tailscale-state:/var/lib/tailscale
+      - /dev/net/tun:/dev/net/tun
+    networks:
+      - confimax-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
+
+  # ==========================================================================
+  # BACKEND TESTS - Contenedor para ejecutar tests Jest
+  # ==========================================================================
+  # Uso:
+  #   docker-compose --profile test up backend-tests
+  #   docker-compose run --rm backend-tests npm test -- --watch
+  #
+  # Conexión Tailscale (opcional):
+  #   1. Asegúrate de que TS_AUTHKEY está configurado en .env
+  #   2. El contenedor puede acceder a servicios remotos via Tailscale
+  # ==========================================================================
+  backend-tests:
+    build:
+      context: ./services/backend
+      dockerfile: Dockerfile.test
+    image: confimax/backend-tests:latest
+    container_name: confimax-backend-tests
+    environment:
+      - NODE_ENV=test
+      - PORT=3006
+      - JWT_SECRET=test_secret_key_for_testing
+      # PostgreSQL (Supabase)
+      - POSTGRES_HOST=aws-1-us-west-2.pooler.supabase.com
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=postgres.tlrliqbgtdplwdvbxqxv
+      - POSTGRES_PASSWORD=Jackwell2019*2424
+      - POSTGRES_DB=postgres
+      - POSTGRES_SCHEMA=public
+      # Redis Upstash
+      - REDIS_URL=rediss://default:gQAAAAAAAdIgAAIgcDFhNDRkNmE3OTg5YjA0MDBlODE4MzQxMGY5NGVjNmU0Mg@good-iguana-119328.upstash.io:6379
+      # MongoDB Atlas
+      - MONGO_URL=mongodb://jak:jema2019@ac-s1gj562-shard-00-00.tedq2nv.mongodb.net:27017,ac-s1gj562-shard-00-01.tedq2nv.mongodb.net:27017,ac-s1gj562-shard-00-02.tedq2nv.mongodb.net:27017/confimax_logs?ssl=true&replicaSet=atlas-mrqwtn-shard-0&authSource=admin&appName=Confimax
+      - MONGO_DB=confimax_logs
+      - SHARED_MODULES_PATH=/shared
+      - NODE_PATH=/app/node_modules
+      # Conexión al backend via Tailscale (cuando está activo)
+      - BACKEND_URL=http://confimax-backend:3006
+      # Tailscale (opcional - para acceso seguro a servicios remotos)
+      - TS_AUTHKEY=${TS_AUTHKEY:-}
+      - TS_HOSTNAME=confimax-backend-tests
+    volumes:
+      - ./services/shared:/shared:ro
+      - ./services/backend/tests:/app/tests:ro
+      - ./services/backend/jest.config.js:/app/jest.config.js:ro
+      - tailscale-state:/var/lib/tailscale:ro
+    working_dir: /app
+    command: ["npm", "test"]
+    depends_on:
+      - backend
+      - tailscale
+    networks:
+      - confimax-network
+    profiles:
+      - test
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+
+  # ==========================================================================
+  # HEXAGONAL TESTS - Tests de Arquitectura Hexagonal
+  # ==========================================================================
+  # Tests que verifican la arquitectura del sistema siguiendo el patrón
+  # Ports and Adapters (Arquitectura Hexagonal).
+  #
+  # Uso:
+  #   docker-compose --profile test run --rm hexagonal-tests
+  #   docker-compose --profile test run --rm hexagonal-tests npx jest --config tests/hexagonal/jest.config.js --watch
+  #
+  # Conexión:
+  #   - Bases de datos cloud: Supabase, Upstash, MongoDB Atlas
+  #   - Servicios locales: via red confimax-network
+  #   - Servicios remotos: via Tailscale (opcional)
+  # ==========================================================================
+  hexagonal-tests:
+    build:
+      context: .
+      dockerfile: tests/hexagonal/Dockerfile
+    image: confimax/hexagonal-tests:latest
+    container_name: confimax-hexagonal-tests
+    environment:
+      - NODE_ENV=test
+      - JWT_SECRET=test_secret_key_for_testing
+      # PostgreSQL (Supabase) - Single DB con 4 schemas
+      - POSTGRES_HOST=aws-1-us-west-2.pooler.supabase.com
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=postgres.tlrliqbgtdplwdvbxqxv
+      - POSTGRES_PASSWORD=Jackwell2019*2424
+      - POSTGRES_DB=postgres
+      # Redis Upstash
+      - REDIS_URL=rediss://default:gQAAAAAAAdIgAAIgcDFhNDRkNmE3OTg5YjA0MDBlODE4MzQxMGY5NGVjNmU0Mg@good-iguana-119328.upstash.io:6379
+      # MongoDB Atlas
+      - MONGO_URL=mongodb://jak:jema2019@ac-s1gj562-shard-00-00.tedq2nv.mongodb.net:27017,ac-s1gj562-shard-00-01.tedq2nv.mongodb.net:27017,ac-s1gj562-shard-00-02.tedq2nv.mongodb.net:27017/confimax_logs?ssl=true&replicaSet=atlas-mrqwtn-shard-0&authSource=admin&appName=Confimax
+      - MONGO_DB=confimax_logs
+      # Servicios locales (via red Docker)
+      - AUTH_SERVICE_URL=http://auth-service:3001
+      - INVENTORY_SERVICE_URL=http://inventory-service:3002
+      - SALES_SERVICE_URL=http://sales-service:3003
+      - CUSTOMERS_SERVICE_URL=http://customers-service:3004
+      - NOTIFICATIONS_SERVICE_URL=http://notifications-service:3005
+      - BACKEND_URL=http://backend:3006
+      # Tailscale (opcional - para acceso seguro a servicios remotos)
+      - TS_AUTHKEY=${TS_AUTHKEY:-}
+      - TS_HOSTNAME=confimax-hexagonal-tests
+    volumes:
+      # Montar código fuente para desarrollo
+      - ./services/auth-service/src:/app/services/auth-service/src:ro
+      - ./services/inventory-service/src:/app/services/inventory-service/src:ro
+      - ./services/sales-service/src:/app/services/sales-service/src:ro
+      - ./services/customers-service/src:/app/services/customers-service/src:ro
+      - ./services/notifications-service/src:/app/services/notifications-service/src:ro
+      - ./services/backend/src:/app/services/backend/src:ro
+      - ./services/shared:/app/services/shared:ro
+      - ./tests/hexagonal:/app/tests/hexagonal:ro
+      - tailscale-state:/var/lib/tailscale:ro
+    working_dir: /app
+    command: ["npx", "jest", "--config", "tests/hexagonal/jest.config.js", "--verbose"]
+    depends_on:
+      - auth-service
+      - inventory-service
+      - sales-service
+      - customers-service
+      - notifications-service
+      - backend
+      - tailscale
+    networks:
+      - confimax-network
+    profiles:
+      - test
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+
+volumes:
+  mongo-data:
+  redis-data:
+  pgadmin-data:
+  grafana-data:
+  tailscale-state:
+
+networks:
+  confimax-network:
+    driver: bridge

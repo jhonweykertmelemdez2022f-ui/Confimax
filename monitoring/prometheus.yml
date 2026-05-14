@@ -1,0 +1,40 @@
+# Confimax Monitoring Configuration
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: []
+
+rule_files:
+  - 'alerts.yml'
+
+scrape_configs:
+  - job_name: 'confimax-services'
+    static_configs:
+      - targets:
+          - 'nginx:80'
+          - 'auth-service:3001'
+          - 'inventory-service:3002'
+          - 'sales-service:3003'
+          - 'customers-service:3004'
+          - 'notifications-service:3005'
+
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['postgres:5432']
+
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis:6379']
+
+  - job_name: 'mongo'
+    static_configs:
+      - targets: ['mongo:27017']
+
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']

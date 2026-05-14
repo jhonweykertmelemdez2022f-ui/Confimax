@@ -1,0 +1,75 @@
+# ============================================
+# ⚠️  ARCHIVOS DE SEGURIDAD - NUNCA SUBIR A GIT
+# ============================================
+
+# Variables de entorno con contraseñas
+.env
+.env.local
+.env.*.local
+.env.backup.*
+
+# Certificados y claves SSL
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+/ssl/
+/certs/
+
+# Backups de bases de datos (pueden contener datos sensibles)
+/backups/
+*.backup
+*.sql.gz
+*.dump
+
+# Logs que pueden contener información sensible
+*.log
+logs/
+log/
+
+# Docker
+.dockerignore
+
+# Sistemas operativos
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Node.js (web)
+web/node_modules/
+web/dist/
+web/build/
+web/.cache/
+
+# Dependencias de servicios
+services/*/node_modules/
+services/*/dist/
+services/*/build/
+
+# Mobile
+mobile/node_modules/
+mobile/.expo/
+mobile/.gradle/
+
+# Testing
+/coverage/
+.nyc_output/
+
+# Otros archivos sensibles
+*.secret
+secrets/
+config/secrets/
+scripts/generate-secrets.sh  # El script genera .env, no debe compartirse
+
+# ============================================
+# NOTA: Si necesitas compartir configuraciones,
+# usa .env.example (con valores de placeholder)
+# ============================================

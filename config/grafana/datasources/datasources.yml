@@ -1,0 +1,55 @@
+apiVersion: 1
+
+datasources:
+  # Windows PC Metrics - CPU, RAM, Disco (via endpoint local)
+  - name: Windows-PC-Metrics
+    type: prometheus
+    access: proxy
+    url: http://host.docker.internal:9182
+    jsonData:
+      httpMethod: GET
+      manageAlerts: false
+      prometheusType: Prometheus
+      cacheLevel: 'Low'
+      queryTimeout: 5s
+
+  # PostgreSQL - Datos de ventas, productos, usuarios (default)
+  - name: PostgreSQL-Confimax
+    type: postgres
+    access: proxy
+    url: postgres:5432
+    database: confimax
+    user: confimax
+    secureJsonData:
+      password: Jackson1
+    jsonData:
+      sslmode: disable
+      maxOpenConns: 100
+      maxIdleConns: 100
+      maxIdleConnsAuto: true
+      connMaxLifetime: 14400
+      postgresVersion: 1200
+      timescaledb: false
+    isDefault: true
+
+  # Redis - Métricas de caché y sesiones
+  - name: Redis-Confimax
+    type: redis-datasource
+    access: proxy
+    url: redis://redis:6379
+    secureJsonData:
+      password: Jackson1
+    jsonData:
+      client: standalone
+      tlsAuth: false
+      tlsAuthWithCACert: false
+
+  # MongoDB - Logs y auditoría
+  - name: MongoDB-Confimax
+    type: grafana-mongodb-datasource
+    access: proxy
+    url: mongo:27017
+    database: confimax_logs
+    secureJsonData:
+      username: confimax
+      password: Jackson1

@@ -1,0 +1,61 @@
+{
+  "name": "confimax",
+  "version": "1.0.0",
+  "description": "Sistema de Ventas e Inventario Confimax - UPTAI Trayecto IV",
+  "scripts": {
+    "start": "docker-compose up -d",
+    "stop": "docker-compose down",
+    "build": "docker-compose build",
+    "logs": "docker-compose logs -f",
+    "test": "npm run test:hexagonal",
+    "test:hexagonal": "npx jest tests/hexagonal/ --config tests/hexagonal/jest.config.js --verbose",
+    "test:hexagonal:domain": "npx jest tests/hexagonal/domain/ --config tests/hexagonal/jest.config.js --verbose",
+    "test:hexagonal:app": "npx jest tests/hexagonal/application/ --config tests/hexagonal/jest.config.js --verbose",
+    "test:hexagonal:infra": "npx jest tests/hexagonal/infrastructure/ --config tests/hexagonal/jest.config.js --verbose",
+    "test:hexagonal:integration": "npx jest tests/hexagonal/integration/ --config tests/hexagonal/jest.config.js --verbose --runInBand",
+    "test:hexagonal:coverage": "npx jest tests/hexagonal/ --config tests/hexagonal/jest.config.js --coverage",
+    "test:stress": "npm run test:stress --prefix tests",
+    "db:migrate": "docker-compose exec postgres psql -U confimax -d confimax -f /docker-entrypoint-initdb.d/init.sh",
+    "db:shell": "docker-compose exec postgres psql -U confimax -d confimax",
+    "db:reset": "docker-compose down -v && docker-compose up -d postgres",
+    "generate:secrets": "bash scripts/generate-secrets.sh",
+    "status": "docker-compose ps",
+    "clean": "docker-compose down -v && docker system prune -f"
+  },
+  "keywords": [
+    "pos",
+    "inventory",
+    "sales",
+    "microservices",
+    "docker",
+    "hexagonal-architecture",
+    "uptai"
+  ],
+  "author": "UPTAI - Trayecto IV",
+  "license": "MIT",
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "supertest": "^6.3.3",
+    "jest-junit": "^16.0.0"
+  },
+  "dependencies": {
+    "pg": "^8.11.3",
+    "postgres": "^3.4.4",
+    "redis": "^4.6.12",
+    "mongodb": "^6.3.0",
+    "axios": "^1.6.2"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "docker": ">=24.0.0",
+    "docker-compose": ">=2.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/uptai/confimax.git"
+  },
+  "bugs": {
+    "url": "https://github.com/uptai/confimax/issues"
+  },
+  "homepage": "https://github.com/uptai/confimax#readme"
+}
