@@ -48,6 +48,14 @@ web/node_modules/
 web/dist/
 web/build/
 web/.cache/
+web/.next/
+
+# web-nextjs (Next.js)
+web-nextjs/node_modules/
+web-nextjs/.next/
+web-nextjs/.turbo/
+web-nextjs/dist/
+web-nextjs/build/
 
 # Dependencias de servicios
 services/*/node_modules/
@@ -58,6 +66,11 @@ services/*/build/
 mobile/node_modules/
 mobile/.expo/
 mobile/.gradle/
+
+# Deploy packages
+deploy-package/
+*.tar
+*.tar.gz
 
 # Testing
 /coverage/
