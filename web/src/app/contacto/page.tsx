@@ -58,7 +58,7 @@ export default function ContactoPage() {
   };
 
   const contactInfo = [
-    { icon: <MapPin className="w-5 h-5" />, label: "Dirección", value: "Av. Principal 123, Ciudad Empresarial" },
+    { icon: <MapPin className="w-5 h-5" />, label: "Dirección", value: "Av. Principal 123, Zona Centro" },
     { icon: <Phone className="w-5 h-5" />, label: "Teléfono", value: "+58 212 123 4567" },
     { icon: <Mail className="w-5 h-5" />, label: "Email", value: "ventas@confimax.com" },
     { icon: <Clock className="w-5 h-5" />, label: "Horario", value: "Lun-Vie: 8:00-18:00, Sáb: 9:00-13:00" },
@@ -71,7 +71,7 @@ export default function ContactoPage() {
         <div ref={headerRef} className="text-center mb-12">
           <h1 className="font-headline-lg text-headline-lg text-slate-900 dark:text-white mb-4 uppercase">Contáctanos</h1>
           <p className="font-body-md text-body-md text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
-            Estamos aquí para ayudarte. Envíanos tu consulta y nuestro equipo comercial te responderá a la brevedad.
+            Estamos aquí para ayudarte. Escríbenos para consultar precios, disponibilidad o pedidos para tu hogar.
           </p>
         </div>
 
@@ -159,8 +159,8 @@ export default function ContactoPage() {
                   >
                     <option value="">Selecciona un tema</option>
                     <option value="ventas">Consulta de Ventas</option>
-                    <option value="soporte">Soporte Técnico</option>
-                    <option value="cotizacion">Solicitud de Cotización</option>
+                    <option value="pedido">Consulta de Pedido</option>
+                    <option value="cotizacion">Solicitud de Precios</option>
                     <option value="otros">Otros</option>
                   </select>
                 </div>

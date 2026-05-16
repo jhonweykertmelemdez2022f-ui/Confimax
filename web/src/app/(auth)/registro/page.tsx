@@ -30,52 +30,53 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white dark:bg-background p-4 md:p-8">
-      <div className="w-full max-w-md bg-white dark:bg-surface border border-slate-900 dark:border-white p-6 md:p-8">
-        <div className="text-center mb-8">
-          <h1 className="font-headline-lg text-headline-lg text-slate-900 dark:text-white uppercase mb-2">Registro de Cuenta</h1>
-          <p className="font-body-md text-body-md text-slate-600 dark:text-slate-400">Crea tu cuenta para acceder a precios exclusivos</p>
+    <div className="w-full max-w-2xl mx-auto">
+      <div className="bg-white/95 dark:bg-surface/95 border border-slate-900 dark:border-white p-5 md:p-6 backdrop-blur-sm">
+        <div className="text-center mb-5">
+          <p className="font-data-label text-data-label uppercase text-data-blue mb-2">Clientes Confimax</p>
+          <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-slate-900 dark:text-white uppercase mb-1">Crear cuenta</h1>
+          <p className="font-body-md text-sm text-slate-600 dark:text-slate-400">Regístrate para guardar tus datos y consultar tus compras.</p>
         </div>
 
         {error && (
-          <div className="mb-6 p-3 border border-error bg-error/10 text-error text-sm font-data-label font-data-label uppercase">
+          <div className="mb-4 p-3 border border-error bg-error/10 text-error text-sm font-data-label font-data-label uppercase">
             {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="grid gap-3 md:grid-cols-2">
           <div>
-            <label className="block font-data-label font-data-label text-xs uppercase text-slate-500 dark:text-slate-300 mb-2">Nombre Completo</label>
+            <label className="block font-data-label font-data-label text-xs uppercase text-slate-500 dark:text-slate-300 mb-1.5">Nombre completo</label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full bg-slate-50 dark:bg-surface-dim border border-slate-900 dark:border-white py-3 px-4 text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-500 focus:outline-none focus:border-data-blue transition-all font-body-md"
+              className="w-full bg-slate-50 dark:bg-surface-dim border border-slate-900 dark:border-white py-2.5 px-4 text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-500 focus:outline-none focus:border-data-blue focus:ring-1 focus:ring-data-blue transition-all font-body-md"
               placeholder="Tu nombre"
               required
             />
           </div>
 
           <div>
-            <label className="block font-data-label font-data-label text-xs uppercase text-slate-500 dark:text-slate-300 mb-2">Correo Electrónico</label>
+            <label className="block font-data-label font-data-label text-xs uppercase text-slate-500 dark:text-slate-300 mb-1.5">Correo electrónico</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-slate-50 dark:bg-surface-dim border border-slate-900 dark:border-white py-3 px-4 text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-500 focus:outline-none focus:border-data-blue transition-all font-body-md"
+              className="w-full bg-slate-50 dark:bg-surface-dim border border-slate-900 dark:border-white py-2.5 px-4 text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-500 focus:outline-none focus:border-data-blue focus:ring-1 focus:ring-data-blue transition-all font-body-md"
               placeholder="tu@email.com"
               required
             />
           </div>
 
           <div>
-            <label className="block font-data-label font-data-label text-xs uppercase text-slate-500 dark:text-slate-300 mb-2">Contraseña</label>
+            <label className="block font-data-label font-data-label text-xs uppercase text-slate-500 dark:text-slate-300 mb-1.5">Contraseña</label>
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-slate-50 dark:bg-surface-dim border border-slate-900 dark:border-white py-3 px-4 pr-12 text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-500 focus:outline-none focus:border-data-blue transition-all font-body-md"
+                className="w-full bg-slate-50 dark:bg-surface-dim border border-slate-900 dark:border-white py-2.5 px-4 pr-12 text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-500 focus:outline-none focus:border-data-blue focus:ring-1 focus:ring-data-blue transition-all font-body-md"
                 placeholder="••••••••"
                 required
               />
@@ -95,12 +96,12 @@ export default function RegisterPage() {
           </div>
 
           <div>
-            <label className="block font-data-label font-data-label text-xs uppercase text-slate-500 dark:text-slate-300 mb-2">Confirmar Contraseña</label>
+            <label className="block font-data-label font-data-label text-xs uppercase text-slate-500 dark:text-slate-300 mb-1.5">Confirmar contraseña</label>
             <input
               type="password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full bg-slate-50 dark:bg-surface-dim border border-slate-900 dark:border-white py-3 px-4 text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-500 focus:outline-none focus:border-data-blue transition-all font-body-md"
+              className="w-full bg-slate-50 dark:bg-surface-dim border border-slate-900 dark:border-white py-2.5 px-4 text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-500 focus:outline-none focus:border-data-blue focus:ring-1 focus:ring-data-blue transition-all font-body-md"
               placeholder="••••••••"
               required
             />
@@ -109,17 +110,17 @@ export default function RegisterPage() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full btn-precision disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full btn-precision justify-center py-3 disabled:opacity-50 disabled:cursor-not-allowed md:col-span-2"
           >
-            {isLoading ? "PROCESANDO..." : "CREAR CUENTA"}
+            {isLoading ? "Procesando..." : "Crear cuenta"}
           </button>
         </form>
 
-        <div className="mt-6 pt-6 border-t border-slate-900 dark:border-white text-center">
+        <div className="mt-4 pt-4 border-t border-slate-900 dark:border-white text-center">
           <p className="font-body-sm font-body-sm text-slate-600 dark:text-slate-400">
             ¿Ya tienes cuenta?{" "}
-            <Link href="/login" className="font-data-label font-data-label text-xs text-data-blue hover:text-slate-900 dark:hover:text-white uppercase transition-colors">
-              INICIAR SESIÓN
+            <Link href="/login" className="font-data-label font-data-label text-xs text-data-blue hover:bg-data-blue hover:text-white focus-visible:outline-none focus-visible:bg-data-blue focus-visible:text-white uppercase transition-colors px-2 py-1">
+              Iniciar sesión
             </Link>
           </p>
         </div>

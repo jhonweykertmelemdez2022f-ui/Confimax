@@ -1,9 +1,22 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Mail, Phone, MapPin } from "lucide-react";
 
-export default function Footer() {
+interface FooterProps {
+  className?: string;
+}
+
+export default function Footer({ className = "" }: FooterProps) {
+  const pathname = usePathname();
+
+  if (["/login", "/registro", "/recuperar-password"].includes(pathname)) {
+    return null;
+  }
+
   return (
-    <footer className="bg-slate-100/90 dark:bg-surface/90 backdrop-blur-sm border-t border-slate-900 dark:border-white">
+    <footer className={`bg-slate-100/90 dark:bg-surface/90 backdrop-blur-sm border-t border-slate-900 dark:border-white ${className}`}>
       <div className="w-full px-margin-page py-12">
         <div className="grid md:grid-cols-4 gap-8">
           {/* Brand */}
@@ -15,7 +28,7 @@ export default function Footer() {
               <span className="text-xl font-headline-lg text-slate-900 dark:text-white uppercase tracking-tighter">CONFIMAX</span>
             </Link>
             <p className="text-slate-600 dark:text-slate-400 text-sm mb-4 font-body-md">
-              Plataforma de precisión para la gestión y distribución de productos. Calidad calibrada en cada entrega.
+              Somos Tu Opcion Ideal para tus compras semanales.
             </p>
             <div className="font-data-label text-data-label text-slate-500 dark:text-slate-500 text-xs">
             </div>
@@ -49,7 +62,7 @@ export default function Footer() {
             <ul className="space-y-3 text-sm">
               <li className="flex items-start gap-3 text-slate-600 dark:text-slate-400">
                 <MapPin className="w-4 h-4 mt-0.5 text-data-blue flex-shrink-0" />
-                <span className="font-body-md">Av. Principal 123, Ciudad Empresarial</span>
+                <span className="font-body-md">Av. Principal 123, Zona Centro</span>
               </li>
               <li className="flex items-center gap-3 text-slate-600 dark:text-slate-400">
                 <Phone className="w-4 h-4 text-data-blue flex-shrink-0" />
@@ -69,9 +82,7 @@ export default function Footer() {
             © 2026 CONFIMAX // TODOS LOS DERECHOS RESERVADOS
           </p>
           <div className="flex gap-6">
-            <Link href="#" className="text-slate-500 dark:text-slate-500 hover:bg-slate-900 dark:hover:bg-white hover:text-white dark:hover:text-background transition-colors font-data-label text-data-label uppercase">Términos</Link>
-            <Link href="#" className="text-slate-500 dark:text-slate-500 hover:bg-slate-900 dark:hover:bg-white hover:text-white dark:hover:text-background transition-colors font-data-label text-data-label uppercase">Privacidad</Link>
-            <Link href="#" className="text-slate-500 dark:text-slate-500 hover:bg-slate-900 dark:hover:bg-white hover:text-white dark:hover:text-background transition-colors font-data-label text-data-label uppercase">Cookies</Link>
+            
           </div>
         </div>
       </div>

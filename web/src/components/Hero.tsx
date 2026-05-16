@@ -32,18 +32,18 @@ export default function Hero() {
             {/* Badge */}
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full category-badge mb-6 animate-fade-in">
               <Sparkles className="w-4 h-4 text-primary-600" />
-              <span className="text-sm font-medium text-primary-700">Nueva Colección 2024</span>
+              <span className="text-sm font-medium text-primary-700">Ofertas de la semana</span>
             </div>
 
             {/* Headline */}
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 mb-6 leading-tight animate-slide-up">
-              Descubre el futuro del{" "}
-              <span className="gradient-text">e-commerce</span>
+              La compra de siempre,{" "}
+              <span className="gradient-text">más cerca</span>
             </h1>
 
             {/* Description */}
             <p className="text-lg md:text-xl text-slate-600 mb-8 max-w-xl mx-auto lg:mx-0 animate-slide-up" style={{ animationDelay: '0.2s' }}>
-              En Confimax encontrarás tecnología de vanguardia, inventario en tiempo real y una experiencia de compra diseñada para ti.
+              En Confimax encuentras alimentos, frescos, limpieza y básicos del hogar con buenos precios y trato cercano.
             </p>
 
             {/* CTA Buttons */}
@@ -89,10 +89,10 @@ export default function Hero() {
                   {/* Product Preview Cards */}
                   <div className="grid grid-cols-2 gap-4">
                     {[
-                      { name: "Auriculares Pro", price: "$149.99", color: "from-blue-500 to-cyan-500" },
-                      { name: "Smartwatch", price: "$299.99", color: "from-purple-500 to-pink-500" },
-                      { name: "Cámara 4K", price: "$899.99", color: "from-orange-500 to-red-500" },
-                      { name: "Tablet Pro", price: "$799.99", color: "from-green-500 to-emerald-500" }
+                      { name: "Arroz 1 kg", price: "$1.25", color: "from-blue-500 to-cyan-500" },
+                      { name: "Café molido", price: "$3.10", color: "from-purple-500 to-pink-500" },
+                      { name: "Leche 1 L", price: "$1.40", color: "from-orange-500 to-red-500" },
+                      { name: "Detergente", price: "$2.20", color: "from-green-500 to-emerald-500" }
                     ].map((item, index) => (
                       <div 
                         key={index}

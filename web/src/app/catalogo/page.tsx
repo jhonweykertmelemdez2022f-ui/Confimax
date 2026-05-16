@@ -22,7 +22,7 @@ interface Product {
 
 const products: Product[] = [];
 
-const categories = ["Todas", "tecnologia", "industrial", "oficina", "herramientas"];
+const categories = ["Todas", "despensa", "frescos", "lácteos", "limpieza"];
 
 export default function CatalogoPage() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
@@ -72,8 +72,8 @@ export default function CatalogoPage() {
       <div className="w-full px-margin-page">
         {/* Header */}
         <div ref={headerRef} className="mb-8">
-          <h1 className="font-headline-lg text-headline-lg text-slate-900 dark:text-white mb-2 uppercase">Catálogo de Productos</h1>
-          <p className="font-body-md text-body-md text-slate-600 dark:text-slate-400">Explora nuestro inventario actualizado con disponibilidad en tiempo real.</p>
+          <h1 className="font-headline-lg text-headline-lg text-slate-900 dark:text-white mb-2 uppercase">Mercado Confimax</h1>
+          <p className="font-body-md text-body-md text-slate-600 dark:text-slate-400">Compra alimentos, frescos, despensa y limpieza con precios pensados para el día a día.</p>
         </div>
 
         {/* Controls */}
@@ -160,7 +160,7 @@ export default function CatalogoPage() {
           <div className="text-center py-20">
             <Package className="w-16 h-16 text-slate-500 mx-auto mb-4" />
             <h3 className="font-headline-lg-mobile text-headline-lg-mobile text-slate-900 dark:text-white mb-2 uppercase">No hay productos disponibles</h3>
-            <p className="font-body-md text-body-md text-slate-600 dark:text-slate-400 mb-6">El catálogo se encuentra vacío en este momento.</p>
+            <p className="font-body-md text-body-md text-slate-600 dark:text-slate-400 mb-6">No encontramos productos con esos filtros.</p>
           </div>
         )}
       </div>

@@ -54,17 +54,17 @@ export default function NosotrosPage() {
   }, []);
 
   const values = [
-    { icon: <ShieldCheck className="w-8 h-8" />, title: "CALIDAD GARANTIZADA", desc: "Cada producto pasa por estrictos controles antes de llegar a ti." },
-    { icon: <Target className="w-8 h-8" />, title: "ENFOQUE EN RESULTADOS", desc: "Soluciones diseñadas para optimizar tus procesos y maximizar eficiencia." },
-    { icon: <Users className="w-8 h-8" />, title: "COMPROMISO HUMANO", desc: "Un equipo dedicado a entender y resolver tus necesidades específicas." },
-    { icon: <Award className="w-8 h-8" />, title: "EXCELENCIA CONTINUA", desc: "Mejora constante en productos, servicios y experiencia de cliente." },
+    { icon: <ShieldCheck className="w-8 h-8" />, title: "PRODUCTOS CONFIABLES", desc: "Elegimos marcas y frescos que puedas llevar tranquilo a tu mesa." },
+    { icon: <Target className="w-8 h-8" />, title: "PRECIOS JUSTOS", desc: "Buscamos ofertas reales para que la compra semanal rinda mejor." },
+    { icon: <Users className="w-8 h-8" />, title: "TRATO CERCANO", desc: "Atendemos con paciencia, claridad y ganas de ayudarte." },
+    { icon: <Award className="w-8 h-8" />, title: "SERVICIO CONSTANTE", desc: "Mejoramos la variedad, la atención y la experiencia de compra cada día." },
   ];
 
   const stats = [
-    { value: "12+", label: "AÑOS DE EXPERIENCIA" },
-    { value: "5000+", label: "CLIENTES SATISFECHOS" },
-    { value: "2000+", label: "PRODUCTOS EN CATÁLOGO" },
-    { value: "98%", label: "TASA DE SATISFACCIÓN" },
+    { value: "12+", label: "AÑOS ATENDIENDO" },
+    { value: "5000+", label: "COMPRAS DESPACHADAS" },
+    { value: "300+", label: "PRODUCTOS PARA EL HOGAR" },
+    { value: "98%", label: "CLIENTES QUE VUELVEN" },
   ];
 
   return (
@@ -74,8 +74,8 @@ export default function NosotrosPage() {
         <div className="w-full px-margin-page text-center">
           <h1 className="font-headline-lg text-headline-lg text-slate-900 dark:text-white mb-6 uppercase">Sobre Confimax</h1>
           <p className="font-body-md text-body-md text-slate-600 dark:text-slate-400 max-w-3xl mx-auto">
-            Somos una empresa dedicada a proveer soluciones integrales en productos industriales, tecnológicos y de oficina. 
-            Nuestra misión es conectar a las empresas con las herramientas que necesitan para crecer.
+            Somos un supermercado cercano, pensado para resolver la compra diaria con buenos precios, productos útiles y atención amable.
+            Nuestra misión es que cada visita sea rápida, clara y conveniente para tu hogar.
           </p>
         </div>
       </section>
@@ -99,7 +99,7 @@ export default function NosotrosPage() {
         <div className="w-full px-margin-page">
           <div className="text-center mb-12">
             <h2 className="font-headline-lg text-headline-lg text-slate-900 dark:text-white mb-4 uppercase">Nuestros Valores</h2>
-            <p className="font-body-md text-body-md text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">Principios que guían cada decisión y cada interacción con nuestros clientes.</p>
+            <p className="font-body-md text-body-md text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">Principios que guían cada compra, cada recomendación y cada atención en tienda.</p>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {values.map((value, idx) => (
@@ -120,13 +120,13 @@ export default function NosotrosPage() {
         <div className="w-full px-margin-page">
           <div className="text-center mb-12">
             <h2 className="font-headline-lg text-headline-lg text-slate-900 dark:text-white mb-4 uppercase">Cómo Trabajamos</h2>
-            <p className="font-body-md text-body-md text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">Un proceso diseñado para garantizar eficiencia y satisfacción en cada pedido.</p>
+            <p className="font-body-md text-body-md text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">Una forma simple de comprar lo necesario sin perder tiempo.</p>
           </div>
           <div className="grid md:grid-cols-3 gap-8">
             {[
-              { icon: <Package className="w-6 h-6" />, step: "01", title: "Selección", desc: "Catálogo curado con productos verificados y disponibles en tiempo real." },
-              { icon: <Truck className="w-6 h-6" />, step: "02", title: "Gestión", desc: "Procesamiento ágil de pedidos con seguimiento transparente." },
-              { icon: <ShieldCheck className="w-6 h-6" />, step: "03", title: "Entrega", desc: "Logística confiable y soporte post-venta para tu tranquilidad." },
+              { icon: <Package className="w-6 h-6" />, step: "01", title: "Escoge", desc: "Revisa alimentos, frescos, limpieza y básicos para armar tu compra." },
+              { icon: <Truck className="w-6 h-6" />, step: "02", title: "Aparta", desc: "Agrega al carrito y confirma lo que necesitas sin vueltas." },
+              { icon: <ShieldCheck className="w-6 h-6" />, step: "03", title: "Retira o recibe", desc: "Te ayudamos a cerrar la compra con atención rápida y amable." },
             ].map((item, idx) => (
               <div key={idx} className="relative">
                 <div className="bg-slate-50 dark:bg-surface-dim border border-slate-900 dark:border-white p-6 h-full">
@@ -150,12 +150,12 @@ export default function NosotrosPage() {
       <section ref={ctaRef} className="py-20">
         <div className="w-full px-margin-page text-center">
           <div className="bg-white dark:bg-surface border border-slate-900 dark:border-white p-8 md:p-12">
-            <h2 className="font-headline-lg text-headline-lg text-slate-900 dark:text-white mb-4 uppercase">¿Listo para trabajar con nosotros?</h2>
+            <h2 className="font-headline-lg text-headline-lg text-slate-900 dark:text-white mb-4 uppercase">¿Listo para hacer tu compra?</h2>
             <p className="font-body-md text-body-md text-slate-600 dark:text-slate-400 mb-8 max-w-2xl mx-auto">
-              Contáctanos para conocer cómo podemos ayudarte a optimizar tus operaciones con nuestros productos y servicios.
+              Escríbenos si necesitas un producto, quieres consultar precios o deseas que te ayudemos a armar tu lista.
             </p>
             <a href="/contacto" className="btn-precision inline-flex">
-              Contactar Ahora
+              Contactar ahora
             </a>
           </div>
         </div>
