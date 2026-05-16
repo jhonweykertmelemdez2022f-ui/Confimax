@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CONFIMAX - Cuidado Integral</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@800;900&amp;family=Inter:wght@400&amp;family=JetBrains+Mono:wght@500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-variant": "#353434",
+                        "tertiary": "#ffffff",
+                        "secondary": "#c6c6c6",
+                        "surface-bright": "#3a3939",
+                        "surface-dim": "#141313",
+                        "on-background": "#e5e2e1",
+                        "on-surface-variant": "#c4c7c8",
+                        "on-tertiary": "#2f3131",
+                        "surface": "#141313",
+                        "inverse-on-surface": "#313030",
+                        "on-primary": "#2f3131",
+                        "outline-variant": "#444748",
+                        "tertiary-fixed": "#e2e2e2",
+                        "accent-pink": "#CC0597",
+                        "inverse-surface": "#e5e2e1",
+                        "surface-container-low": "#1c1b1b",
+                        "on-tertiary-container": "#636565",
+                        "surface-tint": "#c6c6c7",
+                        "border-muted": "#262626",
+                        "background": "#141313",
+                        "on-tertiary-fixed-variant": "#454747",
+                        "data-blue": "#0066FF",
+                        "primary-fixed-dim": "#c6c6c7",
+                        "surface-container-highest": "#353434",
+                        "on-secondary": "#303030",
+                        "secondary-fixed": "#e2e2e2",
+                        "secondary-fixed-dim": "#c6c6c6",
+                        "error-container": "#93000a",
+                        "on-secondary-fixed": "#1b1b1b",
+                        "on-primary-fixed": "#1a1c1c",
+                        "primary-container": "#e2e2e2",
+                        "outline": "#8e9192",
+                        "error": "#ffb4ab",
+                        "tertiary-container": "#e2e2e2",
+                        "on-primary-fixed-variant": "#454747",
+                        "inverse-primary": "#5d5f5f",
+                        "surface-container": "#201f1f",
+                        "on-error-container": "#ffdad6",
+                        "primary": "#ffffff",
+                        "on-tertiary-fixed": "#1a1c1c",
+                        "on-secondary-container": "#b5b5b5",
+                        "tertiary-fixed-dim": "#c6c6c7",
+                        "secondary-container": "#474747",
+                        "primary-fixed": "#e2e2e2",
+                        "surface-container-high": "#2a2a2a",
+                        "on-surface": "#e5e2e1",
+                        "surface-container-lowest": "#0e0e0e",
+                        "on-primary-container": "#636565",
+                        "on-secondary-fixed-variant": "#474747",
+                        "on-error": "#690005"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "unit": "4px",
+                        "grid-cols": "12",
+                        "margin-page": "40px",
+                        "margin-mobile": "20px",
+                        "gutter": "1px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Montserrat"],
+                        "body-md": ["Inter"],
+                        "headline-lg-mobile": ["Montserrat"],
+                        "data-label": ["JetBrains Mono"],
+                        "display-xl": ["Montserrat"],
+                        "data-value": ["JetBrains Mono"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                        "body-md": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "headline-lg-mobile": ["32px", {"lineHeight": "1.2", "fontWeight": "800"}],
+                        "data-label": ["12px", {"lineHeight": "1.0", "letterSpacing": "0.1em", "fontWeight": "500"}],
+                        "display-xl": ["84px", {"lineHeight": "1.0", "letterSpacing": "-0.04em", "fontWeight": "900"}],
+                        "data-value": ["14px", {"lineHeight": "1.2", "fontWeight": "700"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-family: 'Material Symbols Outlined';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 24px;
+            line-height: 1;
+            letter-spacing: normal;
+            text-transform: none;
+            display: inline-block;
+            white-space: nowrap;
+            word-wrap: normal;
+            direction: ltr;
+            -webkit-font-feature-settings: 'liga';
+            -webkit-font-smoothing: antialiased;
+        }
+        
+        /* Brutalist Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #141313;
+            border-left: 1px solid #ffffff;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #ffffff;
+        }
+        
+        /* Grid Lines */
+        .grid-bg {
+            background-size: calc(100% / 12) 100%;
+            background-image: linear-gradient(to right, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+        }
+        @media (max-width: 768px) {
+            .grid-bg {
+                background-size: calc(100% / 4) 100%;
+            }
+        }
+        
+        /* Precision Button Hover */
+        .btn-precision:hover {
+            background-color: #ffffff;
+            color: #141313;
+        }
+        .btn-precision:hover .btn-serial {
+            color: #141313;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md antialiased min-h-screen flex flex-col grid-bg selection:bg-primary selection:text-background">
+<!-- TopAppBar -->
+<header class="bg-background dark:bg-background text-primary dark:text-primary docked full-width top-0 border-b border-white flat no shadows flex justify-between items-center w-full px-margin-page py-4 max-w-full z-50 sticky">
+<div class="flex items-center gap-4">
+<button class="text-primary hover:bg-primary hover:text-background transition-colors duration-200 Active: scale-95 transition-transform duration-100 p-2 border border-transparent hover:border-white focus:outline-none">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+<span class="text-headline-lg font-headline-lg uppercase tracking-tighter text-primary dark:text-primary hidden md:block">CONFIMAX</span>
+<span class="text-headline-lg-mobile font-headline-lg-mobile uppercase tracking-tighter text-primary dark:text-primary md:hidden">CONFIMAX</span>
+</div>
+<!-- Desktop Nav Cluster -->
+<nav class="hidden md:flex items-center gap-8 border-l border-white/20 pl-8">
+<a class="text-primary font-bold border-b border-primary hover:bg-primary hover:text-background transition-colors duration-200 px-2 py-1" href="#">INICIO</a>
+<a class="text-secondary font-data-label uppercase hover:bg-primary hover:text-background transition-colors duration-200 px-2 py-1" href="#">NUTRICIÓN</a>
+<a class="text-secondary font-data-label uppercase hover:bg-primary hover:text-background transition-colors duration-200 px-2 py-1" href="#">FARMACIA</a>
+</nav>
+<div class="flex items-center gap-4">
+<span class="font-data-label text-data-label text-secondary hidden md:inline-block">SYS.STAT: <span class="text-[#00FF66]">ACTIVO</span></span>
+<button class="text-primary hover:bg-primary hover:text-background transition-colors duration-200 font-data-label text-data-label border border-white px-4 py-2 uppercase flex items-center gap-2">
+                INICIO // 01
+                <span class="material-symbols-outlined text-[16px]" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow flex flex-col w-full max-w-[1920px] mx-auto border-x border-white">
+<!-- Hero Section -->
+<section class="relative w-full border-b border-white min-h-[80vh] flex flex-col justify-center items-center px-margin-page py-20 overflow-hidden gsap-reveal">
+<!-- Crosshairs -->
+<div class="absolute top-4 left-4 w-4 h-4 border-t border-l border-white"></div>
+<div class="absolute top-4 right-4 w-4 h-4 border-t border-r border-white"></div>
+<div class="absolute bottom-4 left-4 w-4 h-4 border-b border-l border-white"></div>
+<div class="absolute bottom-4 right-4 w-4 h-4 border-b border-r border-white"></div>
+<div class="text-center z-10 flex flex-col items-center gap-6">
+<span class="font-data-label text-data-label text-secondary tracking-widest uppercase border border-white/20 px-3 py-1 bg-surface-dim">CUIDADO INTEGRAL // DISEÑADO PARA TU BIENESTAR</span>
+<h1 class="font-display-xl text-display-xl text-primary uppercase text-center max-w-4xl tracking-tighter leading-none hidden md:block">DESPENSA Y<br/>BIENESTAR</h1>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary uppercase text-center max-w-full tracking-tighter leading-none md:hidden mt-4">DESPENSA Y<br/>BIENESTAR</h1>
+<p class="font-body-md text-body-md text-secondary max-w-2xl text-center mt-4 border-l-2 border-data-blue pl-4 bg-surface-variant/30 p-4">
+                    Tu despensa y bienestar en un solo lugar. Seguridad desde tu mesa hasta tu botiquín, con calibración exacta para tu salud diaria.
+                </p>
+<button class="btn-precision mt-8 border border-white text-primary font-data-label text-data-label uppercase px-8 py-4 flex items-center gap-4 transition-all duration-200 group relative overflow-hidden">
+<span class="absolute top-1 right-1 text-[8px] text-secondary group-hover:text-background transition-colors">ACT-01</span>
+                    INICIAR ADQUISICIÓN
+                    <span class="material-symbols-outlined text-[18px] group-hover:translate-x-1 transition-transform" data-icon="health_and_safety">health_and_safety</span>
+</button>
+</div>
+<!-- Hero Image / Technical Graphic Placeholder -->
+<div class="absolute inset-0 z-0 opacity-20 pointer-events-none flex justify-center items-center mix-blend-screen grayscale">
+<img alt="" class="w-full h-full object-cover max-w-3xl opacity-50" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDsTWkeafd4Bb5YvU5KJTmoLKm4j91ogiThsibaWHquX_wdsRvADjQXK2gCLlVXDc2u00BIotSpYzUBxvBcOo4a3szttk7JXraNw0Rmu8kbaUxTgZ2kunYarX1ryM9rKi4oTd6joYF3hfJuJ-0yODbonNYgsOLyoiaLyJbodNvydQW10u7EINucAfXZH1BTujHz0Itls6Qeu4nbsIqV4ZphIu4ZDPM_xVgIUui-6vDCMfFT4sUFtwVYVaEJoU4v66WZ_TioL7-rlcw"/>
+<div class="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background"></div>
+</div>
+</section>
+<!-- Data Specs / Features Grid -->
+<section class="w-full grid grid-cols-1 md:grid-cols-3 border-b border-white gsap-stagger">
+<!-- Spec 01 -->
+<div class="border-b md:border-b-0 md:border-r border-white p-8 flex flex-col gap-6 hover:bg-surface-variant transition-colors group">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined text-[32px] text-primary" data-icon="eco">eco</span>
+<span class="font-data-label text-data-label text-secondary">01 // BIE</span>
+</div>
+<div>
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-primary uppercase mb-2">LOGÍSTICA DE BIENESTAR</h3>
+<p class="font-body-md text-body-md text-secondary">Rutas algorítmicas que aseguran la entrega inmediata de activos nutricionales y de salud a tu sector primario.</p>
+</div>
+<div class="w-full h-[1px] bg-white/20 mt-auto group-hover:bg-[#00FF66] transition-colors relative overflow-hidden">
+<div class="absolute top-0 left-0 h-full w-1/4 bg-white transform -translate-x-full group-hover:translate-x-[400%] transition-transform duration-1000 ease-linear"></div>
+</div>
+</div>
+<!-- Spec 02 -->
+<div class="border-b md:border-b-0 md:border-r border-white p-8 flex flex-col gap-6 hover:bg-surface-variant transition-colors group">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined text-[32px] text-primary" data-icon="medication">medication</span>
+<span class="font-data-label text-data-label text-secondary">02 // FAR</span>
+</div>
+<div>
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-primary uppercase mb-2">PRECISIÓN FARMACÉUTICA</h3>
+<p class="font-body-md text-body-md text-secondary">Tolerancias micro-calibradas en todo empaque médico y orgánico. Integridad verificada mediante escaneo molecular.</p>
+</div>
+<div class="w-full h-[1px] bg-white/20 mt-auto group-hover:bg-data-blue transition-colors relative overflow-hidden">
+<div class="absolute top-0 left-0 h-full w-1/4 bg-white transform -translate-x-full group-hover:translate-x-[400%] transition-transform duration-1000 ease-linear"></div>
+</div>
+</div>
+<!-- Spec 03 -->
+<div class="p-8 flex flex-col gap-6 hover:bg-surface-variant transition-colors group">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined text-[32px] text-primary" data-icon="restaurant">restaurant</span>
+<span class="font-data-label text-data-label text-secondary">03 // NUT</span>
+</div>
+<div>
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-primary uppercase mb-2">SÍNTESIS NUTRICIONAL</h3>
+<p class="font-body-md text-body-md text-secondary">Protocolos de extracción a nivel de laboratorio que garantizan el máximo rendimiento de los especímenes botánicos y alimentarios.</p>
+</div>
+<div class="w-full h-[1px] bg-white/20 mt-auto group-hover:bg-[#00FF66] transition-colors relative overflow-hidden">
+<div class="absolute top-0 left-0 h-full w-1/4 bg-white transform -translate-x-full group-hover:translate-x-[400%] transition-transform duration-1000 ease-linear"></div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-background dark:bg-background text-primary dark:text-primary full-width border-t border-white border-t border-white/20 flat no shadows flex flex-col md:flex-row justify-between items-start md:items-center w-full px-margin-page py-12 gap-8 z-10 relative">
+<div class="flex flex-col gap-4">
+<span class="font-headline-lg text-headline-lg text-primary tracking-tighter uppercase">CONFIMAX</span>
+<span class="font-data-label text-data-label text-secondary">©2024 CONFIMAX CUIDADO INTEGRAL. TODOS LOS DERECHOS RESERVADOS.</span>
+</div>
+<nav class="flex flex-wrap gap-6 md:gap-12">
+<a class="text-secondary font-data-label uppercase tracking-widest hover:text-data-blue transition-colors duration-200" href="#">TERMINALES</a>
+<a class="text-secondary font-data-label uppercase tracking-widest hover:text-data-blue transition-colors duration-200" href="#">LOGÍSTICA</a>
+<a class="text-secondary font-data-label uppercase tracking-widest hover:text-data-blue transition-colors duration-200" href="#">ESPECIFICACIONES</a>
+<a class="text-secondary font-data-label uppercase tracking-widest hover:text-data-blue transition-colors duration-200" href="#">CONTACTO</a>
+</nav>
+</footer>
+</body></html>

@@ -44,12 +44,12 @@ export default function ContactoPage() {
   ];
 
   return (
-    <main className="min-h-screen pt-12 pb-20">
-      <div className="container mx-auto px-4">
+    <main className="min-h-screen pt-12 pb-20 bg-white dark:bg-background">
+      <div className="w-full px-margin-page">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-white mb-4">Contáctanos</h1>
-          <p className="text-slate-400 max-w-2xl mx-auto">
+          <h1 className="font-headline-lg text-headline-lg text-slate-900 dark:text-white mb-4 uppercase">Contáctanos</h1>
+          <p className="font-body-md text-body-md text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
             Estamos aquí para ayudarte. Envíanos tu consulta y nuestro equipo comercial te responderá a la brevedad.
           </p>
         </div>
@@ -57,17 +57,17 @@ export default function ContactoPage() {
         <div className="grid lg:grid-cols-2 gap-12">
           {/* Contact Info */}
           <div className="space-y-8">
-            <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-6">
-              <h2 className="text-xl font-semibold text-white mb-6">Información de Contacto</h2>
+            <div className="bg-white dark:bg-surface border border-slate-900 dark:border-white p-6">
+              <h2 className="font-headline-lg-mobile text-headline-lg-mobile text-slate-900 dark:text-white uppercase mb-6">Información de Contacto</h2>
               <div className="space-y-4">
                 {contactInfo.map((item, idx) => (
                   <div key={idx} className="flex items-start gap-4">
-                    <div className="p-2 bg-cyan-500/10 rounded-lg text-cyan-400 flex-shrink-0">
+                    <div className="p-2 border border-data-blue text-data-blue flex-shrink-0">
                       {item.icon}
                     </div>
                     <div>
-                      <p className="text-sm text-slate-400">{item.label}</p>
-                      <p className="text-white font-medium">{item.value}</p>
+                      <p className="font-data-label font-data-label text-xs uppercase text-slate-500 dark:text-slate-400">{item.label}</p>
+                      <p className="font-body-md font-body-md text-slate-900 dark:text-white font-data-value">{item.value}</p>
                     </div>
                   </div>
                 ))}
@@ -75,27 +75,27 @@ export default function ContactoPage() {
             </div>
 
             {/* Map Placeholder */}
-            <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-6">
-              <h2 className="text-xl font-semibold text-white mb-4">Ubicación</h2>
-              <div className="aspect-video bg-slate-800/50 rounded-lg flex items-center justify-center text-slate-500">
+            <div className="bg-white dark:bg-surface border border-slate-900 dark:border-white p-6">
+              <h2 className="font-headline-lg-mobile text-headline-lg-mobile text-slate-900 dark:text-white uppercase mb-4">Ubicación</h2>
+              <div className="aspect-video bg-slate-50 dark:bg-surface-dim border border-slate-900/20 dark:border-white/20 flex items-center justify-center text-slate-500">
                 <MapPin className="w-8 h-8 mr-2" />
-                <span>Mapa interactivo</span>
+                <span className="font-data-label font-data-label text-xs uppercase">Mapa interactivo</span>
               </div>
             </div>
           </div>
 
           {/* Contact Form */}
-          <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-6 md:p-8">
+          <div className="bg-white dark:bg-surface border border-slate-900 dark:border-white p-6 md:p-8">
             {submitted ? (
               <div className="text-center py-12">
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-500/10 text-green-400 mb-4">
+                <div className="inline-flex items-center justify-center w-16 h-16 border border-[#00FF66] text-[#00FF66] mb-4">
                   <CheckCircle className="w-8 h-8" />
                 </div>
-                <h3 className="text-xl font-semibold text-white mb-2">¡Mensaje Enviado!</h3>
-                <p className="text-slate-400 mb-6">Gracias por contactarnos. Te responderemos en menos de 24 horas.</p>
+                <h3 className="font-headline-lg-mobile text-headline-lg-mobile text-slate-900 dark:text-white uppercase mb-2">¡Mensaje Enviado!</h3>
+                <p className="font-body-md text-body-md text-slate-600 dark:text-slate-400 mb-6">Gracias por contactarnos. Te responderemos en menos de 24 horas.</p>
                 <button 
                   onClick={() => setSubmitted(false)}
-                  className="text-cyan-400 hover:text-cyan-300 font-medium transition-colors"
+                  className="font-data-label font-data-label text-data-blue hover:text-slate-900 dark:hover:text-white transition-colors uppercase"
                 >
                   Enviar otro mensaje
                 </button>
@@ -103,38 +103,38 @@ export default function ContactoPage() {
             ) : (
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Nombre Completo *</label>
+                  <label className="block font-data-label font-data-label text-xs uppercase text-slate-500 dark:text-slate-300 mb-2">Nombre Completo *</label>
                   <input
                     type="text"
                     name="name"
                     value={formData.name}
                     onChange={handleChange}
-                    className={`w-full bg-slate-800/50 border rounded-lg py-3 px-4 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all ${errors.name ? "border-red-500" : "border-slate-700 focus:border-cyan-500"}`}
+                    className={`w-full bg-slate-50 dark:bg-surface-dim border py-3 px-4 text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-500 focus:outline-none focus:border-data-blue transition-all font-body-md ${errors.name ? "border-error" : "border-slate-900 dark:border-white"}`}
                     placeholder="Tu nombre"
                   />
-                  {errors.name && <p className="mt-1 text-sm text-red-400">{errors.name}</p>}
+                  {errors.name && <p className="mt-1 font-data-label font-data-label text-xs text-error uppercase">{errors.name}</p>}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Correo Electrónico *</label>
+                  <label className="block font-data-label font-data-label text-xs uppercase text-slate-500 dark:text-slate-300 mb-2">Correo Electrónico *</label>
                   <input
                     type="email"
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
-                    className={`w-full bg-slate-800/50 border rounded-lg py-3 px-4 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all ${errors.email ? "border-red-500" : "border-slate-700 focus:border-cyan-500"}`}
+                    className={`w-full bg-slate-50 dark:bg-surface-dim border py-3 px-4 text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-500 focus:outline-none focus:border-data-blue transition-all font-body-md ${errors.email ? "border-error" : "border-slate-900 dark:border-white"}`}
                     placeholder="tu@email.com"
                   />
-                  {errors.email && <p className="mt-1 text-sm text-red-400">{errors.email}</p>}
+                  {errors.email && <p className="mt-1 font-data-label font-data-label text-xs text-error uppercase">{errors.email}</p>}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Asunto</label>
+                  <label className="block font-data-label font-data-label text-xs uppercase text-slate-500 dark:text-slate-300 mb-2">Asunto</label>
                   <select
                     name="subject"
                     value={formData.subject}
                     onChange={handleChange}
-                    className="w-full bg-slate-800/50 border border-slate-700 rounded-lg py-3 px-4 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 transition-all"
+                    className="w-full bg-slate-50 dark:bg-surface-dim border border-slate-900 dark:border-white py-3 px-4 text-slate-900 dark:text-white focus:outline-none focus:border-data-blue transition-all font-body-md"
                   >
                     <option value="">Selecciona un tema</option>
                     <option value="ventas">Consulta de Ventas</option>
@@ -145,21 +145,21 @@ export default function ContactoPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Mensaje *</label>
+                  <label className="block font-data-label font-data-label text-xs uppercase text-slate-500 dark:text-slate-300 mb-2">Mensaje *</label>
                   <textarea
                     name="message"
                     value={formData.message}
                     onChange={handleChange}
                     rows={5}
-                    className={`w-full bg-slate-800/50 border rounded-lg py-3 px-4 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all resize-none ${errors.message ? "border-red-500" : "border-slate-700 focus:border-cyan-500"}`}
+                    className={`w-full bg-slate-50 dark:bg-surface-dim border py-3 px-4 text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-500 focus:outline-none focus:border-data-blue transition-all resize-none font-body-md ${errors.message ? "border-error" : "border-slate-900 dark:border-white"}`}
                     placeholder="Describe tu consulta..."
                   />
-                  {errors.message && <p className="mt-1 text-sm text-red-400">{errors.message}</p>}
+                  {errors.message && <p className="mt-1 font-data-label font-data-label text-xs text-error uppercase">{errors.message}</p>}
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold py-3 rounded-lg hover:shadow-lg hover:shadow-cyan-500/25 transition-all duration-300 flex items-center justify-center gap-2"
+                  className="w-full btn-precision"
                 >
                   <Send className="w-5 h-5" />
                   Enviar Mensaje

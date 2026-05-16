@@ -1,11 +1,27 @@
+/* Tailwind CSS directives - these are valid and required for Tailwind to work */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
+    /* Light mode (default) */
+    --background: 255 255 255;
+    --foreground: 24 24 27;
+  }
+
+  .dark {
+    /* Dark mode */
+    --background: 20 20 20;
+    --foreground: 228 228 231;
+  }
+  
+  html:not(.dark) {
+    color-scheme: light;
+  }
+  
+  html.dark {
+    color-scheme: dark;
   }
 }
 
@@ -36,38 +52,38 @@
     animation: floating 3s ease-in-out infinite;
     animation-delay: 2s;
   }
-  .category-badge {
-    background: linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%);
+  
+  /* Precision Design Button Styles */
+  .btn-precision {
+    border: 1px solid #1a1a1a;
+    color: #1a1a1a;
+    font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase;
+    padding: 1rem 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
   }
-  .gradient-text {
-    background: linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+  .dark .btn-precision {
+    border: 1px solid white;
+    color: white;
   }
-  .btn-primary {
-    background: linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%);
-    transition: all 0.3s ease;
+  .btn-precision:hover {
+    background-color: #1a1a1a;
+    color: white;
   }
-  .btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 40px rgba(14, 165, 233, 0.3);
+  .dark .btn-precision:hover {
+    background-color: white;
+    color: black;
   }
-  .btn-secondary {
-    background: white;
-    border: 2px solid #e2e8f0;
-    transition: all 0.3s ease;
+  .btn-precision:hover .btn-serial {
+    color: white;
   }
-  .btn-secondary:hover {
-    border-color: #0ea5e9;
-    color: #0ea5e9;
-  }
-  .card-hover {
-    transition: all 0.3s ease;
-  }
-  .card-hover:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  .dark .btn-precision:hover .btn-serial {
+    color: black;
   }
 }
 
@@ -122,21 +138,6 @@
   }
 }
 
-/* Custom scrollbar for modern look */
-::-webkit-scrollbar {
-  width: 8px;
-}
-::-webkit-scrollbar-track {
-  background: #0f172a;
-}
-::-webkit-scrollbar-thumb {
-  background: #334155;
-  border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #475569;
-}
-
 /* Material Symbols (aligned with design) */
 .material-symbols-outlined {
   font-family: 'Material Symbols Outlined';
@@ -150,38 +151,101 @@
   white-space: nowrap;
   word-wrap: normal;
   direction: ltr;
+  font-feature-settings: 'liga';
   -webkit-font-feature-settings: 'liga';
   -webkit-font-smoothing: antialiased;
 }
 
-/* Brutalist Scrollbar variant matching design */
+/* Brutalist Scrollbar matching design */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
-::-webkit-scrollbar-track {
+.dark ::-webkit-scrollbar-track {
   background: #141313;
   border-left: 1px solid #ffffff;
 }
-::-webkit-scrollbar-thumb {
+.dark ::-webkit-scrollbar-thumb {
   background: #ffffff;
+}
+:not(.dark) ::-webkit-scrollbar-track {
+  background: #ffffff;
+  border-left: 1px solid #1a1a1a;
+}
+:not(.dark) ::-webkit-scrollbar-thumb {
+  background: #1a1a1a;
 }
 
 /* Grid background lines */
 .grid-bg {
   background-size: calc(100% / 12) 100%;
+  background-image: linear-gradient(to right, rgba(0,0,0,0.05) 1px, transparent 1px);
+}
+.dark .grid-bg {
   background-image: linear-gradient(to right, rgba(255,255,255,0.08) 1px, transparent 1px);
 }
 @media (max-width: 768px) {
   .grid-bg { background-size: calc(100% / 4) 100%; }
 }
 
-/* Precision button hover */
-.btn-precision:hover { background-color: #ffffff; color: #141313; }
-.btn-precision:hover .btn-serial { color: #141313; }
-
-/* small helper font classes used in layout */
+/* Helper font classes used in layout */
 .font-body-md { font-family: Inter, sans-serif; }
 .font-data-label { font-family: 'JetBrains Mono', monospace; }
 .font-headline-lg { font-family: Montserrat, sans-serif; }
 .font-display-xl { font-family: Montserrat, sans-serif; }
+
+/* Crosshair elements */
+.crosshair-tl {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  width: 1rem;
+  height: 1rem;
+  border-top: 1px solid #1a1a1a;
+  border-left: 1px solid #1a1a1a;
+}
+.dark .crosshair-tl {
+  border-top: 1px solid white;
+  border-left: 1px solid white;
+}
+.crosshair-tr {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 1rem;
+  height: 1rem;
+  border-top: 1px solid #1a1a1a;
+  border-right: 1px solid #1a1a1a;
+}
+.dark .crosshair-tr {
+  border-top: 1px solid white;
+  border-right: 1px solid white;
+}
+.crosshair-bl {
+  position: absolute;
+  bottom: 1rem;
+  left: 1rem;
+  width: 1rem;
+  height: 1rem;
+  border-bottom: 1px solid #1a1a1a;
+  border-left: 1px solid #1a1a1a;
+}
+.dark .crosshair-bl {
+  border-bottom: 1px solid white;
+  border-left: 1px solid white;
+}
+.crosshair-br {
+  position: absolute;
+  bottom: 1rem;
+  right: 1rem;
+  width: 1rem;
+  height: 1rem;
+  border-bottom: 1px solid #1a1a1a;
+  border-right: 1px solid #1a1a1a;
+}
+.dark .crosshair-br {
+  border-bottom: 1px solid white;
+  border-right: 1px solid white;
+}
+
+/* Note: CSS warnings about @tailwind are expected - these are valid Tailwind CSS directives required for the framework to work */

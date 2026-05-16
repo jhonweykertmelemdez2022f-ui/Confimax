@@ -26,39 +26,84 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="bg-slate-900/80 backdrop-blur-xl border border-slate-800 rounded-2xl p-8 shadow-2xl shadow-black/50">
+    <div className="bg-white dark:bg-surface border border-slate-900 dark:border-white p-8">
       <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-600 mb-4 shadow-lg shadow-cyan-500/20">
-          <ShieldCheck className="w-8 h-8 text-white" />
+        <div className="inline-flex items-center justify-center w-16 h-16 border border-slate-900 dark:border-white mb-4">
+          <ShieldCheck className="w-8 h-8 text-slate-900 dark:text-white" />
         </div>
-        <h1 className="text-2xl font-bold text-white mb-2">Acceso a Confimax</h1>
-        <p className="text-slate-400 text-sm">Ingresa para gestionar tu catálogo y pedidos.</p>
+        <h1 className="font-headline-lg text-headline-lg text-slate-900 dark:text-white mb-2 uppercase">Acceso a Confimax</h1>
+        <p className="font-body-md text-body-md text-slate-600 dark:text-slate-400 text-sm">Ingresa para gestionar tu catálogo y pedidos.</p>
       </div>
 
-      {error && <div className="mb-6 p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm text-center">{error}</div>}
+      {error && <div className="mb-6 p-3 border border-error text-error font-data-label text-data-label text-xs uppercase text-center">{error}</div>}
 
       <form onSubmit={handleSubmit} className="space-y-5">
         <div className="relative">
-          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
-          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full bg-slate-800/50 border border-slate-700 rounded-lg py-3 pl-10 pr-4 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 transition-all" placeholder="Correo electrónico" required />
+          <label className="font-data-label text-data-label text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2 block">
+            Correo Electrónico
+          </label>
+          <div className="relative">
+            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+            <input 
+              type="email" 
+              value={email} 
+              onChange={(e) => setEmail(e.target.value)} 
+              className="w-full bg-slate-50 dark:bg-surface-dim border border-slate-900 dark:border-white py-3 pl-10 pr-4 text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-500 focus:outline-none focus:border-data-blue transition-all font-body-md" 
+              placeholder="usuario@confimax.com" 
+              required 
+            />
+          </div>
         </div>
         <div className="relative">
-          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
-          <input type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} className="w-full bg-slate-800/50 border border-slate-700 rounded-lg py-3 pl-10 pr-12 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500 transition-all" placeholder="Contraseña" required />
-          <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors" aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}>
-            {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-          </button>
+          <label className="font-data-label text-data-label text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2 block">
+            Contraseña
+          </label>
+          <div className="relative">
+            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+            <input 
+              type={showPassword ? "text" : "password"} 
+              value={password} 
+              onChange={(e) => setPassword(e.target.value)} 
+              className="w-full bg-slate-50 dark:bg-surface-dim border border-slate-900 dark:border-white py-3 pl-10 pr-12 text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-500 focus:outline-none focus:border-data-blue transition-all font-body-md" 
+              placeholder="••••••••" 
+              required 
+            />
+            <button 
+              type="button" 
+              onClick={() => setShowPassword(!showPassword)} 
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors" 
+              aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+            >
+              {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+            </button>
+          </div>
         </div>
         <div className="flex items-center justify-between text-sm">
-          <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" className="w-4 h-4 rounded border-slate-700 bg-slate-800 text-cyan-500 focus:ring-cyan-500/50" /><span className="text-slate-400">Recordarme</span></label>
-          <Link href="/recuperar-password" className="text-cyan-400 hover:text-cyan-300 transition-colors">¿Olvidaste tu contraseña?</Link>
+          <label className="flex items-center gap-2 cursor-pointer font-data-label text-data-label text-xs uppercase text-slate-500 dark:text-slate-400">
+            <input type="checkbox" className="w-4 h-4 border border-slate-900 dark:border-white bg-slate-50 dark:bg-surface-dim accent-data-blue" />
+            <span>Recordarme</span>
+          </label>
+          <Link href="/recuperar-password" className="font-data-label text-data-label text-xs uppercase text-data-blue hover:text-slate-900 dark:hover:text-white transition-colors">¿Olvidaste tu contraseña?</Link>
         </div>
-        <button type="submit" disabled={isLoading} className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold py-3 rounded-lg hover:shadow-lg hover:shadow-cyan-500/25 transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed">
-          {isLoading ? <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <>Iniciar Sesión <ArrowRight className="w-4 h-4" /></>}
+        <button 
+          type="submit" 
+          disabled={isLoading} 
+          className="w-full btn-precision disabled:opacity-70 disabled:cursor-not-allowed"
+        >
+          {isLoading ? (
+            <span className="w-5 h-5 border-2 border-black dark:border-black border-t-transparent rounded-full animate-spin" />
+          ) : (
+            <>
+              INICIAR SESIÓN
+              <ArrowRight className="w-4 h-4" />
+            </>
+          )}
         </button>
       </form>
-      <div className="mt-8 pt-6 border-t border-slate-800 text-center">
-        <p className="text-slate-400 text-sm">¿No tienes cuenta? <Link href="/registro" className="text-cyan-400 hover:text-cyan-300 font-medium transition-colors">Crear cuenta</Link></p>
+      <div className="mt-8 pt-6 border-t border-slate-900/20 dark:border-white/20 text-center">
+        <p className="font-body-md text-body-md text-slate-600 dark:text-slate-400 text-sm">
+          ¿No tienes cuenta? <Link href="/registro" className="font-data-label text-data-label text-xs uppercase text-data-blue hover:text-slate-900 dark:hover:text-white transition-colors">Crear cuenta</Link>
+        </p>
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 "use client"
 
-import { Heart, ShoppingCart, Star, Package, Eye } from "lucide-react"
+import { ShoppingCart, Star, Package, Eye } from "lucide-react"
 import Link from "next/link"
 import { useCart } from "@/context/CartContext"
 
@@ -26,9 +26,9 @@ interface ProductCardProps {
 export default function ProductCard({ product, viewMode }: ProductCardProps) {
   const { addItem } = useCart();
   const getStockStatus = (stock: number) => {
-    if (stock <= 10) return { label: "Bajo stock", color: "text-red-400" }
-    if (stock <= 30) return { label: "Stock medio", color: "text-amber-400" }
-    return { label: "Disponible", color: "text-green-400" }
+    if (stock <= 10) return { label: "BAJO STOCK", color: "text-error" }
+    if (stock <= 30) return { label: "MEDIO", color: "text-slate-500 dark:text-secondary" }
+    return { label: "DISPONIBLE", color: "text-[#00FF66]" }
   }
 
   const stockStatus = getStockStatus(product.stock)
@@ -36,18 +36,18 @@ export default function ProductCard({ product, viewMode }: ProductCardProps) {
   // List View
   if (viewMode === "list") {
     return (
-      <article className="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden hover:border-blue-500/50 transition-all group">
+      <article className="bg-white dark:bg-surface border border-slate-900 dark:border-white overflow-hidden hover:border-data-blue transition-all group">
         <div className="flex flex-col sm:flex-row">
           {/* Image */}
           <div className="relative sm:w-56 h-48 sm:h-auto flex-shrink-0">
             <img
               src={product.image}
               alt={product.name}
-              className="w-full h-full object-cover transition-transform duration-400 group-hover:scale-105"
+              className="w-full h-full object-cover transition-transform duration-400 group-hover:scale-105 grayscale group-hover:grayscale-0"
               loading="lazy"
             />
             {product.badge && (
-              <span className="absolute top-3 left-3 px-3 py-1 text-xs font-semibold text-white rounded-full bg-gradient-to-r from-blue-600 to-cyan-600">
+              <span className="absolute top-3 left-3 px-3 py-1 text-xs font-data-label text-data-label uppercase text-white dark:text-background bg-accent-pink">
                 {product.badge}
               </span>
             )}
@@ -57,17 +57,17 @@ export default function ProductCard({ product, viewMode }: ProductCardProps) {
           <div className="flex-1 p-5 flex flex-col">
             <div className="flex items-start justify-between gap-4 mb-2">
               <div>
-                <span className="text-xs font-medium text-blue-400 uppercase tracking-wide">{product.category}</span>
-                <h3 className="text-lg font-semibold text-white mt-1 group-hover:text-blue-400 transition-colors">
+                <span className="font-data-label text-data-label text-xs uppercase tracking-wider text-data-blue">{product.category}</span>
+                <h3 className="font-headline-lg-mobile text-headline-lg-mobile text-slate-900 dark:text-white mt-1 uppercase group-hover:text-data-blue transition-colors">
                   {product.name}
                 </h3>
               </div>
-              <button className="p-2 rounded-lg bg-slate-800 text-slate-600 cursor-not-allowed" aria-label="Favoritos no disponible" disabled>
-                <Heart size={18} />
-              </button>
+              <div className="font-data-label text-data-label text-xs text-slate-500 dark:text-slate-500">
+                ID: {product.id.slice(0, 8).toUpperCase()}
+              </div>
             </div>
 
-            <p className="text-slate-400 text-sm mb-4 line-clamp-2">{product.description}</p>
+            <p className="font-body-md text-body-md text-slate-600 dark:text-slate-400 text-sm mb-4 line-clamp-2">{product.description}</p>
 
             <div className="flex items-center gap-2 mb-4">
               <div className="flex">
@@ -75,37 +75,37 @@ export default function ProductCard({ product, viewMode }: ProductCardProps) {
                   <Star
                     key={i}
                     size={14}
-                    className={i < Math.floor(product.rating) ? "text-amber-400 fill-amber-400" : "text-slate-600"}
+                    className={i < Math.floor(product.rating) ? "text-accent-pink fill-accent-pink" : "text-slate-500"}
                   />
                 ))}
               </div>
-              <span className="text-sm text-slate-300">{product.rating}</span>
-              <span className="text-sm text-slate-500">({product.reviews})</span>
+              <span className="font-data-value text-data-value text-sm text-slate-900 dark:text-white">{product.rating}</span>
+              <span className="font-data-label text-data-label text-xs text-slate-500 dark:text-slate-500">({product.reviews} REV)</span>
             </div>
 
             <div className="flex items-end justify-between mt-auto">
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="text-xl font-bold text-white">${product.price.toFixed(2)}</span>
+                  <span className="font-data-value text-data-value text-xl font-bold text-slate-900 dark:text-white">${product.price.toFixed(2)}</span>
                   {product.originalPrice && (
-                    <span className="text-sm text-slate-500 line-through">${product.originalPrice.toFixed(2)}</span>
+                    <span className="font-data-label text-data-label text-sm text-slate-500 dark:text-slate-500 line-through">${product.originalPrice.toFixed(2)}</span>
                   )}
                 </div>
-                <span className={`text-xs font-medium ${stockStatus.color}`}>
-                  • {stockStatus.label}: {product.stock} unidades
+                <span className={`font-data-label text-data-label text-xs ${stockStatus.color}`}>
+                  • {stockStatus.label}: {product.stock} UNIDADES
                 </span>
               </div>
 
               <div className="flex items-center gap-2">
                 <Link
                   href={`/catalogo/${product.id}`}
-                  className="p-3 rounded-xl bg-slate-800 hover:bg-slate-700 transition-colors"
+                  className="p-3 border border-slate-900 dark:border-white hover:bg-slate-900 dark:hover:bg-white hover:text-white dark:hover:text-background transition-colors"
                   aria-label="Ver detalles"
                 >
-                  <Eye size={18} className="text-slate-300" />
+                  <Eye size={18} className="text-slate-900 dark:text-white" />
                 </Link>
                 <button
-                  className="p-3 rounded-xl bg-blue-600 hover:bg-blue-500 transition-all text-white shadow-lg shadow-blue-500/25"
+                  className="p-3 border border-slate-900 dark:border-white bg-slate-900 dark:bg-white text-white dark:text-background hover:bg-slate-800 dark:hover:bg-slate-100 transition-all font-data-label text-data-label uppercase"
                   aria-label="Añadir al carrito"
                   onClick={() => addItem({
                     id: product.id,
@@ -127,32 +127,34 @@ export default function ProductCard({ product, viewMode }: ProductCardProps) {
 
   // Grid View
   return (
-    <article className="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden hover:border-blue-500/50 transition-all group">
+    <article className="bg-white dark:bg-surface border border-slate-900 dark:border-white overflow-hidden hover:border-data-blue transition-all group">
       {/* Image */}
       <div className="relative h-48 overflow-hidden">
         <img
           src={product.image}
           alt={product.name}
-          className="w-full h-full object-cover transition-transform duration-400 group-hover:scale-105"
+          className="w-full h-full object-cover transition-transform duration-400 group-hover:scale-105 grayscale group-hover:grayscale-0"
           loading="lazy"
         />
         {product.badge && (
-          <span className="absolute top-3 left-3 px-3 py-1 text-xs font-semibold text-white rounded-full bg-gradient-to-r from-blue-600 to-cyan-600">
+          <span className="absolute top-3 left-3 px-3 py-1 text-xs font-data-label text-data-label uppercase text-white dark:text-background bg-accent-pink">
             {product.badge}
           </span>
         )}
-        <button className="absolute top-3 right-3 p-2 rounded-full bg-slate-900/80 text-slate-600 cursor-not-allowed opacity-0 group-hover:opacity-100" disabled>
-          <Heart size={16} />
-        </button>
       </div>
 
       {/* Content */}
       <div className="p-4">
-        <span className="text-xs font-medium text-blue-400 uppercase tracking-wide">{product.category}</span>
-        <h3 className="text-base font-semibold text-white mt-1 mb-2 line-clamp-1 group-hover:text-blue-400 transition-colors">
+        <div className="flex justify-between items-start mb-2">
+          <span className="font-data-label text-data-label text-xs uppercase tracking-wider text-data-blue">{product.category}</span>
+          <span className="font-data-label text-data-label text-xs text-slate-500 dark:text-slate-500">
+            {product.id.slice(0, 6).toUpperCase()}
+          </span>
+        </div>
+        <h3 className="font-headline-lg-mobile text-headline-lg-mobile text-slate-900 dark:text-white mt-1 mb-2 uppercase line-clamp-1 group-hover:text-data-blue transition-colors">
           {product.name}
         </h3>
-        <p className="text-slate-400 text-sm mb-3 line-clamp-2">{product.description}</p>
+        <p className="font-body-md text-body-md text-slate-600 dark:text-slate-400 text-sm mb-3 line-clamp-2">{product.description}</p>
 
         <div className="flex items-center gap-1 mb-3">
           <div className="flex">
@@ -160,21 +162,21 @@ export default function ProductCard({ product, viewMode }: ProductCardProps) {
               <Star
                 key={i}
                 size={14}
-                className={i < Math.floor(product.rating) ? "text-amber-400 fill-amber-400" : "text-slate-600"}
+                className={i < Math.floor(product.rating) ? "text-accent-pink fill-accent-pink" : "text-slate-500"}
               />
             ))}
           </div>
-          <span className="text-xs text-slate-300 ml-1">{product.rating}</span>
+          <span className="font-data-value text-data-value text-xs text-slate-900 dark:text-white ml-1">{product.rating}</span>
         </div>
 
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <span className="text-lg font-bold text-white">${product.price.toFixed(2)}</span>
+            <span className="font-data-value text-data-value text-lg font-bold text-slate-900 dark:text-white">${product.price.toFixed(2)}</span>
             {product.originalPrice && (
-              <span className="text-sm text-slate-500 line-through">${product.originalPrice.toFixed(2)}</span>
+              <span className="font-data-label text-data-label text-sm text-slate-500 dark:text-slate-500 line-through">${product.originalPrice.toFixed(2)}</span>
             )}
           </div>
-          <div className={`flex items-center gap-1 text-xs font-medium ${stockStatus.color}`}>
+          <div className={`flex items-center gap-1 text-xs font-data-label font-data-label ${stockStatus.color}`}>
             <Package size={12} />
             <span>{product.stock}</span>
           </div>
@@ -183,12 +185,12 @@ export default function ProductCard({ product, viewMode }: ProductCardProps) {
         <div className="mt-4 flex gap-2">
           <Link
             href={`/catalogo/${product.id}`}
-            className="flex-1 py-2.5 text-center text-sm font-medium rounded-xl bg-slate-800 hover:bg-slate-700 transition-colors text-white"
+            className="flex-1 py-2.5 text-center text-sm font-data-label font-data-label uppercase border border-slate-900 dark:border-white hover:bg-slate-900 dark:hover:bg-white hover:text-white dark:hover:text-background transition-colors text-slate-900 dark:text-white"
           >
             Ver
           </Link>
           <button
-            className="flex-1 py-2.5 text-sm font-medium rounded-xl bg-blue-600 hover:bg-blue-500 transition-all text-white flex items-center justify-center gap-1"
+            className="flex-1 py-2.5 text-sm font-data-label font-data-label uppercase border border-slate-900 dark:border-white bg-slate-900 dark:bg-white text-white dark:text-background hover:bg-slate-800 dark:hover:bg-slate-100 transition-all flex items-center justify-center gap-1"
             onClick={() => addItem({
               id: product.id,
               name: product.name,
