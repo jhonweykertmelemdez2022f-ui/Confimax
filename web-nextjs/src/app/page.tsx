@@ -1,12 +1,57 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useRef } from "react";
+import { gsap } from "gsap";
 
 export default function Home() {
+  const heroRef = useRef<HTMLDivElement>(null);
+  const featuresRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // Animación del Hero
+    if (heroRef.current) {
+      gsap.fromTo(heroRef.current.children, 
+        { 
+          opacity: 0, 
+          y: 60 
+        },
+        { 
+          opacity: 1, 
+          y: 0, 
+          duration: 1, 
+          stagger: 0.2, 
+          ease: "power3.out",
+          delay: 0.3
+        }
+      );
+    }
+
+    // Animación de las features
+    if (featuresRef.current) {
+      gsap.fromTo(featuresRef.current.children, 
+        { 
+          opacity: 0, 
+          y: 40,
+          x: -20
+        },
+        { 
+          opacity: 1, 
+          y: 0,
+          x: 0,
+          duration: 0.8, 
+          stagger: 0.15, 
+          ease: "power3.out",
+          delay: 0.8
+        }
+      );
+    }
+  }, []);
+
   return (
     <main className="flex-grow">
       {/* Hero Section */}
-      <section className="relative w-full border-b border-slate-900 dark:border-white min-h-[80vh] flex flex-col justify-center items-center px-6 md:px-margin-page py-20 overflow-hidden bg-white dark:bg-background">
+      <section ref={heroRef} className="relative w-full border-b border-slate-900 dark:border-white min-h-[80vh] flex flex-col justify-center items-center px-6 md:px-margin-page py-20 overflow-hidden bg-white dark:bg-background">
         {/* Crosshairs */}
         <div className="crosshair-tl" />
         <div className="crosshair-tr" />
@@ -48,7 +93,7 @@ export default function Home() {
       </section>
 
       {/* Data Specs / Features Grid */}
-      <section className="w-full grid grid-cols-1 md:grid-cols-3 border-b border-slate-900 dark:border-white bg-white dark:bg-surface">
+      <section ref={featuresRef} className="w-full grid grid-cols-1 md:grid-cols-3 border-b border-slate-900 dark:border-white bg-white dark:bg-surface">
         <div className="border-b md:border-b-0 md:border-r border-slate-900 dark:border-white p-8 flex flex-col gap-6 hover:bg-slate-50 dark:hover:bg-surface-bright transition-colors group">
           <div className="flex justify-between items-start">
             <span className="material-symbols-outlined text-[32px] text-slate-900 dark:text-white">eco</span>

@@ -49,7 +49,7 @@ function UserMenu() {
       {open && (
         <div
           ref={dropdownRef}
-          className="absolute right-0 mt-2 w-56 bg-white dark:bg-surface border border-slate-900 dark:border-white z-50 overflow-hidden"
+          className="absolute right-0 mt-2 w-56 bg-white/95 dark:bg-surface/95 backdrop-blur-sm border border-slate-900 dark:border-white z-50 overflow-hidden"
         >
           {isLoading ? (
             <div className="p-4 text-center text-slate-500 dark:text-secondary">Cargando...</div>
@@ -94,7 +94,7 @@ export default function Navbar() {
   return (
     <nav 
       ref={navRef}
-      className="fixed top-0 left-0 right-0 z-50 border-b border-slate-900 dark:border-white bg-white dark:bg-background"
+      className="fixed top-0 left-0 right-0 z-50 border-b border-slate-900 dark:border-white bg-white/90 dark:bg-background/90 backdrop-blur-sm"
     >
       <div className="flex items-center justify-between w-full px-margin-page py-4 max-w-full">
         {/* Logo and Menu */}
@@ -160,7 +160,7 @@ export default function Navbar() {
               );
             }
           }}
-          className="md:hidden overflow-hidden bg-white dark:bg-surface border-b border-slate-900 dark:border-white"
+          className="md:hidden overflow-hidden bg-white/90 dark:bg-surface/90 backdrop-blur-sm border-b border-slate-900 dark:border-white"
         >
           <div className="p-4 flex flex-col gap-4">
             {navLinks.map((link) => (

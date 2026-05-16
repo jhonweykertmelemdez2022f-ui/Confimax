@@ -1,6 +1,58 @@
+"use client";
+
 import { ShieldCheck, Target, Users, Award, Truck, Package } from "lucide-react";
+import { useEffect, useRef } from "react";
+import { gsap } from "gsap";
 
 export default function NosotrosPage() {
+  const headerRef = useRef<HTMLDivElement>(null);
+  const statsRef = useRef<HTMLDivElement>(null);
+  const valuesRef = useRef<HTMLDivElement>(null);
+  const processRef = useRef<HTMLDivElement>(null);
+  const ctaRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // Animación del header
+    if (headerRef.current) {
+      gsap.fromTo(headerRef.current, 
+        { opacity: 0, y: -30 },
+        { opacity: 1, y: 0, duration: 0.8, ease: "power3.out" }
+      );
+    }
+
+    // Animación de las estadísticas
+    if (statsRef.current) {
+      gsap.fromTo(statsRef.current.children, 
+        { opacity: 0, scale: 0.8 },
+        { opacity: 1, scale: 1, duration: 0.6, stagger: 0.1, ease: "back.out(1.7)", delay: 0.3 }
+      );
+    }
+
+    // Animación de los valores
+    if (valuesRef.current) {
+      gsap.fromTo(valuesRef.current.children, 
+        { opacity: 0, y: 40, rotateY: 15 },
+        { opacity: 1, y: 0, rotateY: 0, duration: 0.8, stagger: 0.15, ease: "power3.out", delay: 0.6 }
+      );
+    }
+
+    // Animación del proceso
+    if (processRef.current) {
+      gsap.fromTo(processRef.current.children, 
+        { opacity: 0, x: -30 },
+        { opacity: 1, x: 0, duration: 0.8, stagger: 0.2, ease: "power3.out", delay: 0.9 }
+      );
+    }
+
+    // Animación del CTA
+    if (ctaRef.current) {
+      gsap.fromTo(ctaRef.current, 
+        { opacity: 0, scale: 0.9 },
+        { opacity: 1, scale: 1, duration: 0.6, ease: "elastic.out(1, 0.5)", delay: 1.2 }
+      );
+    }
+  }, []);
+
   const values = [
     { icon: <ShieldCheck className="w-8 h-8" />, title: "CALIDAD GARANTIZADA", desc: "Cada producto pasa por estrictos controles antes de llegar a ti." },
     { icon: <Target className="w-8 h-8" />, title: "ENFOQUE EN RESULTADOS", desc: "Soluciones diseñadas para optimizar tus procesos y maximizar eficiencia." },
@@ -18,7 +70,7 @@ export default function NosotrosPage() {
   return (
     <main className="min-h-screen pt-12 pb-20 bg-white dark:bg-background">
       {/* Hero */}
-      <section className="relative py-20 overflow-hidden border-b border-slate-900 dark:border-white">
+      <section ref={headerRef} className="relative py-20 overflow-hidden border-b border-slate-900 dark:border-white">
         <div className="w-full px-margin-page text-center">
           <h1 className="font-headline-lg text-headline-lg text-slate-900 dark:text-white mb-6 uppercase">Sobre Confimax</h1>
           <p className="font-body-md text-body-md text-slate-600 dark:text-slate-400 max-w-3xl mx-auto">
@@ -29,7 +81,7 @@ export default function NosotrosPage() {
       </section>
 
       {/* Stats */}
-      <section className="py-12 bg-white dark:bg-surface border-b border-slate-900 dark:border-white">
+      <section ref={statsRef} className="py-12 bg-white dark:bg-surface border-b border-slate-900 dark:border-white">
         <div className="w-full px-margin-page">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {stats.map((stat, idx) => (
@@ -43,7 +95,7 @@ export default function NosotrosPage() {
       </section>
 
       {/* Values */}
-      <section className="py-20">
+      <section ref={valuesRef} className="py-20">
         <div className="w-full px-margin-page">
           <div className="text-center mb-12">
             <h2 className="font-headline-lg text-headline-lg text-slate-900 dark:text-white mb-4 uppercase">Nuestros Valores</h2>
@@ -64,7 +116,7 @@ export default function NosotrosPage() {
       </section>
 
       {/* Process */}
-      <section className="py-20 bg-white dark:bg-surface border-t border-b border-slate-900 dark:border-white">
+      <section ref={processRef} className="py-20 bg-white dark:bg-surface border-t border-b border-slate-900 dark:border-white">
         <div className="w-full px-margin-page">
           <div className="text-center mb-12">
             <h2 className="font-headline-lg text-headline-lg text-slate-900 dark:text-white mb-4 uppercase">Cómo Trabajamos</h2>
@@ -95,7 +147,7 @@ export default function NosotrosPage() {
       </section>
 
       {/* CTA */}
-      <section className="py-20">
+      <section ref={ctaRef} className="py-20">
         <div className="w-full px-margin-page text-center">
           <div className="bg-white dark:bg-surface border border-slate-900 dark:border-white p-8 md:p-12">
             <h2 className="font-headline-lg text-headline-lg text-slate-900 dark:text-white mb-4 uppercase">¿Listo para trabajar con nosotros?</h2>

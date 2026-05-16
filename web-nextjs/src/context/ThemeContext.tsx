@@ -32,6 +32,15 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const root = document.documentElement;
+    const body = document.body;
+    
+    // Deshabilitar transiciones momentáneamente para cambio de tema
+    body.classList.add("theme-transition-disabled");
+    
+    // Forzar reflow
+    void body.offsetHeight;
+    
+    // Cambiar tema
     if (theme === "dark") {
       root.classList.add("dark");
       root.classList.remove("light");
@@ -41,6 +50,13 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     }
     
     localStorage.setItem("theme", theme);
+    
+    // Habilitar transiciones suaves después del cambio
+    const timeout = setTimeout(() => {
+      body.classList.remove("theme-transition-disabled");
+    }, 200);
+
+    return () => clearTimeout(timeout);
   }, [theme]);
 
   const toggleTheme = () => {

@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Search, Filter, Grid3X3, List, Package } from "lucide-react";
 import ProductCard from "@/components/ProductCard";
 import { useCart } from "@/context/CartContext";
+import { gsap } from "gsap";
 
 interface Product {
   id: string;
@@ -28,6 +29,26 @@ export default function CatalogoPage() {
   const [selectedCategory, setSelectedCategory] = useState("Todas");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("destacados");
+  const headerRef = useRef<HTMLDivElement>(null);
+  const controlsRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // Animación de entrada del header
+    if (headerRef.current) {
+      gsap.fromTo(headerRef.current, 
+        { opacity: 0, y: -30 },
+        { opacity: 1, y: 0, duration: 0.8, ease: "power3.out" }
+      );
+    }
+
+    // Animación de los controles
+    if (controlsRef.current) {
+      gsap.fromTo(controlsRef.current, 
+        { opacity: 0, scale: 0.95 },
+        { opacity: 1, scale: 1, duration: 0.6, ease: "power3.out", delay: 0.3 }
+      );
+    }
+  }, []);
 
   const filteredProducts = products.filter(p => {
     const matchesCategory = selectedCategory === "Todas" || p.category === selectedCategory;
@@ -50,13 +71,13 @@ export default function CatalogoPage() {
     <main className="min-h-screen pt-8 pb-20 bg-white dark:bg-background">
       <div className="w-full px-margin-page">
         {/* Header */}
-        <div className="mb-8">
+        <div ref={headerRef} className="mb-8">
           <h1 className="font-headline-lg text-headline-lg text-slate-900 dark:text-white mb-2 uppercase">Catálogo de Productos</h1>
           <p className="font-body-md text-body-md text-slate-600 dark:text-slate-400">Explora nuestro inventario actualizado con disponibilidad en tiempo real.</p>
         </div>
 
         {/* Controls */}
-        <div className="bg-white dark:bg-surface border border-slate-900 dark:border-white p-4 mb-8">
+        <div ref={controlsRef} className="bg-white dark:bg-surface border border-slate-900 dark:border-white p-4 mb-8">
           <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
             {/* Search */}
             <div className="relative flex-1 max-w-md">

@@ -248,4 +248,22 @@
   border-right: 1px solid white;
 }
 
+/* Smooth theme transition */
+*, *::before, *::after {
+  transition: background-color 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94), color 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94), border-color 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Disable transitions for performance during theme toggle */
+body.theme-transition-disabled * {
+  transition: none !important;
+}
+
+/* Subtle background color for html as fallback */
+html {
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 50%, #f0f0f0 100%);
+}
+.dark html {
+  background: linear-gradient(135deg, #141414 0%, #1a1a1a 50%, #0f0f0f 100%);
+}
+
 /* Note: CSS warnings about @tailwind are expected - these are valid Tailwind CSS directives required for the framework to work */

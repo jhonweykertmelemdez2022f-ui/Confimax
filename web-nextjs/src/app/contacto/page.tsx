@@ -1,12 +1,33 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Mail, Phone, MapPin, Clock, Send, CheckCircle } from "lucide-react";
+import { gsap } from "gsap";
 
 export default function ContactoPage() {
   const [formData, setFormData] = useState({ name: "", email: "", subject: "", message: "" });
   const [submitted, setSubmitted] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const headerRef = useRef<HTMLDivElement>(null);
+  const formRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // Animación del header
+    if (headerRef.current) {
+      gsap.fromTo(headerRef.current, 
+        { opacity: 0, y: -30 },
+        { opacity: 1, y: 0, duration: 0.8, ease: "power3.out" }
+      );
+    }
+
+    // Animación del formulario
+    if (formRef.current) {
+      gsap.fromTo(formRef.current, 
+        { opacity: 0, y: 30 },
+        { opacity: 1, y: 0, duration: 0.8, ease: "power3.out", delay: 0.3 }
+      );
+    }
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -47,14 +68,14 @@ export default function ContactoPage() {
     <main className="min-h-screen pt-12 pb-20 bg-white dark:bg-background">
       <div className="w-full px-margin-page">
         {/* Header */}
-        <div className="text-center mb-12">
+        <div ref={headerRef} className="text-center mb-12">
           <h1 className="font-headline-lg text-headline-lg text-slate-900 dark:text-white mb-4 uppercase">Contáctanos</h1>
           <p className="font-body-md text-body-md text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
             Estamos aquí para ayudarte. Envíanos tu consulta y nuestro equipo comercial te responderá a la brevedad.
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-12">
+        <div ref={formRef} className="grid lg:grid-cols-2 gap-12">
           {/* Contact Info */}
           <div className="space-y-8">
             <div className="bg-white dark:bg-surface border border-slate-900 dark:border-white p-6">
