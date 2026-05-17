@@ -1,59 +1,58 @@
-import Database from '@nozbe/watermelondb/Database';
-import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite';
-import { schema } from './schema';
-import { models } from './models';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const adapter = new SQLiteAdapter({
-  schema,
-  dbName: 'confimax',
-  jsi: true,
-  onSetUpError: (error) => {
-    console.error('Database setup error:', error);
+// Lightweight AsyncStorage-based database for Expo Go compatibility
+// WatermelonDB requires native compilation and cannot run in Expo Go
+
+const storage = {
+  async get(key) {
+    try {
+      const value = await AsyncStorage.getItem(key);
+      return value ? JSON.parse(value) : null;
+    } catch {
+      return null;
+    }
   },
-});
 
-const database = new Database({
-  adapter,
-  modelClasses: models,
-});
+  async set(key, value) {
+    try {
+      await AsyncStorage.setItem(key, JSON.stringify(value));
+    } catch (e) {
+      console.error('Storage set error:', e);
+    }
+  },
 
-export const initializeDatabase = async () => {
-  try {
-    await database.write(async () => {
-      console.log('Database initialized');
-    });
-  } catch (error) {
-    console.error('Failed to initialize database:', error);
-  }
-  return database;
+  async remove(key) {
+    try {
+      await AsyncStorage.removeItem(key);
+    } catch (e) {
+      console.error('Storage remove error:', e);
+    }
+  },
 };
 
-export const getDatabase = () => database;
+export const initializeDatabase = async () => {
+  console.log('Database (AsyncStorage) initialized');
+  return storage;
+};
+
+export const getDatabase = () => storage;
 
 export const syncService = {
   async syncWithServer() {
     console.log('Syncing with server...');
   },
-
   async pushChanges() {
     console.log('Pushing local changes...');
   },
-
   async pullChanges() {
     console.log('Pulling remote changes...');
   },
-
   getVectorClock() {
-    return {
-      products: 0,
-      customers: 0,
-      sales: 0,
-    };
+    return { products: 0, customers: 0, sales: 0 };
   },
-
   updateVectorClock(entity, version) {
     console.log(`Updated ${entity} to version ${version}`);
   },
 };
 
-export default database;
+export default storage;

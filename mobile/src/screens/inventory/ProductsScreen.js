@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import {
   View,
   Text,
@@ -7,24 +7,103 @@ import {
   TouchableOpacity,
   TextInput,
   ActivityIndicator,
+  Platform,
+  Animated,
 } from 'react-native';
 import {inventoryAPI} from '../../services/api';
+import { useTheme } from '../../theme';
+import { MaterialIcons } from '@expo/vector-icons';
+import { useIsFocused } from '@react-navigation/native';
+import { useAuthStore } from '../../stores/authStore';
+
+
+// Componente animado elástico nativo para las tarjetas en cascada
+function FadeInUpCard({ children, delay = 0, duration = 400 }) {
+  const isFocused = useIsFocused();
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const translateYAnim = useRef(new Animated.Value(30)).current;
+
+  useEffect(() => {
+    if (isFocused) {
+      fadeAnim.setValue(0);
+      translateYAnim.setValue(30);
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: duration,
+          delay: delay,
+          useNativeDriver: true,
+        }),
+        Animated.spring(translateYAnim, {
+          toValue: 0,
+          tension: 50,
+          friction: 7,
+          delay: delay,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    } else {
+      fadeAnim.setValue(0);
+      translateYAnim.setValue(30);
+    }
+  }, [isFocused]);
+
+  return (
+    <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: translateYAnim }] }}>
+      {children}
+    </Animated.View>
+  );
+}
+
+// Componente animado para Estados Vacíos
+function AnimatedEmptyState({ icon, title, subtitle, colors }) {
+  const scaleAnim = useRef(new Animated.Value(0.85)).current;
+  const opacityAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        tension: 30,
+        friction: 6,
+        useNativeDriver: true,
+      }),
+      Animated.timing(opacityAnim, {
+        toValue: 1,
+        duration: 450,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
+
+  return (
+    <Animated.View style={[styles.emptyContainer, { opacity: opacityAnim, transform: [{ scale: scaleAnim }] }]}>
+      <MaterialIcons name={icon} size={75} color={colors.secondary} style={styles.emptyIcon} />
+      <Text style={[styles.emptyTitle, { color: colors.primary }]}>{title}</Text>
+      <Text style={[styles.emptySubtitle, { color: colors.secondary }]}>{subtitle}</Text>
+    </Animated.View>
+  );
+}
 
 function ProductsScreen({navigation}) {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const {colors} = useTheme();
+  const {user} = useAuthStore();
 
   useEffect(() => {
     loadProducts();
-  }, []);
+  }, [useIsFocused()]); // Recargar al enfocar para traer nuevos productos
+
 
   const loadProducts = async () => {
     try {
       const response = await inventoryAPI.getProducts();
-      setProducts(response.data);
+      setProducts(response.data || []);
     } catch (error) {
-      console.error('Error loading products:', error);
+      console.error('Error loading products from database:', error);
+      setProducts([]);
     } finally {
       setLoading(false);
     }
@@ -34,89 +113,194 @@ function ProductsScreen({navigation}) {
     product.name?.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
-  const renderProduct = ({item}) => (
-    <TouchableOpacity
-      style={styles.productCard}
-      onPress={() => navigation.navigate('ProductDetail', {id: item.id})}>
-      <Text style={styles.productName}>{item.name}</Text>
-      <Text style={styles.productPrice}>${item.price}</Text>
-      <Text style={styles.productStock}>Stock: {item.stock}</Text>
-    </TouchableOpacity>
+  const dynamicStyles = createStyles(colors);
+
+  const renderProduct = ({item, index}) => (
+    <FadeInUpCard delay={index * 60} duration={350}>
+      <TouchableOpacity
+        style={dynamicStyles.productCard}
+        onPress={() => navigation.navigate('ProductDetail', {id: item.id})}>
+        <Text style={dynamicStyles.productName}>{item.name}</Text>
+        <Text style={dynamicStyles.productPrice}>${item.price}</Text>
+        <Text style={dynamicStyles.productStock}>Inventario: {item.stock} uds.</Text>
+      </TouchableOpacity>
+    </FadeInUpCard>
   );
 
   if (loading) {
     return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color="#007AFF" />
+      <View style={dynamicStyles.center}>
+        <ActivityIndicator size="large" color={colors.dataBlue} />
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <TextInput
-        style={styles.searchInput}
-        placeholder="Buscar productos..."
-        value={searchQuery}
-        onChangeText={setSearchQuery}
-      />
-      <FlatList
-        data={filteredProducts}
-        renderItem={renderProduct}
-        keyExtractor={item => item.id.toString()}
-        contentContainerStyle={styles.list}
-      />
+    <View style={dynamicStyles.container}>
+      <FadeInUpCard delay={0} duration={300}>
+        <View style={dynamicStyles.searchBarContainer}>
+          <MaterialIcons name="search" size={20} color={colors.secondary} style={dynamicStyles.searchIcon} />
+          <TextInput
+            style={dynamicStyles.searchInput}
+            placeholder="Buscar artículos en stock..."
+            placeholderTextColor={colors.secondary}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+        </View>
+      </FadeInUpCard>
+
+      {products.length === 0 ? (
+        <AnimatedEmptyState
+          icon="inventory-2"
+          title="Inventario vacío"
+          subtitle="No hay productos registrados en el sistema. Registra tus artículos en el panel administrativo o espera la sincronización de la base de datos."
+          colors={colors}
+        />
+      ) : filteredProducts.length === 0 ? (
+        <AnimatedEmptyState
+          icon="search-off"
+          title="Sin resultados"
+          subtitle={`No se encontraron coincidencias para "${searchQuery}". Revisa la ortografía o intenta con otro término.`}
+          colors={colors}
+        />
+      ) : (
+        <FlatList
+          data={filteredProducts}
+          renderItem={({item, index}) => renderProduct({item, index})}
+          keyExtractor={item => item.id.toString()}
+          contentContainerStyle={dynamicStyles.list}
+        />
+      )}
+
+      {/* Botón Flotante para Registrar Producto (Solo para Admin/Vendedor) */}
+      {user?.role !== 'customer' && (
+        <TouchableOpacity 
+          style={dynamicStyles.fab}
+          onPress={() => navigation.navigate('NewProduct')}
+          activeOpacity={0.8}
+        >
+          <MaterialIcons name="add" size={28} color="#ffffff" />
+        </TouchableOpacity>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 40,
+    marginTop: 60,
+  },
+  emptyIcon: {
+    marginBottom: 20,
+    opacity: 0.8,
+  },
+  emptyTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    letterSpacing: 0.5,
+  },
+  emptySubtitle: {
+    fontSize: 14,
+    textAlign: 'center',
+    marginTop: 10,
+    lineHeight: 22,
+  },
+});
+
+const createStyles = (colors) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: colors.surfaceDim,
   },
   center: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: colors.surfaceDim,
+  },
+  searchBarContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderColor: colors.borderMuted,
+    borderWidth: 1,
+    borderRadius: 12,
+    marginHorizontal: 15,
+    marginTop: Platform.OS === 'ios' ? 60 : 35,
+    marginBottom: 10,
+    paddingHorizontal: 15,
+    height: 52,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: colors.isDark ? 0.2 : 0.03,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  searchIcon: {
+    marginRight: 10,
   },
   searchInput: {
-    margin: 15,
-    padding: 15,
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#ddd',
+    flex: 1,
+    height: '100%',
+    color: colors.primary,
+    fontSize: 16,
   },
   list: {
     padding: 15,
   },
   productCard: {
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    padding: 15,
-    marginBottom: 10,
+    backgroundColor: colors.surface,
+    borderRadius: 12,
+    padding: 18,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: colors.borderMuted,
     shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowOffset: {width: 0, height: 4},
+    shadowOpacity: colors.isDark ? 0.3 : 0.05,
+    shadowRadius: 5,
+    elevation: 4,
   },
   productName: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#333',
+    color: colors.primary,
+    letterSpacing: 0.5,
   },
   productPrice: {
-    fontSize: 18,
-    color: '#007AFF',
+    fontSize: 20,
+    color: colors.dataBlue,
     fontWeight: 'bold',
-    marginTop: 5,
+    marginTop: 8,
   },
   productStock: {
     fontSize: 14,
-    color: '#666',
+    color: colors.secondary,
     marginTop: 5,
+    fontWeight: '500',
+  },
+  fab: {
+    position: 'absolute',
+    right: 20,
+    bottom: 20,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: colors.dataBlue,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: colors.dataBlue,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 6,
+    elevation: 6,
+    zIndex: 999,
   },
 });
 

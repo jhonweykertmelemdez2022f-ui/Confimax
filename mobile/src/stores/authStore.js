@@ -1,7 +1,13 @@
 import { create } from 'zustand';
-import * as Keychain from 'react-native-keychain';
+import * as SecureStore from 'expo-secure-store';
 import { authAPI } from '../services/api';
-import SyncService from '../services/sync';
+
+// Simple mock SyncService - no native DB required for Expo Go
+const SyncService = {
+  syncAll: async () => {
+    console.log('Sync skipped in Expo Go mode');
+  },
+};
 
 export const useAuthStore = create((set, get) => ({
   user: null,
@@ -17,17 +23,26 @@ export const useAuthStore = create((set, get) => ({
       const response = await authAPI.login({ username, password });
       const { user, accessToken, refreshToken } = response.data;
 
-      await Keychain.setGenericPassword(
-        JSON.stringify({ token: accessToken, refreshToken }),
-        'confimax_auth'
+      // Guardar tokens de autenticación
+      await SecureStore.setItemAsync(
+        'confimax_auth',
+        JSON.stringify({ token: accessToken, refreshToken })
+      );
+
+      // Guardar credenciales de forma encriptada para el Login Biométrico
+      await SecureStore.setItemAsync(
+        'confimax_credentials',
+        JSON.stringify({ username, password })
       );
 
       set({ user, token: accessToken, refreshToken, isAuthenticated: true, isLoading: false });
-      
       await SyncService.syncAll();
-      
       return true;
     } catch (error) {
+      console.error('🔴 Error de Login en móvil:', error);
+      if (error.response) {
+        console.error('🔴 Respuesta de error del Servidor:', error.response.status, error.response.data);
+      }
       set({ error: error.response?.data?.message || 'Login failed', isLoading: false });
       return false;
     }
@@ -43,7 +58,7 @@ export const useAuthStore = create((set, get) => ({
       console.error('Logout error:', error);
     }
 
-    await Keychain.resetGenericPassword();
+    await SecureStore.deleteItemAsync('confimax_auth');
     set({ user: null, token: null, refreshToken: null, isAuthenticated: false });
   },
 
@@ -55,10 +70,9 @@ export const useAuthStore = create((set, get) => ({
       const response = await authAPI.refreshToken(refreshToken);
       const { accessToken } = response.data;
 
-      const credentials = await Keychain.getGenericPassword();
-      const stored = JSON.parse(credentials.password);
+      const stored = JSON.parse(await SecureStore.getItemAsync('confimax_auth') || '{}');
       stored.token = accessToken;
-      await Keychain.setGenericPassword(JSON.stringify(stored), 'confimax_auth');
+      await SecureStore.setItemAsync('confimax_auth', JSON.stringify(stored));
 
       set({ token: accessToken });
       return true;
@@ -68,7 +82,14 @@ export const useAuthStore = create((set, get) => ({
     }
   },
 
+  updateUser: (newData) => {
+    set((state) => ({
+      user: state.user ? { ...state.user, ...newData } : null
+    }));
+  },
+
   clearError: () => set({ error: null }),
 }));
 
 export default useAuthStore;
+

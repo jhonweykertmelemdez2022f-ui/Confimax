@@ -7,7 +7,7 @@ connectRedis();
 
 const Profile = {
   async findByEmail(email) {
-    const sql = 'SELECT * FROM public.profiles WHERE email = $1 AND is_active = true';
+    const sql = 'SELECT * FROM public.users WHERE email = $1 AND active = true';
     messageQueue.publish('audit-logs', {
       action: 'PG_QUERY_ATTEMPT_LOGIN',
       details: { query: sql, email },
@@ -17,36 +17,47 @@ const Profile = {
     return result.rows[0];
   },
 
+  async findByUsername(username) {
+    const sql = 'SELECT * FROM public.users WHERE username = $1 AND active = true';
+    messageQueue.publish('audit-logs', {
+      action: 'PG_QUERY_ATTEMPT_LOGIN_USERNAME',
+      details: { query: sql, username },
+      context: { service: 'auth-service', entity: 'Profile' }
+    });
+    const result = await pool.query(sql, [username]);
+    return result.rows[0];
+  },
+
   async findById(id) {
     const result = await pool.query(
-      'SELECT id, email, name, role, phone, created_at FROM public.profiles WHERE id = $1 AND is_active = true',
+      'SELECT id, email, username as name, role, active as is_active, created_at FROM public.users WHERE id = $1 AND active = true',
       [id]
     );
     return result.rows[0];
   },
 
   async create(profileData) {
-    const { email, name, password, role = 'user', phone } = profileData;
+    const { username, email, password, role = 'vendor' } = profileData;
     const result = await pool.query(
-      `INSERT INTO public.profiles (email, name, role, phone) 
-       VALUES ($1, $2, $3, $4) 
-       RETURNING id, email, name, role, phone, created_at`,
-      [email, name, role, phone || null]
+      `INSERT INTO public.users (username, email, password, role, active) 
+       VALUES ($1, $2, $3, $4, true) 
+       RETURNING id, email, username as name, role, created_at`,
+      [username, email, password, role]
     );
     return result.rows[0];
   },
 
   async updateLastLogin(id) {
     await pool.query(
-      'UPDATE public.profiles SET last_login_at = NOW() WHERE id = $1',
+      'UPDATE public.users SET last_login = NOW() WHERE id = $1',
       [id]
     );
   },
 
   async list(limit = 50, offset = 0) {
     const result = await pool.query(
-      `SELECT id, email, name, role, phone, created_at, last_login_at 
-       FROM public.profiles WHERE is_active = true 
+      `SELECT id, email, username as name, role, active as is_active, created_at, last_login 
+       FROM public.users WHERE active = true 
        ORDER BY created_at DESC 
        LIMIT $1 OFFSET $2`,
       [limit, offset]
@@ -56,7 +67,7 @@ const Profile = {
 
   async deactivate(id) {
     await pool.query(
-      'UPDATE public.profiles SET is_active = false WHERE id = $1',
+      'UPDATE public.users SET active = false WHERE id = $1',
       [id]
     );
   },

@@ -17,19 +17,47 @@ const isSupabase = () => {
 
 // Construir configuración del pool
 const getPoolConfig = () => {
+  const POOLER_IP_FALLBACK = '44.225.139.66';
+  const DEFAULT_POOLER_HOST = 'aws-1-us-west-2.pooler.supabase.com';
+
   // Si existe DATABASE_URL, usarla directamente (formato de Supabase)
   if (process.env.DATABASE_URL) {
+    let finalUrl = process.env.DATABASE_URL;
+    let customHost = null;
+
+    // Detectar si la URL apunta a cualquier dominio de Supabase
+    if (finalUrl.includes('supabase.co') || finalUrl.includes('supabase.com')) {
+      // Extraer el host real original de la URL
+      try {
+        const tempUri = finalUrl.replace('postgresql://', 'http://').replace('postgres://', 'http://');
+        const parsed = new URL(tempUri);
+        customHost = parsed.hostname;
+        
+        // Reemplazar el host original por la IP física de AWS/Supabase
+        finalUrl = finalUrl.replace(customHost, POOLER_IP_FALLBACK);
+        
+        // Si el host extraído termina en .co, normalizar a .com para asegurar un SNI de TLS válido
+        if (customHost.endsWith('.co')) {
+          customHost = customHost.replace('.co', '.com');
+        }
+      } catch (e) {
+        customHost = DEFAULT_POOLER_HOST;
+        finalUrl = finalUrl.replace('aws-1-us-west-2.pooler.supabase.com', POOLER_IP_FALLBACK);
+        finalUrl = finalUrl.replace('aws-1-us-west-2.pooler.supabase.co', POOLER_IP_FALLBACK);
+      }
+    }
+
     const config = {
-      connectionString: process.env.DATABASE_URL,
+      connectionString: finalUrl,
       max: parseInt(process.env.DB_POOL_MAX) || 20,
       idleTimeoutMillis: parseInt(process.env.DB_IDLE_TIMEOUT) || 30000,
       connectionTimeoutMillis: parseInt(process.env.DB_CONNECTION_TIMEOUT) || 5000,
     };
 
-    // Supabase requiere SSL
-    if (isSupabase() || process.env.DATABASE_URL.includes('supabase.co')) {
+    if (isSupabase() || process.env.DATABASE_URL.includes('supabase.co') || process.env.DATABASE_URL.includes('supabase.com')) {
       config.ssl = {
         rejectUnauthorized: false,
+        servername: customHost || DEFAULT_POOLER_HOST
       };
     }
 
@@ -37,8 +65,19 @@ const getPoolConfig = () => {
   }
 
   // Configuración manual (local o externo)
+  let rawHost = process.env.POSTGRES_HOST || 'localhost';
+  let useSniHost = null;
+
+  if (rawHost.includes('supabase.co') || rawHost.includes('supabase.com')) {
+    useSniHost = rawHost;
+    if (useSniHost.endsWith('.co')) {
+      useSniHost = useSniHost.replace('.co', '.com');
+    }
+    rawHost = POOLER_IP_FALLBACK;
+  }
+
   const config = {
-    host: process.env.POSTGRES_HOST || 'localhost',
+    host: rawHost,
     port: parseInt(process.env.POSTGRES_PORT) || 5432,
     user: process.env.POSTGRES_USER || 'confimax',
     password: process.env.POSTGRES_PASSWORD || '',
@@ -48,10 +87,10 @@ const getPoolConfig = () => {
     connectionTimeoutMillis: parseInt(process.env.DB_CONNECTION_TIMEOUT) || 5000,
   };
 
-  // Añadir SSL para conexiones externas (incluyendo Supabase)
   if (isSupabase() || process.env.POSTGRES_SSL === 'true') {
     config.ssl = {
       rejectUnauthorized: false,
+      servername: useSniHost || DEFAULT_POOLER_HOST
     };
   }
 

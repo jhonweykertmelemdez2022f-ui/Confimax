@@ -1,14 +1,16 @@
 import axios from 'axios';
-import * as Keychain from 'react-native-keychain';
+import * as SecureStore from 'expo-secure-store';
 
-// Para emulador Android usa 10.0.2.2, para iOS usa localhost, para dispositivo real usa tu IP
-const API_BASE_URL = __DEV__
-  ? 'http://10.0.2.2:3006/api' // Android emulator
-  : 'http://localhost:3006/api'; // iOS simulator
+// ⚠️ IMPORTANTE: Cambia esta IP por la IP local de tu PC en la red WiFi
+// Para verla en Windows: abre cmd y escribe "ipconfig", busca "Dirección IPv4"
+// Ejemplo: 192.168.1.15
+const LOCAL_IP = '192.168.101.4'; // <-- Cambia esto por tu IP
+
+const API_BASE_URL = `http://${LOCAL_IP}:8080/api`;
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 30000,
+  timeout: 2000,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -17,10 +19,12 @@ const api = axios.create({
 api.interceptors.request.use(
   async (config) => {
     try {
-      const credentials = await Keychain.getGenericPassword();
-      if (credentials) {
-        const { token } = JSON.parse(credentials.password);
-        config.headers.Authorization = `Bearer ${token}`;
+      const stored = await SecureStore.getItemAsync('confimax_auth');
+      if (stored) {
+        const { token } = JSON.parse(stored);
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
       }
     } catch (error) {
       console.log('No token found');
@@ -34,7 +38,7 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     if (error.response?.status === 401) {
-      await Keychain.resetGenericPassword();
+      await SecureStore.deleteItemAsync('confimax_auth');
     }
     return Promise.reject(error);
   }
@@ -57,6 +61,10 @@ export const inventoryAPI = {
   adjustStock: (id, data) => api.patch(`/products/${id}/stock`, data),
   getLowStock: () => api.get('/products/low-stock'),
   getExpiring: (days) => api.get('/products/expiring', { params: { days } }),
+  createProduct: (data) => api.post('/products', data),
+  getProductStockItems: (productId) => api.get(`/inventory/stock/product/${productId}`),
+  createStockItem: (data) => api.post('/inventory/stock', data),
+  updateStockItem: (id, data) => api.put(`/inventory/stock/${id}`, data),
 };
 
 export const salesAPI = {

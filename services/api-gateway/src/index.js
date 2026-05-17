@@ -33,7 +33,7 @@ const PORT = process.env.GATEWAY_PORT || 8080;
 const SERVICES = {
   auth: {
     target: process.env.AUTH_SERVICE_URL || 'http://auth-service:3001',
-    pathRewrite: { '^/api/auth': '' },
+    pathRewrite: { '^/api/auth': '/auth' }, // Conservar el prefijo /auth para mapear correctamente
     changeOrigin: true,
   },
   inventory: {
@@ -115,8 +115,19 @@ const createServiceProxy = (name, config) => {
         });
       }
     },
-    onProxyReq: (proxyReq, req) => {
+    onProxyReq: (proxyReq, req, res) => {
       console.log(`[GATEWAY] ${req.method} ${req.path} -> ${name}`);
+      
+      // RESTREAM BODY BUG FIX: Si el body ya fue analizado por express.json(), 
+      // volver a serializar el payload en el stream original antes de enviarlo
+      if (req.body && Object.keys(req.body).length > 0) {
+        const bodyData = JSON.stringify(req.body);
+        // Ajustar content-length para reflejar el nuevo tamaño
+        proxyReq.setHeader('Content-Type', 'application/json');
+        proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
+        // Escribir el body en el stream de destino
+        proxyReq.write(bodyData);
+      }
     },
   });
   return proxy;
@@ -125,14 +136,39 @@ const createServiceProxy = (name, config) => {
 // Auth service (login/register publicos, resto protegido)
 app.use('/api/auth', createServiceProxy('auth', SERVICES.auth));
 
+// Rutas Directas Compatibles con el Móvil (Mapeos Transparentes)
+app.use('/api/products', authenticateGateway, createServiceProxy('inventory', {
+  target: SERVICES.inventory.target,
+  pathRewrite: { '^/api/products': '/products' },
+  changeOrigin: true,
+}));
+
+app.use('/api/sales', authenticateGateway, createServiceProxy('sales', {
+  target: SERVICES.sales.target,
+  pathRewrite: { '^/api/sales': '/sales' },
+  changeOrigin: true,
+}));
+
+app.use('/api/customers', authenticateGateway, createServiceProxy('customers', {
+  target: SERVICES.customers.target,
+  pathRewrite: { '^/api/customers': '/customers' },
+  changeOrigin: true,
+}));
+
+app.use('/api/notifications', authenticateGateway, createServiceProxy('notifications', {
+  target: SERVICES.notifications.target,
+  pathRewrite: { '^/api/notifications': '/notifications' },
+  changeOrigin: true,
+}));
+
 // Backend unificado (protegido por JWT)
 app.use('/api/backend', authenticateGateway, createServiceProxy('backend', SERVICES.backend));
 
-// Servicios protegidos por JWT
+// Servicios protegidos por JWT (Rutas con prefijos de Microservicio tradicionales)
 app.use('/api/inventory', authenticateGateway, createServiceProxy('inventory', SERVICES.inventory));
-app.use('/api/sales', authenticateGateway, createServiceProxy('sales', SERVICES.sales));
-app.use('/api/customers', authenticateGateway, createServiceProxy('customers', SERVICES.customers));
-app.use('/api/notifications', authenticateGateway, createServiceProxy('notifications', SERVICES.notifications));
+app.use('/api/sales-legacy', authenticateGateway, createServiceProxy('sales', SERVICES.sales));
+app.use('/api/customers-legacy', authenticateGateway, createServiceProxy('customers', SERVICES.customers));
+app.use('/api/notifications-legacy', authenticateGateway, createServiceProxy('notifications', SERVICES.notifications));
 
 // ============================================================
 // RUTAS DIRECTAS A DASHBOARDS (sin rewrite)

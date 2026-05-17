@@ -1,7 +1,7 @@
 services:
   web-nextjs:
     build:
-      context: ./web-nextjs
+      context: ./web
       dockerfile: Dockerfile
     image: confimax/web-nextjs:latest
     container_name: confimax-web-nextjs
@@ -70,15 +70,15 @@ services:
       - NODE_ENV=${NODE_ENV:-development}
       - PORT=3001
       - JWT_SECRET=${JWT_SECRET}
-      # PostgreSQL: Single DB con 4 schemas
-      # PostgreSQL (Supabase)
-      - POSTGRES_HOST=aws-1-us-west-2.pooler.supabase.com
-      - POSTGRES_PORT=5432
-      - POSTGRES_USER=postgres.tlrliqbgtdplwdvbxqxv
-      - POSTGRES_PASSWORD=Jackwell2019*2424
-      - POSTGRES_DB=postgres
-      - POSTGRES_SCHEMA=auth
-      - REDIS_URL=rediss://default:gQAAAAAAAdIgAAIgcDFhNDRkNmE3OTg5YjA0MDBlODE4MzQxMGY5NGVjNmU0Mg@good-iguana-119328.upstash.io:6379
+      # PostgreSQL centralizado desde el .env
+      - DATABASE_URL=${DATABASE_URL}
+      - POSTGRES_HOST=${POSTGRES_HOST}
+      - POSTGRES_PORT=${POSTGRES_PORT:-5432}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_SCHEMA=public
+      - REDIS_URL=${REDIS_URL}
       - SHARED_MODULES_PATH=/shared
       - NODE_PATH=/app/node_modules
     volumes:
@@ -104,14 +104,15 @@ services:
     environment:
       - NODE_ENV=${NODE_ENV:-development}
       - PORT=3002
-      # PostgreSQL (Supabase)
-      - POSTGRES_HOST=aws-1-us-west-2.pooler.supabase.com
-      - POSTGRES_PORT=5432
-      - POSTGRES_USER=postgres.tlrliqbgtdplwdvbxqxv
-      - POSTGRES_PASSWORD=Jackwell2019*2424
-      - POSTGRES_DB=postgres
-      - POSTGRES_SCHEMA=inventory
-      - REDIS_URL=rediss://default:gQAAAAAAAdIgAAIgcDFhNDRkNmE3OTg5YjA0MDBlODE4MzQxMGY5NGVjNmU0Mg@good-iguana-119328.upstash.io:6379
+      # PostgreSQL centralizado desde el .env
+      - DATABASE_URL=${DATABASE_URL}
+      - POSTGRES_HOST=${POSTGRES_HOST}
+      - POSTGRES_PORT=${POSTGRES_PORT:-5432}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_SCHEMA=public
+      - REDIS_URL=${REDIS_URL}
       - SHARED_MODULES_PATH=/shared
       - NODE_PATH=/app/node_modules
     volumes:
@@ -137,14 +138,15 @@ services:
     environment:
       - NODE_ENV=${NODE_ENV:-development}
       - PORT=3003
-      # PostgreSQL (Supabase)
-      - POSTGRES_HOST=aws-1-us-west-2.pooler.supabase.com
-      - POSTGRES_PORT=5432
-      - POSTGRES_USER=postgres.tlrliqbgtdplwdvbxqxv
-      - POSTGRES_PASSWORD=Jackwell2019*2424
-      - POSTGRES_DB=postgres
-      - POSTGRES_SCHEMA=sales
-      - REDIS_URL=rediss://default:gQAAAAAAAdIgAAIgcDFhNDRkNmE3OTg5YjA0MDBlODE4MzQxMGY5NGVjNmU0Mg@good-iguana-119328.upstash.io:6379
+      # PostgreSQL centralizado desde el .env
+      - DATABASE_URL=${DATABASE_URL}
+      - POSTGRES_HOST=${POSTGRES_HOST}
+      - POSTGRES_PORT=${POSTGRES_PORT:-5432}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_SCHEMA=public
+      - REDIS_URL=${REDIS_URL}
       - SHARED_MODULES_PATH=/shared
       - NODE_PATH=/app/node_modules
     volumes:
@@ -170,14 +172,15 @@ services:
     environment:
       - NODE_ENV=${NODE_ENV:-development}
       - PORT=3004
-      # PostgreSQL (Supabase)
-      - POSTGRES_HOST=aws-1-us-west-2.pooler.supabase.com
-      - POSTGRES_PORT=5432
-      - POSTGRES_USER=postgres.tlrliqbgtdplwdvbxqxv
-      - POSTGRES_PASSWORD=Jackwell2019*2424
-      - POSTGRES_DB=postgres
-      - POSTGRES_SCHEMA=customers
-      - REDIS_URL=rediss://default:gQAAAAAAAdIgAAIgcDFhNDRkNmE3OTg5YjA0MDBlODE4MzQxMGY5NGVjNmU0Mg@good-iguana-119328.upstash.io:6379
+      # PostgreSQL centralizado desde el .env
+      - DATABASE_URL=${DATABASE_URL}
+      - POSTGRES_HOST=${POSTGRES_HOST}
+      - POSTGRES_PORT=${POSTGRES_PORT:-5432}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_SCHEMA=public
+      - REDIS_URL=${REDIS_URL}
       - SHARED_MODULES_PATH=/shared
       - NODE_PATH=/app/node_modules
     volumes:
@@ -203,12 +206,11 @@ services:
     environment:
       - NODE_ENV=${NODE_ENV:-development}
       - PORT=3005
-      # Redis: usa EXTERNAL_* si está definido, sino usa el contenedor local
-      # Redis Upstash (Cloud)
-      - REDIS_URL=rediss://default:gQAAAAAAAdIgAAIgcDFhNDRkNmE3OTg5YjA0MDBlODE4MzQxMGY5NGVjNmU0Mg@good-iguana-119328.upstash.io:6379
-      # MongoDB Atlas
-      - MONGO_URL=mongodb://jak:jema2019@ac-s1gj562-shard-00-00.tedq2nv.mongodb.net:27017,ac-s1gj562-shard-00-01.tedq2nv.mongodb.net:27017,ac-s1gj562-shard-00-02.tedq2nv.mongodb.net:27017/confimax_logs?ssl=true&replicaSet=atlas-mrqwtn-shard-0&authSource=admin&appName=Confimax
-      - MONGO_DB=confimax_logs
+      # Redis centralizado
+      - REDIS_URL=${REDIS_URL}
+      # MongoDB Atlas centralizado
+      - MONGO_URL=${MONGO_URL}
+      - MONGO_DB=${MONGO_DB}
       - SHARED_MODULES_PATH=/shared
       - NODE_PATH=/app/node_modules
     volumes:
@@ -240,18 +242,19 @@ services:
       - NODE_ENV=${NODE_ENV:-development}
       - PORT=3006
       - JWT_SECRET=${JWT_SECRET}
-      # PostgreSQL (Supabase)
-      - POSTGRES_HOST=aws-1-us-west-2.pooler.supabase.com
-      - POSTGRES_PORT=5432
-      - POSTGRES_USER=postgres.tlrliqbgtdplwdvbxqxv
-      - POSTGRES_PASSWORD=Jackwell2019*2424
-      - POSTGRES_DB=postgres
+      # PostgreSQL centralizado desde el .env
+      - DATABASE_URL=${DATABASE_URL}
+      - POSTGRES_HOST=${POSTGRES_HOST}
+      - POSTGRES_PORT=${POSTGRES_PORT:-5432}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_SCHEMA=public
-      # Redis Upstash
-      - REDIS_URL=rediss://default:gQAAAAAAAdIgAAIgcDFhNDRkNmE3OTg5YjA0MDBlODE4MzQxMGY5NGVjNmU0Mg@good-iguana-119328.upstash.io:6379
-      # MongoDB Atlas
-      - MONGO_URL=mongodb://jak:jema2019@ac-s1gj562-shard-00-00.tedq2nv.mongodb.net:27017,ac-s1gj562-shard-00-01.tedq2nv.mongodb.net:27017,ac-s1gj562-shard-00-02.tedq2nv.mongodb.net:27017/confimax_logs?ssl=true&replicaSet=atlas-mrqwtn-shard-0&authSource=admin&appName=Confimax
-      - MONGO_DB=confimax_logs
+      # Redis centralizado
+      - REDIS_URL=${REDIS_URL}
+      # MongoDB Atlas centralizado
+      - MONGO_URL=${MONGO_URL}
+      - MONGO_DB=${MONGO_DB}
       - SHARED_MODULES_PATH=/shared
       - NODE_PATH=/app/node_modules
     volumes:
@@ -410,7 +413,7 @@ services:
       - ME_CONFIG_BASICAUTH_USERNAME=admin
       - ME_CONFIG_BASICAUTH_PASSWORD=Jackson1
     ports:
-      - "8081:8081"
+      - "8090:8081"
     entrypoint: ["node", "app.js"]
     networks:
       - confimax-network

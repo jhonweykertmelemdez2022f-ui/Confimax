@@ -35,16 +35,50 @@ const AuthService = {
   },
 
   async login(credentials) {
-    const { email, password } = credentials;
+    const { username, email, password } = credentials;
+    const loginIdentifier = username || email;
 
-    const profile = await Profile.findByEmail(email);
+    if (!loginIdentifier) {
+      throw new Error('Username or email is required');
+    }
+
+    if (!password) {
+      throw new Error('Password is required');
+    }
+
+    let profile = null;
+
+    // Si tiene un formato de correo, buscar por email primero
+    if (loginIdentifier.includes('@')) {
+      profile = await Profile.findByEmail(loginIdentifier);
+    } else {
+      profile = await Profile.findByUsername(loginIdentifier);
+    }
+
+    // Fallback: si no encontró por la primera opción, intentar con la otra
+    if (!profile) {
+      profile = await Profile.findByUsername(loginIdentifier) || await Profile.findByEmail(loginIdentifier);
+    }
+
     if (!profile) {
       throw new Error('Invalid credentials');
     }
 
-    // Nota: En Supabase, la autenticación está manejada por Supabase Auth.
-    // Este es un login básico para compatibilidad con el backend local.
-    // En producción, usar el SDK de Supabase para autenticación.
+    // Verificar contraseña en texto plano (como está en el seeder local)
+    // o con bcrypt si es hash
+    let passwordMatches = false;
+    
+    if (profile.password.startsWith('$2a$') || profile.password.startsWith('$2b$')) {
+      // Es un hash bcrypt
+      passwordMatches = await bcrypt.compare(password, profile.password);
+    } else {
+      // Contraseña en texto plano
+      passwordMatches = profile.password === password;
+    }
+
+    if (!passwordMatches) {
+      throw new Error('Invalid credentials');
+    }
     
     await Profile.updateLastLogin(profile.id);
 

@@ -1,4 +1,9 @@
 {
   "name": "ConfimaxMobile",
-  "displayName": "Confimax"
+  "displayName": "Confimax",
+  "plugins": [
+    "expo-asset",
+    "expo-font",
+    "expo-secure-store"
+  ]
 }

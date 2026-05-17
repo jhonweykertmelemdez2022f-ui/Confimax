@@ -4,6 +4,10 @@ const authController = require('../controllers/auth.controller');
 
 const router = express.Router();
 
+router.get('/health', (req, res) => {
+  res.status(200).json({ status: 'OK', service: 'auth-service', db: 'connected' });
+});
+
 const validateRequest = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {

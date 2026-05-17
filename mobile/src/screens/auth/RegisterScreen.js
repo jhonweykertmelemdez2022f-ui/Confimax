@@ -1,15 +1,47 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import {
   View,
   Text,
   TextInput,
-  Button,
   StyleSheet,
   Alert,
   KeyboardAvoidingView,
   Platform,
+  TouchableOpacity,
+  ActivityIndicator,
+  Animated,
 } from 'react-native';
 import {useAuthStore} from '../../stores/authStore';
+
+// Componente animado elástico nativo para efectos en cascada cinemática
+function FadeInUpCard({ children, delay = 0, duration = 400 }) {
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const translateYAnim = useRef(new Animated.Value(30)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: duration,
+        delay: delay,
+        useNativeDriver: true,
+      }),
+      Animated.spring(translateYAnim, {
+        toValue: 0,
+        tension: 50,
+        friction: 8,
+        delay: delay,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
+
+  return (
+    <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: translateYAnim }] }}>
+      {children}
+    </Animated.View>
+  );
+}
 
 function RegisterScreen({navigation}) {
   const [username, setUsername] = useState('');
@@ -43,47 +75,75 @@ function RegisterScreen({navigation}) {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={styles.container}>
       <View style={styles.content}>
-        <Text style={styles.title}>Confimax</Text>
-        <Text style={styles.subtitle}>Crear Cuenta</Text>
+        {/* Cabecera Animada */}
+        <FadeInUpCard delay={0} duration={350}>
+          <Text style={styles.title}>Confimax</Text>
+        </FadeInUpCard>
+        
+        <FadeInUpCard delay={80} duration={350}>
+          <Text style={styles.subtitle}>Crear Cuenta</Text>
+        </FadeInUpCard>
 
-        <TextInput
-          style={styles.input}
-          placeholder="Usuario"
-          value={username}
-          onChangeText={setUsername}
-          autoCapitalize="none"
-        />
+        {/* Inputs Animados */}
+        <FadeInUpCard delay={160} duration={350}>
+          <TextInput
+            style={styles.input}
+            placeholder="Usuario"
+            placeholderTextColor="#7a7a7a"
+            value={username}
+            onChangeText={setUsername}
+            autoCapitalize="none"
+          />
+        </FadeInUpCard>
 
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          value={email}
-          onChangeText={setEmail}
-          autoCapitalize="none"
-          keyboardType="email-address"
-        />
+        <FadeInUpCard delay={240} duration={350}>
+          <TextInput
+            style={styles.input}
+            placeholder="Email"
+            placeholderTextColor="#7a7a7a"
+            value={email}
+            onChangeText={setEmail}
+            autoCapitalize="none"
+            keyboardType="email-address"
+          />
+        </FadeInUpCard>
 
-        <TextInput
-          style={styles.input}
-          placeholder="Contraseña"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-        />
+        <FadeInUpCard delay={320} duration={350}>
+          <TextInput
+            style={styles.input}
+            placeholder="Contraseña"
+            placeholderTextColor="#7a7a7a"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+          />
+        </FadeInUpCard>
 
-        <TextInput
-          style={styles.input}
-          placeholder="Confirmar Contraseña"
-          value={confirmPassword}
-          onChangeText={setConfirmPassword}
-          secureTextEntry
-        />
+        <FadeInUpCard delay={400} duration={350}>
+          <TextInput
+            style={styles.input}
+            placeholder="Confirmar Contraseña"
+            placeholderTextColor="#7a7a7a"
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+            secureTextEntry
+          />
+        </FadeInUpCard>
 
-        <Button
-          title={isLoading ? 'Cargando...' : 'Crear Cuenta'}
-          onPress={handleRegister}
-          disabled={isLoading}
-        />
+        {/* Botón de Creación Animado */}
+        <FadeInUpCard delay={480} duration={350}>
+          <TouchableOpacity
+            style={[styles.registerButton, isLoading && styles.disabledButton]}
+            onPress={handleRegister}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.registerButtonText}>Crear Cuenta</Text>
+            )}
+          </TouchableOpacity>
+        </FadeInUpCard>
       </View>
     </KeyboardAvoidingView>
   );
@@ -92,7 +152,7 @@ function RegisterScreen({navigation}) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#0A0A0A',
   },
   content: {
     flex: 1,
@@ -102,24 +162,50 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#007AFF',
+    color: '#0066FF',
     textAlign: 'center',
     marginBottom: 10,
+    letterSpacing: -0.5,
   },
   subtitle: {
     fontSize: 18,
-    color: '#666',
+    color: '#c4c7c8',
     textAlign: 'center',
     marginBottom: 30,
   },
   input: {
     height: 50,
-    borderColor: '#ddd',
+    backgroundColor: '#141313',
+    borderColor: '#262626',
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 15,
     marginBottom: 15,
     fontSize: 16,
+    color: '#e5e2e1',
+  },
+  registerButton: {
+    height: 52,
+    backgroundColor: '#0066FF',
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 10,
+    shadowColor: '#0066FF',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 4,
+  },
+  registerButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  disabledButton: {
+    backgroundColor: '#1c1b1b',
   },
 });
 
