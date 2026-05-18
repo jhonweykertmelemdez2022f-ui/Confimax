@@ -23,6 +23,8 @@ import CustomerDetailScreen from '../screens/customers/CustomerDetailScreen';
 import NewCustomerScreen from '../screens/customers/NewCustomerScreen';
 import NewSaleScreen from '../screens/sales/NewSaleScreen';
 import NewProductScreen from '../screens/inventory/NewProductScreen';
+import UsersScreen from '../screens/users/UsersScreen';
+import NewUserScreen from '../screens/users/NewUserScreen';
 
 
 const Stack = createNativeStackNavigator();
@@ -179,6 +181,16 @@ function AppNavigator() {
         name="NewProduct"
         component={NewProductScreen}
         options={{title: 'Registrar Producto'}}
+      />
+      <Stack.Screen
+        name="Users"
+        component={UsersScreen}
+        options={{title: 'Gestionar Usuarios'}}
+      />
+      <Stack.Screen
+        name="NewUser"
+        component={NewUserScreen}
+        options={({ route }) => ({ title: route.params?.user ? 'Editar Usuario' : 'Registrar Usuario' })}
       />
     </Stack.Navigator>
   );

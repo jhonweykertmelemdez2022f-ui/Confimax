@@ -9,13 +9,14 @@ import {
   ActivityIndicator,
   Platform,
   Animated,
+  Alert,
 } from 'react-native';
-import {customersAPI} from '../../services/api';
+import {authAPI} from '../../services/api';
 import { useTheme } from '../../theme';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useIsFocused } from '@react-navigation/native';
 
-// Componente animado elástico nativo para las tarjetas en cascada
+// Animated Component for cards
 function FadeInUpCard({ children, delay = 0, duration = 400 }) {
   const isFocused = useIsFocused();
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -53,7 +54,7 @@ function FadeInUpCard({ children, delay = 0, duration = 400 }) {
   );
 }
 
-// Componente animado para Estados Vacíos
+// Empty State Component
 function AnimatedEmptyState({ icon, title, subtitle, colors }) {
   const scaleAnim = useRef(new Animated.Value(0.85)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
@@ -83,44 +84,74 @@ function AnimatedEmptyState({ icon, title, subtitle, colors }) {
   );
 }
 
-function CustomersScreen({navigation}) {
-  const [customers, setCustomers] = useState([]);
+function UsersScreen({navigation}) {
+  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [page, setPage] = useState(1);
   const {colors} = useTheme();
+  const isFocused = useIsFocused();
 
   useEffect(() => {
-    loadCustomers();
-  }, []);
+    if (isFocused) {
+      loadUsers();
+    }
+  }, [isFocused]);
 
-  const loadCustomers = async () => {
+  const loadUsers = async () => {
     try {
-      const response = await customersAPI.getCustomers();
-      setCustomers(response.data || []);
+      setLoading(true);
+      const response = await authAPI.getUsers();
+      setUsers(response.data || []);
     } catch (error) {
-      console.error('Error loading customers from database:', error);
-      setCustomers([]);
+      console.error('Error loading users:', error);
+      Alert.alert('Error', 'No se pudieron cargar los usuarios.');
+      setUsers([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const filteredCustomers = customers.filter(customer =>
-    customer.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    customer.email?.toLowerCase().includes(searchQuery.toLowerCase()),
+  const handleDeleteUser = (id, name) => {
+    Alert.alert(
+      'Eliminar Usuario',
+      `¿Estás seguro de que deseas desactivar a ${name}?`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Desactivar',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await authAPI.deleteUser(id);
+              Alert.alert('Éxito', 'Usuario desactivado correctamente.');
+              loadUsers();
+            } catch (error) {
+              console.error('Error deleting user:', error);
+              Alert.alert('Error', 'No se pudo desactivar el usuario.');
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  const filteredUsers = users.filter(user =>
+    user.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    user.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    user.role?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const displayedCustomers = filteredCustomers.slice(0, page * 10);
+  const displayedUsers = filteredUsers.slice(0, page * 10);
 
   const handleLoadMore = () => {
-    if (page * 10 < filteredCustomers.length) {
+    if (page * 10 < filteredUsers.length) {
       setPage(prev => prev + 1);
     }
   };
 
   const renderFooter = () => {
-    if (page * 10 >= filteredCustomers.length) return null;
+    if (page * 10 >= filteredUsers.length) return null;
     return (
       <View style={{ paddingVertical: 15, alignItems: 'center' }}>
         <ActivityIndicator size="small" color={colors.dataBlue} />
@@ -128,21 +159,65 @@ function CustomersScreen({navigation}) {
     );
   };
 
-  const dynamicStyles = createStyles(colors);
+  const getRoleLabel = (role) => {
+    const roles = {
+      admin: 'Administrador',
+      vendor: 'Vendedor',
+      customer: 'Cliente (Customer)',
+      manager: 'Gestor (Manager)',
+    };
+    return roles[role] || role;
+  };
 
-  const renderCustomer = ({item, index}) => (
+  const getRoleColor = (role) => {
+    const roleColors = {
+      admin: '#EF4444',
+      vendor: '#F59E0B',
+      customer: '#10B981',
+      manager: '#3B82F6',
+    };
+    return roleColors[role] || colors.secondary;
+  };
+
+  const renderUser = ({item, index}) => (
     <FadeInUpCard delay={index * 60} duration={350}>
-      <TouchableOpacity
-        style={dynamicStyles.customerCard}
-        onPress={() => navigation.navigate('CustomerDetail', {id: item.id})}>
-        <Text style={dynamicStyles.customerName}>{item.name}</Text>
-        <Text style={dynamicStyles.customerEmail}>{item.email}</Text>
-        <Text style={dynamicStyles.customerPhone}>{item.phone}</Text>
-      </TouchableOpacity>
+      <View style={dynamicStyles.userCard}>
+        <View style={dynamicStyles.cardHeader}>
+          <View>
+            <Text style={dynamicStyles.userName}>{item.name}</Text>
+            <Text style={dynamicStyles.userEmail}>{item.email}</Text>
+          </View>
+          <View style={[dynamicStyles.roleBadge, {backgroundColor: getRoleColor(item.role) + '20', borderColor: getRoleColor(item.role)}]}>
+            <Text style={[dynamicStyles.roleText, {color: getRoleColor(item.role)}]}>
+              {getRoleLabel(item.role)}
+            </Text>
+          </View>
+        </View>
+
+        <View style={dynamicStyles.cardActions}>
+          <TouchableOpacity 
+            style={dynamicStyles.editButton}
+            onPress={() => navigation.navigate('NewUser', { user: item })}
+          >
+            <MaterialIcons name="edit" size={18} color="#3B82F6" />
+            <Text style={dynamicStyles.editButtonText}>Editar</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={dynamicStyles.deleteButton}
+            onPress={() => handleDeleteUser(item.id, item.name)}
+          >
+            <MaterialIcons name="delete-outline" size={18} color="#EF4444" />
+            <Text style={dynamicStyles.deleteButtonText}>Eliminar</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
     </FadeInUpCard>
   );
 
-  if (loading) {
+  const dynamicStyles = createStyles(colors);
+
+  if (loading && users.length === 0) {
     return (
       <View style={dynamicStyles.center}>
         <ActivityIndicator size="large" color={colors.dataBlue} />
@@ -157,35 +232,35 @@ function CustomersScreen({navigation}) {
           <MaterialIcons name="search" size={20} color={colors.secondary} style={dynamicStyles.searchIcon} />
           <TextInput
             style={dynamicStyles.searchInput}
-            placeholder="Buscar clientes por nombre o correo..."
+            placeholder="Buscar usuarios por nombre, correo o rol..."
             placeholderTextColor={colors.secondary}
             value={searchQuery}
             onChangeText={(text) => {
               setSearchQuery(text);
-              setPage(1); // Reset page on new search
+              setPage(1);
             }}
           />
         </View>
       </FadeInUpCard>
 
-      {customers.length === 0 ? (
+      {users.length === 0 ? (
         <AnimatedEmptyState
           icon="people-outline"
-          title="Sin clientes registrados"
-          subtitle="No tienes clientes asociados en el sistema. Registra un nuevo cliente presionando el botón '+' flotante de aquí abajo."
+          title="Sin usuarios en el sistema"
+          subtitle="No se encontraron cuentas activas en Confimax. Crea una cuenta presionando el botón '+'."
           colors={colors}
         />
-      ) : filteredCustomers.length === 0 ? (
+      ) : filteredUsers.length === 0 ? (
         <AnimatedEmptyState
           icon="search-off"
           title="Sin resultados"
-          subtitle={`No se encontraron coincidencias para "${searchQuery}". Revisa la ortografía o intenta con otro término.`}
+          subtitle={`No se encontraron coincidencias para "${searchQuery}".`}
           colors={colors}
         />
       ) : (
         <FlatList
-          data={displayedCustomers}
-          renderItem={({item, index}) => renderCustomer({item, index})}
+          data={displayedUsers}
+          renderItem={renderUser}
           keyExtractor={item => item.id.toString()}
           contentContainerStyle={dynamicStyles.list}
           onEndReached={handleLoadMore}
@@ -196,8 +271,10 @@ function CustomersScreen({navigation}) {
 
       <TouchableOpacity
         style={dynamicStyles.fab}
-        onPress={() => navigation.navigate('NewCustomer')}>
-        <Text style={dynamicStyles.fabText}>+</Text>
+        onPress={() => navigation.navigate('NewUser')}
+        activeOpacity={0.8}
+      >
+        <MaterialIcons name="add" size={28} color="#ffffff" />
       </TouchableOpacity>
     </View>
   );
@@ -270,7 +347,7 @@ const createStyles = (colors) => StyleSheet.create({
   list: {
     padding: 15,
   },
-  customerCard: {
+  userCard: {
     backgroundColor: colors.surface,
     borderRadius: 12,
     padding: 18,
@@ -283,21 +360,63 @@ const createStyles = (colors) => StyleSheet.create({
     shadowRadius: 5,
     elevation: 4,
   },
-  customerName: {
+  cardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderMuted,
+    paddingBottom: 12,
+    marginBottom: 12,
+  },
+  userName: {
     fontSize: 16,
     fontWeight: 'bold',
     color: colors.primary,
     letterSpacing: 0.5,
   },
-  customerEmail: {
+  userEmail: {
     fontSize: 14,
     color: colors.secondary,
-    marginTop: 5,
+    marginTop: 3,
   },
-  customerPhone: {
-    fontSize: 14,
-    color: colors.secondary,
-    marginTop: 5,
+  roleBadge: {
+    borderWidth: 1,
+    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+  },
+  roleText: {
+    fontSize: 11,
+    fontWeight: 'bold',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  cardActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+  },
+  editButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 20,
+  },
+  editButtonText: {
+    color: '#3B82F6',
+    fontWeight: 'bold',
+    marginLeft: 5,
+    fontSize: 13,
+  },
+  deleteButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  deleteButtonText: {
+    color: '#EF4444',
+    fontWeight: 'bold',
+    marginLeft: 5,
+    fontSize: 13,
   },
   fab: {
     position: 'absolute',
@@ -315,11 +434,6 @@ const createStyles = (colors) => StyleSheet.create({
     shadowRadius: 6,
     elevation: 6,
   },
-  fabText: {
-    fontSize: 30,
-    color: '#ffffff',
-    fontWeight: 'bold',
-  },
 });
 
-export default CustomersScreen;
+export default UsersScreen;

@@ -66,9 +66,53 @@ router.post(
   authController.changePassword
 );
 
+const { authenticate, authorize } = require('../middleware/auth.middleware');
+
 router.get(
   '/me',
   authController.getCurrentUser
+);
+
+// Admin-only User CRUD
+router.get(
+  '/users',
+  authenticate,
+  authorize('admin'),
+  authController.getUsers
+);
+
+router.post(
+  '/users',
+  authenticate,
+  authorize('admin'),
+  [
+    body('username').trim().isLength({ min: 3, max: 30 }).withMessage('Username must be 3-30 characters'),
+    body('email').isEmail().withMessage('Valid email required'),
+    body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
+    body('role').isIn(['admin', 'vendor', 'customer', 'manager']).withMessage('Invalid role'),
+  ],
+  validateRequest,
+  authController.register
+);
+
+router.put(
+  '/users/:id',
+  authenticate,
+  authorize('admin'),
+  [
+    body('username').optional().trim().isLength({ min: 3, max: 30 }).withMessage('Username must be 3-30 characters'),
+    body('email').optional().isEmail().withMessage('Valid email required'),
+    body('role').optional().isIn(['admin', 'vendor', 'customer', 'manager']).withMessage('Invalid role'),
+  ],
+  validateRequest,
+  authController.updateUser
+);
+
+router.delete(
+  '/users/:id',
+  authenticate,
+  authorize('admin'),
+  authController.deleteUser
 );
 
 module.exports = router;

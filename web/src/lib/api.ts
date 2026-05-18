@@ -15,7 +15,8 @@
  *   /api/notifications/* -> notifications-service:3005
  */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 
+  (typeof window !== 'undefined' ? '/api' : 'http://api-gateway:8080/api');
 
 interface ApiResponse<T> {
   data?: T;
@@ -74,10 +75,11 @@ class ApiClient {
       }
 
       // Guardar token si viene en la respuesta
-      if (data.token) {
-        this.token = data.token;
+      const token = data.token || data.accessToken;
+      if (token) {
+        this.token = token;
         if (typeof window !== 'undefined') {
-          localStorage.setItem('confimax_token', data.token);
+          localStorage.setItem('confimax_token', token);
         }
       }
 
@@ -103,17 +105,19 @@ class ApiClient {
   }
 
   // Auth Service
-  async login(email: string, password: string) {
+  async login(usernameOrEmail: string, password: string) {
     return this.request('/auth/login', {
       method: 'POST',
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ username: usernameOrEmail, email: usernameOrEmail, password }),
     });
   }
 
   async register(name: string, email: string, password: string) {
+    // Generar un username libre de espacios para satisfacer express-validator en el backend
+    const username = name.trim().toLowerCase().replace(/[^a-z0-9]/g, '') || `user${Date.now()}`;
     return this.request('/auth/register', {
       method: 'POST',
-      body: JSON.stringify({ name, email, password }),
+      body: JSON.stringify({ name, username, email, password }),
     });
   }
 
@@ -133,14 +137,37 @@ class ApiClient {
     });
   }
 
-  // Inventory Service
+  // Inventory Service (Direct Paths)
   async getProducts(params?: { limit?: number; offset?: number; category?: string }) {
     const queryString = params ? `?${new URLSearchParams(params as any).toString()}` : '';
-    return this.request(`/inventory/products${queryString}`);
+    return this.request(`/products${queryString}`);
   }
 
   async getProduct(id: string) {
-    return this.request(`/inventory/products/${id}`);
+    return this.request(`/products/${id}`);
+  }
+
+  async createProduct(data: {
+    name: string;
+    sku: string;
+    description?: string;
+    price: number;
+    stock: number;
+    category: string;
+    image?: string;
+  }) {
+    return this.request('/products', {
+      method: 'POST',
+      body: JSON.stringify({
+        name: data.name,
+        sku: data.sku,
+        description: data.description,
+        unit_price: data.price,
+        stock_quantity: data.stock,
+        category: data.category,
+        image_url: data.image
+      }),
+    });
   }
 
   async getCategories() {
@@ -148,7 +175,7 @@ class ApiClient {
   }
 
   async searchProducts(query: string) {
-    return this.request(`/inventory/products/search?q=${encodeURIComponent(query)}`);
+    return this.request(`/products/search?q=${encodeURIComponent(query)}`);
   }
 
   // Sales Service

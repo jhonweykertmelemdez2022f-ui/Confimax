@@ -48,6 +48,22 @@ export const useAuthStore = create((set, get) => ({
     }
   },
 
+  register: async (username, email, password) => {
+    set({ isLoading: true, error: null });
+    try {
+      await authAPI.register({ name: username, username, email, password, role: 'customer' });
+      set({ isLoading: false });
+      return true;
+    } catch (error) {
+      console.error('🔴 Error de Registro en móvil:', error);
+      if (error.response) {
+        console.error('🔴 Respuesta de error del Servidor:', error.response.status, error.response.data);
+      }
+      set({ error: error.response?.data?.message || 'Registration failed', isLoading: false });
+      return false;
+    }
+  },
+
   logout: async () => {
     try {
       const { refreshToken } = get();
@@ -59,6 +75,7 @@ export const useAuthStore = create((set, get) => ({
     }
 
     await SecureStore.deleteItemAsync('confimax_auth');
+    await SecureStore.deleteItemAsync('confimax_credentials');
     set({ user: null, token: null, refreshToken: null, isAuthenticated: false });
   },
 

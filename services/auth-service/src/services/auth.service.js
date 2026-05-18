@@ -8,16 +8,22 @@ const { getRedisClient } = require('../services/redis.service');
 const AuthService = {
   async register(userData) {
     const { name, email, password, role, phone } = userData;
+    const cleanUsername = (name || userData.username || '').trim();
+    const cleanEmail = (email || '').trim();
 
-    const existingEmail = await Profile.findByEmail(email);
+    const existingEmail = await Profile.findByEmail(cleanEmail);
     if (existingEmail) {
       throw new Error('Email already exists');
     }
 
+    // Encriptar la contraseña con bcrypt antes de guardarla en base de datos
+    const hashedPassword = password ? await bcrypt.hash(password, 10) : null;
+
     const profile = await Profile.create({
-      name,
-      email,
-      role,
+      username: cleanUsername,
+      email: cleanEmail,
+      password: hashedPassword || password,
+      role: role || 'customer',
       phone,
     });
 
@@ -36,7 +42,7 @@ const AuthService = {
 
   async login(credentials) {
     const { username, email, password } = credentials;
-    const loginIdentifier = username || email;
+    const loginIdentifier = (username || email || '').trim();
 
     if (!loginIdentifier) {
       throw new Error('Username or email is required');
@@ -167,6 +173,27 @@ const AuthService = {
     // Nota: Cambio de password debe hacerse via Supabase Auth SDK
     // Este es un placeholder para compatibilidad
     throw new Error('Use Supabase Auth to change password');
+  },
+
+  async listUsers(limit = 100, offset = 0) {
+    return await Profile.list(limit, offset);
+  },
+
+  async updateUser(id, updateData) {
+    const updated = await Profile.update(id, updateData);
+    if (!updated) {
+      throw new Error('User not found or unable to update');
+    }
+    return updated;
+  },
+
+  async deleteUser(id) {
+    const profile = await Profile.findById(id);
+    if (!profile) {
+      throw new Error('User not found');
+    }
+    await Profile.deactivate(id);
+    return { message: 'User deleted successfully' };
   },
 };
 

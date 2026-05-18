@@ -7,6 +7,8 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Animated,
+  TextInput,
+  Platform,
 } from 'react-native';
 import {salesAPI} from '../../services/api';
 import { useTheme } from '../../theme';
@@ -83,6 +85,8 @@ function AnimatedEmptyState({ icon, title, subtitle, colors }) {
 
 function SalesScreen({navigation}) {
   const [sales, setSales] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const {colors} = useTheme();
 
@@ -100,6 +104,30 @@ function SalesScreen({navigation}) {
     } finally {
       setLoading(false);
     }
+  };
+
+  const filteredSales = sales.filter(sale => {
+    const searchLower = searchQuery.toLowerCase();
+    const customerMatch = sale.customer_name?.toLowerCase().includes(searchLower) ?? false;
+    const idMatch = sale.id?.toString().includes(searchLower);
+    return customerMatch || idMatch;
+  });
+
+  const displayedSales = filteredSales.slice(0, page * 10);
+
+  const handleLoadMore = () => {
+    if (page * 10 < filteredSales.length) {
+      setPage(prev => prev + 1);
+    }
+  };
+
+  const renderFooter = () => {
+    if (page * 10 >= filteredSales.length) return null;
+    return (
+      <View style={{ paddingVertical: 15, alignItems: 'center' }}>
+        <ActivityIndicator size="small" color={colors.dataBlue} />
+      </View>
+    );
   };
 
   const dynamicStyles = createStyles(colors);
@@ -129,7 +157,21 @@ function SalesScreen({navigation}) {
 
   return (
     <View style={dynamicStyles.container}>
-      {sales.length === 0 ? (
+      <View style={dynamicStyles.searchBarContainer}>
+        <MaterialIcons name="search" size={20} color={colors.secondary} style={dynamicStyles.searchIcon} />
+        <TextInput
+          style={dynamicStyles.searchInput}
+          placeholder="Buscar por cliente o número de transacción..."
+          placeholderTextColor={colors.secondary}
+          value={searchQuery}
+          onChangeText={(text) => {
+            setSearchQuery(text);
+            setPage(1); // Reset page on new search
+          }}
+        />
+      </View>
+      
+      {filteredSales.length === 0 ? (
         <AnimatedEmptyState
           icon="receipt-long"
           title="Sin comprobantes de venta"
@@ -138,10 +180,13 @@ function SalesScreen({navigation}) {
         />
       ) : (
         <FlatList
-          data={sales}
+          data={displayedSales}
           renderItem={({item, index}) => renderSale({item, index})}
           keyExtractor={item => item.id.toString()}
           contentContainerStyle={dynamicStyles.list}
+          onEndReached={handleLoadMore}
+          onEndReachedThreshold={0.2}
+          ListFooterComponent={renderFooter}
         />
       )}
 
@@ -190,6 +235,33 @@ const createStyles = (colors) => StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: colors.surfaceDim,
+  },
+  searchBarContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderColor: colors.borderMuted,
+    borderWidth: 1,
+    borderRadius: 12,
+    marginHorizontal: 15,
+    marginTop: Platform.OS === 'ios' ? 60 : 35,
+    marginBottom: 10,
+    paddingHorizontal: 15,
+    height: 52,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: colors.isDark ? 0.2 : 0.03,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  searchIcon: {
+    marginRight: 10,
+  },
+  searchInput: {
+    flex: 1,
+    height: '100%',
+    color: colors.primary,
+    fontSize: 16,
   },
   list: {
     padding: 15,

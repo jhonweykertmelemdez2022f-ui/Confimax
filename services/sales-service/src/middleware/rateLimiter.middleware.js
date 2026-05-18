@@ -1,15 +1,21 @@
 const config = require('../config');
-const { messageQueue } = require('../services/redis.service');
+const { getRedisClient } = require('../services/redis.service');
 
 const rateLimiter = async (req, res, next) => {
   const ip = req.ip || req.connection.remoteAddress;
   const key = `ratelimit:${ip}`;
+  const redisClient = getRedisClient();
+
+  if (!redisClient) {
+    // Si Redis no está disponible, continuar sin rate limit
+    return next();
+  }
 
   try {
-    const current = await messageQueue.incr(key);
+    const current = await redisClient.incr(key);
 
     if (current === 1) {
-      await messageQueue.expire(key, 60);
+      await redisClient.expire(key, 60);
     }
 
     res.setHeader('X-RateLimit-Limit', 100);

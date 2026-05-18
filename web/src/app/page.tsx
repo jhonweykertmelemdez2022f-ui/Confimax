@@ -60,7 +60,7 @@ export default function Home() {
 
         <div className="text-center z-10 flex flex-col items-center gap-6">
           <span className="font-data-label text-data-label text-slate-500 dark:text-secondary tracking-widest uppercase border border-slate-900/20 dark:border-white/20 px-3 py-1 bg-slate-100 dark:bg-surface-dim">
-            SUPERMERCADO DEL BARRIO // PRECIOS QUE RINDEN
+            CONFIMAX // PRECIOS QUE RINDEN
           </span>
           <h1 className="font-display-xl text-display-xl text-slate-900 dark:text-white uppercase text-center max-w-4xl tracking-tighter leading-none hidden md:block">
             MERCADO Y<br/>DESPENSA

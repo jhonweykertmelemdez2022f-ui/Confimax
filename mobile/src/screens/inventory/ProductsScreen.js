@@ -89,6 +89,7 @@ function ProductsScreen({navigation}) {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [page, setPage] = useState(1);
   const {colors} = useTheme();
   const {user} = useAuthStore();
 
@@ -112,6 +113,23 @@ function ProductsScreen({navigation}) {
   const filteredProducts = products.filter(product =>
     product.name?.toLowerCase().includes(searchQuery.toLowerCase()),
   );
+
+  const displayedProducts = filteredProducts.slice(0, page * 10);
+
+  const handleLoadMore = () => {
+    if (page * 10 < filteredProducts.length) {
+      setPage(prev => prev + 1);
+    }
+  };
+
+  const renderFooter = () => {
+    if (page * 10 >= filteredProducts.length) return null;
+    return (
+      <View style={{ paddingVertical: 15, alignItems: 'center' }}>
+        <ActivityIndicator size="small" color={colors.dataBlue} />
+      </View>
+    );
+  };
 
   const dynamicStyles = createStyles(colors);
 
@@ -145,7 +163,10 @@ function ProductsScreen({navigation}) {
             placeholder="Buscar artículos en stock..."
             placeholderTextColor={colors.secondary}
             value={searchQuery}
-            onChangeText={setSearchQuery}
+            onChangeText={(text) => {
+              setSearchQuery(text);
+              setPage(1); // Reset page on new search
+            }}
           />
         </View>
       </FadeInUpCard>
@@ -166,10 +187,13 @@ function ProductsScreen({navigation}) {
         />
       ) : (
         <FlatList
-          data={filteredProducts}
+          data={displayedProducts}
           renderItem={({item, index}) => renderProduct({item, index})}
           keyExtractor={item => item.id.toString()}
           contentContainerStyle={dynamicStyles.list}
+          onEndReached={handleLoadMore}
+          onEndReachedThreshold={0.2}
+          ListFooterComponent={renderFooter}
         />
       )}
 

@@ -12,6 +12,7 @@ import {
   Animated,
 } from 'react-native';
 import {useAuthStore} from '../../stores/authStore';
+import { validateUsername, validateEmail, validatePassword } from '../../utils/validation';
 
 // Componente animado elástico nativo para efectos en cascada cinemática
 function FadeInUpCard({ children, delay = 0, duration = 400 }) {
@@ -48,25 +49,50 @@ function RegisterScreen({navigation}) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const {isLoading} = useAuthStore();
+  const [errors, setErrors] = useState({});
+  const {register, isLoading} = useAuthStore();
 
   const handleRegister = async () => {
-    if (!username || !email || !password || !confirmPassword) {
-      Alert.alert('Error', 'Por favor completa todos los campos');
-      return;
-    }
+    const trimmedUsername = username.trim();
+    const trimmedEmail = email.trim();
 
+    // Validate fields
+    const usernameError = validateUsername(trimmedUsername);
+    const emailError = validateEmail(trimmedEmail);
+    const passwordError = validatePassword(password);
+    
+    let confirmPasswordError = null;
     if (password !== confirmPassword) {
-      Alert.alert('Error', 'Las contraseñas no coinciden');
-      return;
+      confirmPasswordError = 'Las contraseñas no coinciden';
+    } else if (!confirmPassword) {
+      confirmPasswordError = 'Por favor confirma tu contraseña';
     }
 
-    try {
-      // TODO: Implement register API call
+    if (usernameError || emailError || passwordError || confirmPasswordError) {
+      setErrors({
+        username: usernameError,
+        email: emailError,
+        password: passwordError,
+        confirmPassword: confirmPasswordError,
+      });
+      return;
+    }
+    
+    setErrors({});
+
+    const success = await register(trimmedUsername, trimmedEmail, password);
+    if (success) {
       Alert.alert('Éxito', 'Cuenta creada exitosamente');
       navigation.navigate('Login');
-    } catch (error) {
-      Alert.alert('Error', 'No se pudo crear la cuenta');
+    } else {
+      const freshError = useAuthStore.getState().error;
+      let friendlyMessage = 'No se pudo crear la cuenta. Inténtalo de nuevo.';
+      if (freshError === 'Email already exists') {
+        friendlyMessage = 'El correo electrónico ya está registrado.';
+      } else if (freshError) {
+        friendlyMessage = freshError;
+      }
+      Alert.alert('Error de Registro', friendlyMessage);
     }
   };
 
@@ -87,47 +113,63 @@ function RegisterScreen({navigation}) {
         {/* Inputs Animados */}
         <FadeInUpCard delay={160} duration={350}>
           <TextInput
-            style={styles.input}
+            style={[styles.input, errors.username && styles.inputError]}
             placeholder="Usuario"
             placeholderTextColor="#7a7a7a"
             value={username}
-            onChangeText={setUsername}
+            onChangeText={(text) => {
+              setUsername(text);
+              if (errors.username) setErrors(prev => ({...prev, username: null}));
+            }}
             autoCapitalize="none"
           />
+          {errors.username && <Text style={styles.errorText}>{errors.username}</Text>}
         </FadeInUpCard>
 
         <FadeInUpCard delay={240} duration={350}>
           <TextInput
-            style={styles.input}
+            style={[styles.input, errors.email && styles.inputError]}
             placeholder="Email"
             placeholderTextColor="#7a7a7a"
             value={email}
-            onChangeText={setEmail}
+            onChangeText={(text) => {
+              setEmail(text);
+              if (errors.email) setErrors(prev => ({...prev, email: null}));
+            }}
             autoCapitalize="none"
             keyboardType="email-address"
           />
+          {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
         </FadeInUpCard>
 
         <FadeInUpCard delay={320} duration={350}>
           <TextInput
-            style={styles.input}
+            style={[styles.input, errors.password && styles.inputError]}
             placeholder="Contraseña"
             placeholderTextColor="#7a7a7a"
             value={password}
-            onChangeText={setPassword}
+            onChangeText={(text) => {
+              setPassword(text);
+              if (errors.password) setErrors(prev => ({...prev, password: null}));
+            }}
             secureTextEntry
           />
+          {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
         </FadeInUpCard>
 
         <FadeInUpCard delay={400} duration={350}>
           <TextInput
-            style={styles.input}
+            style={[styles.input, errors.confirmPassword && styles.inputError]}
             placeholder="Confirmar Contraseña"
             placeholderTextColor="#7a7a7a"
             value={confirmPassword}
-            onChangeText={setConfirmPassword}
+            onChangeText={(text) => {
+              setConfirmPassword(text);
+              if (errors.confirmPassword) setErrors(prev => ({...prev, confirmPassword: null}));
+            }}
             secureTextEntry
           />
+          {errors.confirmPassword && <Text style={styles.errorText}>{errors.confirmPassword}</Text>}
         </FadeInUpCard>
 
         {/* Botón de Creación Animado */}
@@ -180,9 +222,18 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 15,
-    marginBottom: 15,
+    marginBottom: 10,
     fontSize: 16,
     color: '#e5e2e1',
+  },
+  inputError: {
+    borderColor: '#EF4444',
+  },
+  errorText: {
+    color: '#EF4444',
+    fontSize: 12,
+    marginBottom: 10,
+    marginLeft: 5,
   },
   registerButton: {
     height: 52,

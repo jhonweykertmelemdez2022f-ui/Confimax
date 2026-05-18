@@ -9,6 +9,7 @@ services:
       - "${HTTP_PORT:-3000}:3000"
     environment:
       - NODE_ENV=${NODE_ENV:-production}
+      - API_GATEWAY_URL=http://api-gateway:8080
     networks:
       - confimax-network
     restart: unless-stopped

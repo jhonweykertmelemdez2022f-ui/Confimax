@@ -193,9 +193,29 @@ function ProfileScreen({navigation}) {
         {/* Notificaciones Push */}
         {user?.role !== 'customer' && (
           <FadeInUpCard delay={320} duration={350}>
-            <TouchableOpacity style={[dynamicStyles.menuItem, { borderBottomWidth: 0 }]} onPress={() => setPushModalVisible(true)}>
+            <TouchableOpacity 
+              style={[
+                dynamicStyles.menuItem, 
+                user?.role !== 'admin' && { borderBottomWidth: 0 }
+              ]} 
+              onPress={() => setPushModalVisible(true)}
+            >
               <Icon name="notifications" size={24} color={colors.secondary} />
               <Text style={dynamicStyles.menuLabel}>Notificaciones Push</Text>
+              <Icon name="chevron-right" size={24} color={colors.secondary} />
+            </TouchableOpacity>
+          </FadeInUpCard>
+        )}
+
+        {/* Gestionar Usuarios (Solo Admin) */}
+        {user?.role === 'admin' && (
+          <FadeInUpCard delay={400} duration={350}>
+            <TouchableOpacity 
+              style={[dynamicStyles.menuItem, { borderBottomWidth: 0 }]} 
+              onPress={() => navigation.navigate('Users')}
+            >
+              <Icon name="people" size={24} color={colors.dataBlue} />
+              <Text style={dynamicStyles.menuLabel}>Gestionar Usuarios (CRUD)</Text>
               <Icon name="chevron-right" size={24} color={colors.secondary} />
             </TouchableOpacity>
           </FadeInUpCard>

@@ -67,6 +67,33 @@ const authController = {
       next(error);
     }
   },
+
+  async getUsers(req, res, next) {
+    try {
+      const users = await AuthService.listUsers();
+      res.json(users);
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async updateUser(req, res, next) {
+    try {
+      const result = await AuthService.updateUser(req.params.id, req.body);
+      res.json(result);
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async deleteUser(req, res, next) {
+    try {
+      const result = await AuthService.deleteUser(req.params.id);
+      res.json(result);
+    } catch (error) {
+      next(error);
+    }
+  },
 };
 
 module.exports = authController;

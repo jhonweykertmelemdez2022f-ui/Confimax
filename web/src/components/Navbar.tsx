@@ -56,7 +56,10 @@ function UserMenu() {
                 <div className="font-semibold text-slate-900 dark:text-white">{user.name}</div>
                 <div className="text-xs text-slate-500 dark:text-secondary">{user.email}</div>
               </div>
-              <Link href="/ajustes" className={menuItemClass}>Ajustes</Link>
+              {user && (user.role === "admin" || user.role === "vendedor") && (
+                <Link href="/dashboard" className={menuItemClass} onClick={() => setOpen(false)}>Dashboard</Link>
+              )}
+              <Link href="/ajustes" className={menuItemClass} onClick={() => setOpen(false)}>Ajustes</Link>
               <button
                 className="block w-full border-l-2 border-transparent px-4 py-3 text-left font-data-label text-data-label uppercase text-red-600 transition-colors hover:border-error hover:bg-error hover:text-white focus-visible:border-error focus-visible:bg-error focus-visible:text-white focus-visible:outline-none dark:text-error"
                 onClick={() => { logout(); setOpen(false); }}
@@ -190,6 +193,7 @@ export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
   const { setIsOpen, totalItems } = useCart();
+  const { user } = useAuth();
   const pathname = usePathname();
   const navRef = useRef(null);
 
@@ -198,6 +202,10 @@ export default function Navbar() {
     { name: "Catálogo", href: "/catalogo" },
     { name: "Nosotros", href: "/nosotros" },
   ];
+
+  if (user && (user.role === "admin" || user.role === "vendedor")) {
+    navLinks.push({ name: "Dashboard", href: "/dashboard" });
+  }
 
   const isActive = (href: string) => href === "/" ? pathname === "/" : pathname.startsWith(href);
   const navClass = (href: string) => {

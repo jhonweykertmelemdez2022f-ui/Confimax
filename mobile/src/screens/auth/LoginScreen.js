@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import { useAuthStore } from '../../stores/authStore';
 import api from '../../services/api';
+import { validateUsername, validatePassword } from '../../utils/validation';
 import * as SecureStore from 'expo-secure-store';
 import * as LocalAuthentication from 'expo-local-authentication';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -51,6 +52,7 @@ function FadeInUpCard({ children, delay = 0, duration = 400 }) {
 function LoginScreen({ navigation }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [errors, setErrors] = useState({});
   const { login, isLoading, error } = useAuthStore();
   const [connectionStatus, setConnectionStatus] = useState('checking'); // 'checking', 'connected', 'disconnected'
   const [detailedError, setDetailedError] = useState('');
@@ -95,6 +97,9 @@ function LoginScreen({ navigation }) {
         if (savedUsername) {
           setUsername(savedUsername);
         }
+      } else {
+        setHasSavedCredentials(false);
+        setUsername('');
       }
     } catch (err) {
       console.log('Error checking biometrics:', err);
@@ -130,6 +135,10 @@ function LoginScreen({ navigation }) {
             let friendlyMessage = 'No se pudo conectar con el servidor.';
             if (freshError === 'Invalid credentials' || freshError?.toLowerCase().includes('credential')) {
               friendlyMessage = 'Credenciales guardadas inválidas o expiradas.';
+              // Si las credenciales guardadas son inválidas, las eliminamos para no seguir mostrando el botón
+              await SecureStore.deleteItemAsync('confimax_credentials');
+              setHasSavedCredentials(false);
+              setUsername('');
             } else if (freshError) {
               friendlyMessage = freshError;
             }
@@ -144,12 +153,23 @@ function LoginScreen({ navigation }) {
   };
 
   const handleLogin = async () => {
-    if (!username || !password) {
-      Alert.alert('Datos Incompletos', 'Por favor completa todos los campos');
+    const trimmedUsername = username.trim();
+    
+    // Validate fields
+    const usernameError = validateUsername(trimmedUsername);
+    const passwordError = validatePassword(password);
+    
+    if (usernameError || passwordError) {
+      setErrors({
+        username: usernameError,
+        password: passwordError,
+      });
       return;
     }
+    
+    setErrors({});
 
-    const success = await login(username, password);
+    const success = await login(trimmedUsername, password);
     if (success) {
       navigation.replace('Main');
     } else {
@@ -218,24 +238,32 @@ function LoginScreen({ navigation }) {
         {/* Inputs Animados */}
         <FadeInUpCard delay={200} duration={400}>
           <TextInput
-            style={styles.input}
+            style={[styles.input, errors.username && styles.inputError]}
             placeholder="Usuario"
             placeholderTextColor="#7a7a7a"
             value={username}
-            onChangeText={setUsername}
+            onChangeText={(text) => {
+              setUsername(text);
+              if (errors.username) setErrors(prev => ({...prev, username: null}));
+            }}
             autoCapitalize="none"
           />
+          {errors.username && <Text style={styles.errorText}>{errors.username}</Text>}
         </FadeInUpCard>
 
         <FadeInUpCard delay={300} duration={400}>
           <TextInput
-            style={styles.input}
+            style={[styles.input, errors.password && styles.inputError]}
             placeholder="Contraseña"
             placeholderTextColor="#7a7a7a"
             value={password}
-            onChangeText={setPassword}
+            onChangeText={(text) => {
+              setPassword(text);
+              if (errors.password) setErrors(prev => ({...prev, password: null}));
+            }}
             secureTextEntry
           />
+          {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
         </FadeInUpCard>
 
         {/* Botonera de Acción Animada */}
@@ -326,9 +354,18 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 15,
-    marginBottom: 15,
+    marginBottom: 10,
     fontSize: 16,
     color: '#e5e2e1',
+  },
+  inputError: {
+    borderColor: '#EF4444',
+  },
+  errorText: {
+    color: '#EF4444',
+    fontSize: 12,
+    marginBottom: 10,
+    marginLeft: 5,
   },
   registerText: {
     textAlign: 'center',

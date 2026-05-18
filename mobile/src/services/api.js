@@ -10,9 +10,12 @@ const API_BASE_URL = `http://${LOCAL_IP}:8080/api`;
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 2000,
+  timeout: 15000, // Aumentado a 15s para evitar timeouts agresivos en Docker/WiFi
   headers: {
     'Content-Type': 'application/json',
+    'Cache-Control': 'no-cache, no-store, must-revalidate',
+    'Pragma': 'no-cache',
+    'Expires': '0',
   },
 });
 
@@ -50,6 +53,10 @@ export const authAPI = {
   refreshToken: (refreshToken) => api.post('/auth/refresh', { refreshToken }),
   logout: (refreshToken) => api.post('/auth/logout', { refreshToken }),
   getCurrentUser: () => api.get('/auth/me'),
+  getUsers: () => api.get('/auth/users'),
+  createUser: (data) => api.post('/auth/users', data),
+  updateUser: (id, data) => api.put(`/auth/users/${id}`, data),
+  deleteUser: (id) => api.delete(`/auth/users/${id}`),
 };
 
 export const inventoryAPI = {

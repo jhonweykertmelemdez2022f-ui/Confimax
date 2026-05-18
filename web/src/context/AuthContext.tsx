@@ -13,7 +13,7 @@ interface User {
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (usernameOrEmail: string, password: string) => Promise<User>;
   register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => void;
   recoverPassword: (email: string) => Promise<void>;
@@ -37,14 +37,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(false);
   }, []);
 
-  const login = async (email: string, password: string) => {
+  const login = async (usernameOrEmail: string, password: string) => {
     setIsLoading(true);
     try {
-      const response = await api.login(email, password) as any;
+      const response = await api.login(usernameOrEmail, password) as any;
       
-      const userData = response.user || response.data;
+      const token = response.token || response.accessToken;
+      if (token) {
+        api.setToken(token);
+        localStorage.setItem("confimax_token", token);
+      }
+
+      const rawUser = response.user || response.data;
+      const roleMapping: Record<string, "admin" | "cliente" | "vendedor"> = {
+        admin: "admin",
+        vendor: "vendedor",
+        vendedor: "vendedor",
+        customer: "cliente",
+        cliente: "cliente",
+      };
+      
+      const userData: User = {
+        id: rawUser.id,
+        name: rawUser.name || rawUser.username || "Usuario",
+        email: rawUser.email,
+        role: roleMapping[rawUser.role] || "cliente"
+      };
+
       setUser(userData);
       localStorage.setItem("confimax_user", JSON.stringify(userData));
+      return userData;
     } catch (error) {
       throw error;
     } finally {
@@ -57,7 +79,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const response = await api.register(name, email, password) as any;
       
-      const userData = response.user || response.data;
+      const token = response.token || response.accessToken;
+      if (token) {
+        api.setToken(token);
+        localStorage.setItem("confimax_token", token);
+      }
+
+      const rawUser = response.user || response.data;
+      const roleMapping: Record<string, "admin" | "cliente" | "vendedor"> = {
+        admin: "admin",
+        vendor: "vendedor",
+        vendedor: "vendedor",
+        customer: "cliente",
+        cliente: "cliente",
+      };
+      
+      const userData: User = {
+        id: rawUser.id,
+        name: rawUser.name || rawUser.username || name,
+        email: rawUser.email,
+        role: roleMapping[rawUser.role] || "cliente"
+      };
+
       setUser(userData);
       localStorage.setItem("confimax_user", JSON.stringify(userData));
     } catch (error) {

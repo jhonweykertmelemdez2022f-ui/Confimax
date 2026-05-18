@@ -12,7 +12,7 @@ import ParticleBackground from "@/components/ParticleBackground";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Confimax | Supermercado del Barrio",
+  title: "Confimax",
   description: "Alimentos, frescos, despensa y limpieza con buenos precios y atención cercana.",
 };
 

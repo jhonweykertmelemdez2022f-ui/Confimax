@@ -71,6 +71,20 @@ const Profile = {
       [id]
     );
   },
+
+  async update(id, updateData) {
+    const { username, email, role } = updateData;
+    const result = await pool.query(
+      `UPDATE public.users 
+       SET username = COALESCE($1, username), 
+           email = COALESCE($2, email), 
+           role = COALESCE($3, role)
+       WHERE id = $4 AND active = true
+       RETURNING id, email, username as name, role, created_at`,
+      [username, email, role, id]
+    );
+    return result.rows[0];
+  },
 };
 
 module.exports = {
