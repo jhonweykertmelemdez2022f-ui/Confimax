@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useRef} from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -12,7 +12,7 @@ import {
   TouchableOpacity,
   Animated,
 } from 'react-native';
-import {useAuthStore} from '../../stores/authStore';
+import { useAuthStore } from '../../stores/authStore';
 import api from '../../services/api';
 import * as SecureStore from 'expo-secure-store';
 import * as LocalAuthentication from 'expo-local-authentication';
@@ -48,13 +48,13 @@ function FadeInUpCard({ children, delay = 0, duration = 400 }) {
   );
 }
 
-function LoginScreen({navigation}) {
+function LoginScreen({ navigation }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const {login, isLoading, error} = useAuthStore();
+  const { login, isLoading, error } = useAuthStore();
   const [connectionStatus, setConnectionStatus] = useState('checking'); // 'checking', 'connected', 'disconnected'
   const [detailedError, setDetailedError] = useState('');
-  
+
   // Estados para Biometría
   const [isBiometricSupported, setIsBiometricSupported] = useState(false);
   const [hasSavedCredentials, setHasSavedCredentials] = useState(false);
@@ -120,13 +120,20 @@ function LoginScreen({navigation}) {
         const savedCreds = await SecureStore.getItemAsync('confimax_credentials');
         if (savedCreds) {
           const { username: savedUser, password: savedPassword } = JSON.parse(savedCreds);
-          
+
           // Login instantáneo automático contra el backend
           const success = await login(savedUser, savedPassword);
           if (success) {
             navigation.replace('Main');
           } else {
-            Alert.alert('Autenticación Fallida', 'No se pudo conectar con el servidor.');
+            const freshError = useAuthStore.getState().error;
+            let friendlyMessage = 'No se pudo conectar con el servidor.';
+            if (freshError === 'Invalid credentials' || freshError?.toLowerCase().includes('credential')) {
+              friendlyMessage = 'Credenciales guardadas inválidas o expiradas.';
+            } else if (freshError) {
+              friendlyMessage = freshError;
+            }
+            Alert.alert('Autenticación Fallida', friendlyMessage);
           }
         }
       }
@@ -138,7 +145,7 @@ function LoginScreen({navigation}) {
 
   const handleLogin = async () => {
     if (!username || !password) {
-      Alert.alert('Error', 'Por favor completa todos los campos');
+      Alert.alert('Datos Incompletos', 'Por favor completa todos los campos');
       return;
     }
 
@@ -146,7 +153,25 @@ function LoginScreen({navigation}) {
     if (success) {
       navigation.replace('Main');
     } else {
-      Alert.alert('Error', error || 'Login falló');
+      // Obtener el error más fresco del store para evitar el bug de clausura de React
+      const freshError = useAuthStore.getState().error;
+
+      // Mapeador amigable de errores de red y credenciales para el usuario de la 
+      let friendlyMessage = 'Hubo un problema al iniciar sesión. Inténtalo de nuevo.';
+
+      if (freshError === 'Invalid credentials' || freshError?.toLowerCase().includes('credential')) {
+        friendlyMessage = 'El usuario o la contraseña ingresados son incorrectos. Por favor, verifícalos.';
+      } else if (
+        freshError?.toLowerCase().includes('network') ||
+        freshError?.toLowerCase().includes('timeout') ||
+        freshError?.toLowerCase().includes('conn')
+      ) {
+        friendlyMessage = 'No hay conexión con el servidor de Confimax. Asegúrate de estar en la misma red WiFi o VPN (IP 192.168.101.4).';
+      } else if (freshError) {
+        friendlyMessage = freshError;
+      }
+
+      Alert.alert('Inicio de Sesión Fallido', friendlyMessage);
     }
   };
 
@@ -154,7 +179,7 @@ function LoginScreen({navigation}) {
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={styles.container}>
-      
+
       {/* Barra de Estado de Conexión Flotante y Estética */}
       <View style={[
         styles.connectionBanner,
@@ -185,7 +210,7 @@ function LoginScreen({navigation}) {
         <FadeInUpCard delay={0} duration={400}>
           <Text style={styles.title}>Confimax</Text>
         </FadeInUpCard>
-        
+
         <FadeInUpCard delay={100} duration={400}>
           <Text style={styles.subtitle}>Iniciar Sesión</Text>
         </FadeInUpCard>
@@ -243,8 +268,8 @@ function LoginScreen({navigation}) {
         {/* Huella Rápida Animada */}
         {isBiometricSupported && hasSavedCredentials ? (
           <FadeInUpCard delay={500} duration={400}>
-            <TouchableOpacity 
-              style={styles.biometricQuickLink} 
+            <TouchableOpacity
+              style={styles.biometricQuickLink}
               onPress={handleBiometricAuth}
             >
               <Text style={styles.biometricQuickLinkText}>

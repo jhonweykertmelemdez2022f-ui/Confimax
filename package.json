@@ -35,15 +35,16 @@
   "license": "MIT",
   "devDependencies": {
     "jest": "^29.7.0",
-    "supertest": "^6.3.3",
-    "jest-junit": "^16.0.0"
+    "jest-junit": "^16.0.0",
+    "supertest": "^6.3.3"
   },
   "dependencies": {
+    "axios": "^1.6.2",
+    "mongodb": "^6.3.0",
+    "mongoose": "^9.6.2",
     "pg": "^8.11.3",
     "postgres": "^3.4.4",
-    "redis": "^4.6.12",
-    "mongodb": "^6.3.0",
-    "axios": "^1.6.2"
+    "redis": "^4.6.12"
   },
   "engines": {
     "node": ">=18.0.0",

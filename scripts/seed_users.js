@@ -110,6 +110,12 @@ async function runWithHost(hostToUse, snName) {
       email: 'vendedor@confimax.com',
       password: DEFAULT_PASSWORD_HASH,
       role: 'vendor'
+    },
+    {
+      username: 'cliente',
+      email: 'cliente@confimax.com',
+      password: DEFAULT_PASSWORD_HASH,
+      role: 'customer'
     }
   ];
 
@@ -117,13 +123,14 @@ async function runWithHost(hostToUse, snName) {
   if (args.length >= 2) {
     const customUser = args[0].toLowerCase();
     const customPass = args[1];
+    const customRole = args[2] || 'customer';
     usersToSeed.unshift({
       username: customUser,
       email: `${customUser}@confimax.com`,
       password: customPass,
-      role: 'vendor'
+      role: customRole
     });
-    console.log(`👤 Añadido usuario personalizado para crear: ${customUser}`);
+    console.log(`👤 Añadido usuario personalizado para crear: ${customUser} con rol: ${customRole}`);
   }
 
   try {
