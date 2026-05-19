@@ -235,6 +235,34 @@ class ApiClient {
     return this.request(`/notifications/${id}/read`, { method: 'POST' });
   }
 
+  // User Management Service (Admin Only)
+  async getUsers() {
+    return this.request('/auth/users', { method: 'GET' });
+  }
+
+  async createUser(data: { username: string; email: string; password?: string; role: string }) {
+    return this.request('/auth/users', {
+      method: 'POST',
+      body: JSON.stringify({
+        username: data.username,
+        email: data.email,
+        password: data.password || 'Confimax123*',
+        role: data.role
+      }),
+    });
+  }
+
+  async updateUser(id: string, data: { username?: string; email?: string; role?: string }) {
+    return this.request(`/auth/users/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteUser(id: string) {
+    return this.request(`/auth/users/${id}`, { method: 'DELETE' });
+  }
+
   // Health Check
   async healthCheck() {
     return this.request('/health');

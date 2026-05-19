@@ -53,7 +53,7 @@ export default function DashboardPage() {
   const [loadingData, setLoadingData] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
-  const [activeTab, setActiveTab] = useState<"overview" | "inventory" | "sales" | "customers">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "inventory" | "sales" | "customers" | "users">("overview");
 
   // Formulario nuevo producto
   const [newProduct, setNewProduct] = useState({
@@ -73,6 +73,21 @@ export default function DashboardPage() {
     email: "",
     phone: "",
     address: ""
+  });
+
+  // Estado para usuarios (Admin only)
+  interface SystemUser {
+    id: string;
+    username: string;
+    email: string;
+    role: string;
+  }
+  const [systemUsers, setSystemUsers] = useState<SystemUser[]>([]);
+  const [newUser, setNewUser] = useState({
+    username: "",
+    email: "",
+    password: "",
+    role: "vendor"
   });
 
   // Referencias para animaciones
@@ -139,6 +154,18 @@ export default function DashboardPage() {
       setProducts(mappedProducts);
       setSales(mappedSales);
       setCustomers(mappedCustomers);
+
+      // Cargar usuarios del sistema si es admin
+      let usersList: any[] = [];
+      if (user.role === 'admin') {
+        try {
+          const usersRes = await api.getUsers() as any;
+          usersList = Array.isArray(usersRes?.data || usersRes) ? (usersRes?.data || usersRes) : [];
+        } catch (e) {
+          console.error("Error al cargar usuarios de auth-service:", e);
+        }
+      }
+      setSystemUsers(usersList);
 
       // Muro de actividades recientes dinámico
       const activityFeed: any[] = [];
@@ -297,6 +324,49 @@ export default function DashboardPage() {
     }
   };
 
+  // 6. Crear usuario handler (Admin only)
+  const handleCreateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMsg("");
+    setSuccessMsg("");
+
+    if (!newUser.username || !newUser.email || !newUser.role) {
+      setErrorMsg("Por favor completa todos los campos requeridos del usuario.");
+      return;
+    }
+
+    try {
+      await api.createUser(newUser);
+      setSuccessMsg(`¡Usuario "${newUser.username}" registrado exitosamente en auth-service!`);
+      setNewUser({
+        username: "",
+        email: "",
+        password: "",
+        role: "vendor"
+      });
+      await loadDashboardData();
+    } catch (err: any) {
+      console.error("Error al crear usuario:", err);
+      setErrorMsg(err.message || "Error al conectar con el microservicio de autenticación.");
+    }
+  };
+
+  // 7. Eliminar usuario handler (Admin only)
+  const handleDeleteUser = async (id: string, name: string) => {
+    if (!confirm(`¿Estás seguro de que deseas eliminar al usuario "${name}"?`)) return;
+    setErrorMsg("");
+    setSuccessMsg("");
+
+    try {
+      await api.deleteUser(id);
+      setSuccessMsg(`¡Usuario "${name}" eliminado exitosamente!`);
+      await loadDashboardData();
+    } catch (err: any) {
+      console.error("Error al eliminar usuario:", err);
+      setErrorMsg(err.message || "Error al conectar con el microservicio de autenticación.");
+    }
+  };
+
   // Pantalla de carga técnica ultra premium
   if (authLoading || (user && user.role !== "cliente" && loadingData)) {
     return (
@@ -374,7 +444,8 @@ export default function DashboardPage() {
             { id: "overview", name: "Resumen General", icon: Layers },
             { id: "inventory", name: "Gestión Stock", icon: Package },
             { id: "sales", name: "Comprobantes Ventas", icon: DollarSign },
-            { id: "customers", name: "Base Clientes", icon: Users }
+            { id: "customers", name: "Base Clientes", icon: Users },
+            ...(user.role === 'admin' ? [{ id: "users", name: "Gestión Usuarios", icon: ShieldCheck }] : [])
           ].map((tab) => {
             const Icon = tab.icon;
             const active = activeTab === tab.id;
@@ -838,6 +909,149 @@ export default function DashboardPage() {
                   className="w-full bg-slate-900 dark:bg-white text-white dark:text-background border border-slate-900 dark:border-white py-3 hover:bg-slate-800 dark:hover:bg-slate-100 font-data-label text-data-label uppercase transition-all flex items-center justify-center gap-2"
                 >
                   <Plus className="w-4 h-4" /> Guardar Cliente
+                </button>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* 5. USERS (ADMIN ONLY) */}
+        {activeTab === "users" && user.role === 'admin' && (
+          <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-8">
+            
+            {/* Tabla de Usuarios */}
+            <div className="bg-white dark:bg-surface border border-slate-900 dark:border-white p-6 overflow-hidden">
+              <h2 className="font-data-label text-sm uppercase mb-6 tracking-wide flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-data-blue" /> Cuentas de Acceso en auth-service
+              </h2>
+              
+              <div className="overflow-x-auto w-full max-w-full">
+                <table className="w-full border-collapse text-left text-sm">
+                  <thead>
+                    <tr className="border-b border-slate-900 dark:border-white font-data-label text-[11px] text-slate-500 uppercase tracking-widest">
+                      <th className="py-3 px-4">Usuario</th>
+                      <th className="py-3 px-4">Email</th>
+                      <th className="py-3 px-4">Rol de Acceso</th>
+                      <th className="py-3 px-4 text-right">Acción</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200 dark:divide-white/10 font-body-sm">
+                    {systemUsers.map((u) => (
+                      <tr key={u.id} className="hover:bg-slate-50 dark:hover:bg-surface-bright/50">
+                        <td className="py-3.5 px-4 font-semibold text-slate-900 dark:text-white uppercase">{u.username}</td>
+                        <td className="py-3.5 px-4 font-mono text-xs">{u.email}</td>
+                        <td className="py-3.5 px-4">
+                          <span className={`px-2 py-0.5 text-[10px] font-bold uppercase rounded-sm border ${
+                            u.role === 'admin' 
+                              ? 'bg-accent-pink/15 text-accent-pink border-accent-pink/30' 
+                              : u.role === 'vendor'
+                              ? 'bg-data-blue/15 text-data-blue border-data-blue/30'
+                              : 'bg-slate-500/15 text-slate-500 border-slate-500/30'
+                          }`}>
+                            {u.role}
+                          </span>
+                        </td>
+                        <td className="py-3.5 px-4 text-right">
+                          {u.username.toLowerCase() !== user.name.toLowerCase() ? (
+                            <button
+                              onClick={() => handleDeleteUser(u.id, u.username)}
+                              className="text-error hover:text-white hover:bg-error uppercase font-data-label text-[10px] border border-error px-2.5 py-1 rounded-sm transition-colors"
+                            >
+                              Eliminar
+                            </button>
+                          ) : (
+                            <span className="font-data-label text-[10px] text-slate-500 uppercase">Actual</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                    {systemUsers.length === 0 && (
+                      <tr>
+                        <td colSpan={4} className="py-10 text-center text-slate-500">
+                          No hay usuarios registrados en el microservicio.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Crear Usuario Panel */}
+            <div className="bg-white dark:bg-surface border border-slate-900 dark:border-white p-6 h-fit">
+              <h2 className="font-data-label text-sm uppercase mb-6 tracking-wide flex items-center gap-2 border-b border-slate-900/10 dark:border-white/10 pb-3">
+                <Plus className="w-4 h-4 text-accent-pink" /> Registrar Cuenta
+              </h2>
+              
+              <form onSubmit={handleCreateUser} className="space-y-4">
+                <div>
+                  <label htmlFor="usr-name" className="font-data-label text-xs uppercase text-slate-500 block mb-1">
+                    Username *
+                  </label>
+                  <input
+                    type="text"
+                    id="usr-name"
+                    value={newUser.username}
+                    onChange={(e) => setNewUser({ ...newUser, username: e.target.value })}
+                    placeholder="jhon_weykert"
+                    className="w-full bg-slate-50 dark:bg-surface-dim border border-slate-900 dark:border-white py-2 px-3 focus:outline-none focus:border-data-blue text-sm font-body-sm"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="usr-email" className="font-data-label text-xs uppercase text-slate-500 block mb-1">
+                    Email *
+                  </label>
+                  <input
+                    type="email"
+                    id="usr-email"
+                    value={newUser.email}
+                    onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+                    placeholder="jhon.melendez@example.com"
+                    className="w-full bg-slate-50 dark:bg-surface-dim border border-slate-900 dark:border-white py-2 px-3 focus:outline-none focus:border-data-blue text-sm font-mono"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="usr-pass" className="font-data-label text-xs uppercase text-slate-500 block mb-1">
+                    Contraseña *
+                  </label>
+                  <input
+                    type="password"
+                    id="usr-pass"
+                    value={newUser.password}
+                    onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
+                    placeholder="Confimax123*"
+                    className="w-full bg-slate-50 dark:bg-surface-dim border border-slate-900 dark:border-white py-2 px-3 focus:outline-none focus:border-data-blue text-sm font-mono"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="usr-role" className="font-data-label text-xs uppercase text-slate-500 block mb-1">
+                    Rol de Acceso *
+                  </label>
+                  <select
+                    id="usr-role"
+                    value={newUser.role}
+                    onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
+                    className="w-full bg-slate-50 dark:bg-surface-dim border border-slate-900 dark:border-white py-2 px-3 focus:outline-none focus:border-data-blue text-sm font-data-label uppercase"
+                  >
+                    <option value="vendor">Vendedor (Vendor)</option>
+                    <option value="admin">Administrador (Admin)</option>
+                    <option value="manager">Gerente (Manager)</option>
+                    <option value="customer">Cliente (Customer)</option>
+                  </select>
+                </div>
+
+                <button
+                  type="submit"
+                  id="btn-submit-new-user"
+                  className="w-full bg-slate-900 dark:bg-white text-white dark:text-background border border-slate-900 dark:border-white py-3 hover:bg-slate-800 dark:hover:bg-slate-100 font-data-label text-data-label uppercase transition-all flex items-center justify-center gap-2"
+                >
+                  <Plus className="w-4 h-4" /> Crear Usuario
                 </button>
               </form>
             </div>

@@ -7,7 +7,7 @@ connectRedis();
 
 const Profile = {
   async findByEmail(email) {
-    const sql = 'SELECT * FROM public.users WHERE email = $1 AND active = true';
+    const sql = 'SELECT * FROM public.users WHERE LOWER(email) = LOWER($1) AND active = true';
     messageQueue.publish('audit-logs', {
       action: 'PG_QUERY_ATTEMPT_LOGIN',
       details: { query: sql, email },
@@ -18,7 +18,7 @@ const Profile = {
   },
 
   async findByUsername(username) {
-    const sql = 'SELECT * FROM public.users WHERE username = $1 AND active = true';
+    const sql = 'SELECT * FROM public.users WHERE LOWER(username) = LOWER($1) AND active = true';
     messageQueue.publish('audit-logs', {
       action: 'PG_QUERY_ATTEMPT_LOGIN_USERNAME',
       details: { query: sql, username },

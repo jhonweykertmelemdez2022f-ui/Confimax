@@ -67,7 +67,9 @@ const AuthService = {
     }
 
     if (!profile) {
-      throw new Error('Invalid credentials');
+      const error = new Error('Invalid credentials');
+      error.statusCode = 401;
+      throw error;
     }
 
     // Verificar contraseña en texto plano (como está en el seeder local)
@@ -83,7 +85,9 @@ const AuthService = {
     }
 
     if (!passwordMatches) {
-      throw new Error('Invalid credentials');
+      const error = new Error('Invalid credentials');
+      error.statusCode = 401;
+      throw error;
     }
     
     await Profile.updateLastLogin(profile.id);
