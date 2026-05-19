@@ -86,18 +86,19 @@ const Product = {
   async create(productData) {
     const {
       name, sku, description, category_id,
-      price, cost, is_active, expiration_date
+      price, cost, is_active, expiration_date, stock_quantity
     } = productData;
 
     const result = await pool.query(
       `INSERT INTO inventory.products 
-       (name, sku, description, category_id, price, cost, is_active, expiration_date) 
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8) 
+       (name, sku, description, category_id, price, cost, is_active, expiration_date, stock_quantity) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
        RETURNING *`,
       [
         name, sku, description, category_id, price, cost, 
         is_active !== undefined ? is_active : true, 
-        expiration_date || null
+        expiration_date || null,
+        stock_quantity || 0
       ]
     );
     return result.rows[0];

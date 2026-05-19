@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {View, Text, StyleSheet, TextInput, TouchableOpacity, Alert, ActivityIndicator} from 'react-native';
+import {View, Text, StyleSheet, TextInput, TouchableOpacity, Alert, ActivityIndicator, ScrollView} from 'react-native';
 import {inventoryAPI} from '../../services/api';
 import { useTheme } from '../../theme';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -8,13 +8,19 @@ function NewProductScreen({navigation}) {
   const [name, setName] = useState('');
   const [sku, setSku] = useState('');
   const [price, setPrice] = useState('');
+  const [stock, setStock] = useState('0');
+  const [category, setCategory] = useState('despensa');
+  const [description, setDescription] = useState('');
+  const [image, setImage] = useState('');
   const [expirationDate, setExpirationDate] = useState('');
   const {colors} = useTheme();
   const [loading, setLoading] = useState(false);
 
+  const categories = ['despensa', 'frescos', 'lácteos', 'limpieza'];
+
   const handleSave = async () => {
-    if (!name || !sku || !price) {
-      Alert.alert('Faltan Datos', 'Por favor, rellena todos los campos.');
+    if (!name || !sku || !price || !stock) {
+      Alert.alert('Faltan Datos', 'Por favor, rellena todos los campos requeridos (*).');
       return;
     }
 
@@ -24,16 +30,25 @@ function NewProductScreen({navigation}) {
       return;
     }
 
-    setLoading(false);
+    const stockInt = parseInt(stock, 10);
+    if (isNaN(stockInt) || stockInt < 0) {
+      Alert.alert('Valor Inválido', 'El stock inicial debe ser un número entero mayor o igual a cero.');
+      return;
+    }
+
     setLoading(true);
     try {
       await inventoryAPI.createProduct({
         name,
         sku,
         price: priceFloat,
-        expiration_date: expirationDate ? expirationDate : null,
+        stock_quantity: stockInt,
+        category_id: category === 'despensa' ? 'de0a6464-94e8-468b-90f7-5db18863fce9' : '3b9bbcbd-fb12-ae26-d332-b951dc649bd6', // Relación a UUID por defecto
+        description: description.trim(),
+        image_url: image.trim() || undefined,
+        expiration_date: expirationDate.trim() ? expirationDate.trim() : null,
       });
-      Alert.alert('Éxito', 'Producto registrado correctamente en el inventario.', [
+      Alert.alert('Éxito', 'Producto registrado correctamente en el inventario cloud.', [
         { text: 'OK', onPress: () => navigation.goBack() }
       ]);
     } catch (error) {
@@ -47,11 +62,11 @@ function NewProductScreen({navigation}) {
   const dynamicStyles = createStyles(colors);
 
   return (
-    <View style={dynamicStyles.container}>
+    <ScrollView style={dynamicStyles.container} contentContainerStyle={dynamicStyles.contentContainer}>
       <View style={dynamicStyles.form}>
-        <Text style={dynamicStyles.title}>NUEVO PRODUCTO</Text>
+        <Text style={dynamicStyles.title}>REGISTRO DE PRODUCTO</Text>
         
-        <Text style={dynamicStyles.label}>NOMBRE DEL PRODUCTO</Text>
+        <Text style={dynamicStyles.label}>NOMBRE DEL PRODUCTO *</Text>
         <TextInput
           style={dynamicStyles.input}
           placeholder="Ej: Manteca Industrial 24kg"
@@ -60,7 +75,7 @@ function NewProductScreen({navigation}) {
           onChangeText={setName}
         />
 
-        <Text style={dynamicStyles.label}>CÓDIGO DE BARRAS / SKU</Text>
+        <Text style={dynamicStyles.label}>CÓDIGO DE BARRAS / SKU *</Text>
         <TextInput
           style={dynamicStyles.input}
           placeholder="Ej: SKP-098-765"
@@ -70,15 +85,51 @@ function NewProductScreen({navigation}) {
           autoCapitalize="characters"
         />
 
-        <Text style={dynamicStyles.label}>PRECIO DE VENTA ($)</Text>
-        <TextInput
-          style={dynamicStyles.input}
-          placeholder="Ej: 45.50"
-          placeholderTextColor={colors.secondary}
-          value={price}
-          onChangeText={setPrice}
-          keyboardType="numeric"
-        />
+        <View style={dynamicStyles.row}>
+          <View style={dynamicStyles.col}>
+            <Text style={dynamicStyles.label}>PRECIO VENTA ($) *</Text>
+            <TextInput
+              style={dynamicStyles.input}
+              placeholder="Ej: 45.50"
+              placeholderTextColor={colors.secondary}
+              value={price}
+              onChangeText={setPrice}
+              keyboardType="numeric"
+            />
+          </View>
+          <View style={dynamicStyles.col}>
+            <Text style={dynamicStyles.label}>STOCK INICIAL *</Text>
+            <TextInput
+              style={dynamicStyles.input}
+              placeholder="Ej: 100"
+              placeholderTextColor={colors.secondary}
+              value={stock}
+              onChangeText={setStock}
+              keyboardType="numeric"
+            />
+          </View>
+        </View>
+
+        <Text style={dynamicStyles.label}>CATEGORÍA</Text>
+        <View style={dynamicStyles.categoryRow}>
+          {categories.map((cat) => (
+            <TouchableOpacity 
+              key={cat}
+              onPress={() => setCategory(cat)}
+              style={[
+                dynamicStyles.categoryChip,
+                category === cat && dynamicStyles.activeCategoryChip
+              ]}
+            >
+              <Text style={[
+                dynamicStyles.categoryText,
+                category === cat && dynamicStyles.activeCategoryText
+              ]}>
+                {cat}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
 
         <Text style={dynamicStyles.label}>FECHA DE VENCIMIENTO (Opcional - YYYY-MM-DD)</Text>
         <TextInput
@@ -87,6 +138,28 @@ function NewProductScreen({navigation}) {
           placeholderTextColor={colors.secondary}
           value={expirationDate}
           onChangeText={setExpirationDate}
+        />
+
+        <Text style={dynamicStyles.label}>URL DE LA IMAGEN</Text>
+        <TextInput
+          style={dynamicStyles.input}
+          placeholder="Ej: https://example.com/imagen.png"
+          placeholderTextColor={colors.secondary}
+          value={image}
+          onChangeText={setImage}
+          autoCapitalize="none"
+          keyboardType="url"
+        />
+
+        <Text style={dynamicStyles.label}>DESCRIPCIÓN</Text>
+        <TextInput
+          style={[dynamicStyles.input, dynamicStyles.textArea]}
+          placeholder="Escribe una breve descripción del artículo..."
+          placeholderTextColor={colors.secondary}
+          value={description}
+          onChangeText={setDescription}
+          multiline={true}
+          numberOfLines={3}
         />
 
         <TouchableOpacity 
@@ -104,7 +177,7 @@ function NewProductScreen({navigation}) {
           )}
         </TouchableOpacity>
       </View>
-    </View>
+    </ScrollView>
   );
 }
 
@@ -112,8 +185,10 @@ const createStyles = (colors) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.surfaceDim,
+  },
+  contentContainer: {
     padding: 15,
-    justifyContent: 'center',
+    paddingBottom: 40,
   },
   form: {
     backgroundColor: colors.surface,
@@ -153,6 +228,46 @@ const createStyles = (colors) => StyleSheet.create({
     marginBottom: 15,
     fontSize: 16,
     color: colors.primary,
+  },
+  textArea: {
+    height: 80,
+    textAlignVertical: 'top',
+    paddingTop: 12,
+  },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  col: {
+    flex: 1,
+  },
+  categoryRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 15,
+  },
+  categoryChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: colors.borderMuted,
+    backgroundColor: colors.surfaceDim,
+  },
+  activeCategoryChip: {
+    borderColor: colors.dataBlue,
+    backgroundColor: `${colors.dataBlue}15`,
+  },
+  categoryText: {
+    color: colors.secondary,
+    fontWeight: 'bold',
+    fontSize: 12,
+    textTransform: 'uppercase',
+  },
+  activeCategoryText: {
+    color: colors.dataBlue,
   },
   saveButton: {
     flexDirection: 'row',

@@ -5,6 +5,7 @@
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {
     "start": "expo start --port 6767",
+    "start:tailscale": "node start-tailscale.js",
     "android": "expo start --android --port 6767",
     "ios": "expo start --ios --port 6767",
     "web": "expo start --web --port 6767",
