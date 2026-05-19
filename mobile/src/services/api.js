@@ -1,12 +1,18 @@
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 
-// ⚠️ IMPORTANTE: Cambia esta IP por la IP local de tu PC en la red WiFi
-// Para verla en Windows: abre cmd y escribe "ipconfig", busca "Dirección IPv4"
-// Ejemplo: 192.168.1.15
-const LOCAL_IP = '192.168.101.4'; // <-- Cambia esto por tu IP
+// ⚠️ CONFIGURACIÓN DE CONEXIÓN CLOUD VS LOCAL:
+// Cambia USE_PRODUCTION a:
+//   - true: Para conectarte al servidor central de producción en la nube (Supabase + Render)
+//   - false: Para conectarte al backend de desarrollo local ejecutándose en tu PC en Docker
+const USE_PRODUCTION = true; 
 
-const API_BASE_URL = `http://${LOCAL_IP}:8080/api`;
+// Para conexión local: cambia esta IP por la IP local de tu PC en tu red WiFi
+const LOCAL_IP = '192.168.101.4'; 
+
+const API_BASE_URL = USE_PRODUCTION 
+  ? 'https://confimax-api-gateway.onrender.com/api'
+  : `http://${LOCAL_IP}:8080/api`;
 
 const api = axios.create({
   baseURL: API_BASE_URL,
