@@ -1,6 +1,7 @@
 import React, {useState} from 'react';
 import {View, Text, StyleSheet, TextInput, TouchableOpacity, Alert, ActivityIndicator} from 'react-native';
 import {customersAPI} from '../../services/api';
+import { useTheme } from '../../theme';
 import { MaterialIcons } from '@expo/vector-icons';
 
 function NewCustomerScreen({navigation}) {
@@ -8,6 +9,7 @@ function NewCustomerScreen({navigation}) {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [loading, setLoading] = useState(false);
+  const {colors} = useTheme();
 
   const handleSave = async () => {
     if (!name || !email || !phone) {
@@ -31,43 +33,45 @@ function NewCustomerScreen({navigation}) {
     }
   };
 
+  const dynamicStyles = createStyles(colors);
+
   return (
-    <View style={styles.container}>
-      <View style={styles.form}>
-        <Text style={styles.title}>REGISTRO DE CLIENTE</Text>
+    <View style={dynamicStyles.container}>
+      <View style={dynamicStyles.form}>
+        <Text style={dynamicStyles.title}>REGISTRO DE CLIENTE</Text>
         
-        <Text style={styles.label}>NOMBRE COMPLETO</Text>
+        <Text style={dynamicStyles.label}>NOMBRE COMPLETO</Text>
         <TextInput
-          style={styles.input}
+          style={dynamicStyles.input}
           placeholder="Ej: Jhon Weykert Meléndez"
-          placeholderTextColor="#8e9192"
+          placeholderTextColor={colors.secondary}
           value={name}
           onChangeText={setName}
         />
 
-        <Text style={styles.label}>CORREO ELECTRÓNICO</Text>
+        <Text style={dynamicStyles.label}>CORREO ELECTRÓNICO</Text>
         <TextInput
-          style={styles.input}
+          style={dynamicStyles.input}
           placeholder="Ej: jhonweykert@confimax.com"
-          placeholderTextColor="#8e9192"
+          placeholderTextColor={colors.secondary}
           value={email}
           onChangeText={setEmail}
           autoCapitalize="none"
           keyboardType="email-address"
         />
 
-        <Text style={styles.label}>TELÉFONO MÓVIL</Text>
+        <Text style={dynamicStyles.label}>TELÉFONO MÓVIL</Text>
         <TextInput
-          style={styles.input}
+          style={dynamicStyles.input}
           placeholder="Ej: +58 412 1234567"
-          placeholderTextColor="#8e9192"
+          placeholderTextColor={colors.secondary}
           value={phone}
           onChangeText={setPhone}
           keyboardType="phone-pad"
         />
 
         <TouchableOpacity 
-          style={[styles.saveButton, loading && styles.disabledButton]} 
+          style={[dynamicStyles.saveButton, loading && dynamicStyles.disabledButton]} 
           onPress={handleSave}
           disabled={loading}
         >
@@ -76,7 +80,7 @@ function NewCustomerScreen({navigation}) {
           ) : (
             <>
               <MaterialIcons name="person-add" size={20} color="#ffffff" style={{marginRight: 8}} />
-              <Text style={styles.saveButtonText}>REGISTRAR NUEVO CLIENTE</Text>
+              <Text style={dynamicStyles.saveButtonText}>REGISTRAR NUEVO CLIENTE</Text>
             </>
           )}
         </TouchableOpacity>
@@ -85,31 +89,36 @@ function NewCustomerScreen({navigation}) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0A0A0A',
+    backgroundColor: colors.surfaceDim,
     padding: 15,
     justifyContent: 'center',
   },
   form: {
-    backgroundColor: '#141313',
+    backgroundColor: colors.surface,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#1c1b1b',
+    borderColor: colors.borderMuted,
     padding: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: colors.isDark ? 0.3 : 0.05,
+    shadowRadius: 5,
+    elevation: 4,
   },
   title: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#ffffff',
+    color: colors.primary,
     textAlign: 'center',
     marginBottom: 25,
     letterSpacing: 0.5,
   },
   label: {
     fontSize: 11,
-    color: '#8e9192',
+    color: colors.secondary,
     fontWeight: 'bold',
     letterSpacing: 1,
     marginBottom: 8,
@@ -117,31 +126,31 @@ const styles = StyleSheet.create({
   },
   input: {
     height: 50,
-    backgroundColor: '#0A0A0A',
-    borderColor: '#262626',
+    backgroundColor: colors.surfaceDim,
+    borderColor: colors.borderMuted,
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 15,
     marginBottom: 15,
     fontSize: 16,
-    color: '#ffffff',
+    color: colors.primary,
   },
   saveButton: {
     flexDirection: 'row',
-    backgroundColor: '#0066FF',
+    backgroundColor: colors.dataBlue,
     height: 52,
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 15,
-    shadowColor: '#0066FF',
+    shadowColor: colors.dataBlue,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 5,
     elevation: 4,
   },
   disabledButton: {
-    backgroundColor: '#1c1b1b',
+    backgroundColor: colors.borderMuted,
   },
   saveButtonText: {
     color: '#ffffff',
