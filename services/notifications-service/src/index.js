@@ -7,8 +7,10 @@ const notificationRoutes = require('./routes/notification.routes');
 const { errorHandler } = require('./middleware/error.middleware');
 const sharedPath = process.env.SHARED_MODULES_PATH || '../../shared';
 const { connectUpstash } = require(sharedPath + '/upstash-redis');
-const { connectAtlas, checkAtlasHealth } = require(sharedPath + '/mongo-atlas');
+const { connectAtlas, checkAtlasHealth, getMongoose } = require(sharedPath + '/mongo-atlas');
 const logger = require('./services/logger.service');
+
+const mongoose = getMongoose();
 
 const app = express();
 const PORT = process.env.PORT || 3005;

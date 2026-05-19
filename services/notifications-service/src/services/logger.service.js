@@ -1,8 +1,9 @@
 /**
  * Logger Service - Guarda logs de auditoría en MongoDB Atlas
  */
-
-const mongoose = require('mongoose');
+const sharedPath = process.env.SHARED_MODULES_PATH || '../../shared';
+const { getMongoose } = require(sharedPath + '/mongo-atlas');
+const mongoose = getMongoose();
 
 const AuditLogSchema = new mongoose.Schema({
   action: { type: String, required: true },
