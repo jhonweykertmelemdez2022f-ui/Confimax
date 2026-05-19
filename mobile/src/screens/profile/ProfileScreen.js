@@ -211,11 +211,25 @@ function ProfileScreen({navigation}) {
         {user?.role === 'admin' && (
           <FadeInUpCard delay={400} duration={350}>
             <TouchableOpacity 
-              style={[dynamicStyles.menuItem, { borderBottomWidth: 0 }]} 
+              style={dynamicStyles.menuItem} 
               onPress={() => navigation.navigate('Users')}
             >
               <Icon name="people" size={24} color={colors.dataBlue} />
               <Text style={dynamicStyles.menuLabel}>Gestionar Usuarios (CRUD)</Text>
+              <Icon name="chevron-right" size={24} color={colors.secondary} />
+            </TouchableOpacity>
+          </FadeInUpCard>
+        )}
+
+        {/* Auditoría del Sistema (Solo Admin) */}
+        {user?.role === 'admin' && (
+          <FadeInUpCard delay={440} duration={350}>
+            <TouchableOpacity 
+              style={[dynamicStyles.menuItem, { borderBottomWidth: 0 }]} 
+              onPress={() => navigation.navigate('AuditLogs')}
+            >
+              <Icon name="security" size={24} color={colors.accentPink} />
+              <Text style={dynamicStyles.menuLabel}>Auditoría de Logs (MongoDB)</Text>
               <Icon name="chevron-right" size={24} color={colors.secondary} />
             </TouchableOpacity>
           </FadeInUpCard>

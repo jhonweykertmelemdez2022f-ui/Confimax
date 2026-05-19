@@ -115,14 +115,7 @@ function MainTabs() {
       })}>
       
       {/* Pestañas Adaptativas por Rol */}
-      {user?.role === 'admin' ? (
-        <>
-          <Tab.Screen name="Inicio" component={HomeScreen} />
-          <Tab.Screen name="Auditoría" component={AuditLogsScreen} />
-          <Tab.Screen name="Usuarios" component={UsersScreen} />
-          <Tab.Screen name="Perfil" component={ProfileScreen} />
-        </>
-      ) : user?.role === 'customer' ? (
+      {user?.role === 'customer' ? (
         <>
           <Tab.Screen name="Inicio" component={HomeScreen} />
           <Tab.Screen name="Productos" component={ProductsScreen} />
