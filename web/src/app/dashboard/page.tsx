@@ -7,7 +7,8 @@ import { api } from "@/lib/api";
 import { 
   Package, DollarSign, Users, RefreshCw, Plus, 
   Trash2, AlertTriangle, CheckCircle, Search, 
-  Layers, ShoppingBag, Eye, Calendar, ShieldCheck
+  Layers, ShoppingBag, Eye, Calendar, ShieldCheck,
+  Database, Activity
 } from "lucide-react";
 import { gsap } from "gsap";
 
@@ -53,7 +54,7 @@ export default function DashboardPage() {
   const [loadingData, setLoadingData] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
-  const [activeTab, setActiveTab] = useState<"overview" | "inventory" | "sales" | "customers" | "users">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "inventory" | "sales" | "customers" | "users" | "audit">("overview");
 
   // Formulario nuevo producto
   const [newProduct, setNewProduct] = useState({
@@ -84,6 +85,7 @@ export default function DashboardPage() {
     role: string;
   }
   const [systemUsers, setSystemUsers] = useState<SystemUser[]>([]);
+  const [auditLogs, setAuditLogs] = useState<any[]>([]);
   const [newUser, setNewUser] = useState({
     username: "",
     email: "",
@@ -158,6 +160,7 @@ export default function DashboardPage() {
 
       // Cargar usuarios del sistema si es admin
       let usersList: any[] = [];
+      let logsList: any[] = [];
       if (user.role === 'admin') {
         try {
           const usersRes = await api.getUsers() as any;
@@ -165,8 +168,16 @@ export default function DashboardPage() {
         } catch (e) {
           console.error("Error al cargar usuarios de auth-service:", e);
         }
+
+        try {
+          const logsRes = await api.getAuditLogs({ limit: 100 }) as any;
+          logsList = Array.isArray(logsRes?.data || logsRes) ? (logsRes?.data || logsRes) : [];
+        } catch (e) {
+          console.error("Error al cargar logs de auditoría de backend-service:", e);
+        }
       }
       setSystemUsers(usersList);
+      setAuditLogs(logsList);
 
       // Muro de actividades recientes dinámico
       const activityFeed: any[] = [];
@@ -446,7 +457,10 @@ export default function DashboardPage() {
             { id: "inventory", name: "Gestión Stock", icon: Package },
             { id: "sales", name: "Comprobantes Ventas", icon: DollarSign },
             { id: "customers", name: "Base Clientes", icon: Users },
-            ...(user.role === 'admin' ? [{ id: "users", name: "Gestión Usuarios", icon: ShieldCheck }] : [])
+            ...(user.role === 'admin' ? [
+              { id: "users", name: "Gestión Usuarios", icon: ShieldCheck },
+              { id: "audit", name: "Auditoría MongoDB", icon: RefreshCw }
+            ] : [])
           ].map((tab) => {
             const Icon = tab.icon;
             const active = activeTab === tab.id;
@@ -1055,6 +1069,138 @@ export default function DashboardPage() {
                   <Plus className="w-4 h-4" /> Crear Usuario
                 </button>
               </form>
+            </div>
+          </div>
+        )}
+
+        {/* 6. AUDIT (ADMIN ONLY) */}
+        {activeTab === "audit" && user.role === 'admin' && (
+          <div className="space-y-6">
+            
+            {/* Cabecera & Stats de MongoDB */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="bg-white dark:bg-surface border border-slate-900 dark:border-white p-5 flex items-center gap-4">
+                <div className="p-3 bg-data-blue/10 border border-data-blue/20 text-data-blue">
+                  <Database className="w-6 h-6" />
+                </div>
+                <div>
+                  <div className="font-data-label text-[10px] text-slate-500 uppercase tracking-wider">Base de Datos</div>
+                  <div className="font-data-label text-sm uppercase text-slate-900 dark:text-white">MongoDB Atlas</div>
+                </div>
+              </div>
+              
+              <div className="bg-white dark:bg-surface border border-slate-900 dark:border-white p-5 flex items-center gap-4">
+                <div className="p-3 bg-[#00FF66]/10 border border-[#00FF66]/20 text-[#00FF66]">
+                  <CheckCircle className="w-6 h-6" />
+                </div>
+                <div>
+                  <div className="font-data-label text-[10px] text-slate-500 uppercase tracking-wider">Estado Conexión</div>
+                  <div className="font-data-label text-sm uppercase text-[#00FF66] flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-[#00FF66] animate-pulse"></span> Activo
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white dark:bg-surface border border-slate-900 dark:border-white p-5 flex items-center gap-4">
+                <div className="p-3 bg-accent-pink/10 border border-accent-pink/20 text-accent-pink">
+                  <Activity className="w-6 h-6" />
+                </div>
+                <div>
+                  <div className="font-data-label text-[10px] text-slate-500 uppercase tracking-wider">Logs en Vista</div>
+                  <div className="font-data-label text-sm uppercase text-slate-900 dark:text-white">{auditLogs.length} Registros</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Listado de Logs de Auditoría */}
+            <div className="bg-white dark:bg-surface border border-slate-900 dark:border-white p-6">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 border-b border-slate-900/10 dark:border-white/10 pb-4">
+                <h2 className="font-data-label text-sm uppercase tracking-wide flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-accent-pink" /> Registro de Operaciones y Auditoría de Seguridad (MongoDB Logs)
+                </h2>
+                <button
+                  onClick={async () => {
+                    setLoadingData(true);
+                    try {
+                      const logsRes = await api.getAuditLogs({ limit: 100 }) as any;
+                      setAuditLogs(Array.isArray(logsRes?.data || logsRes) ? (logsRes?.data || logsRes) : []);
+                    } catch (e) {
+                      console.error(e);
+                    }
+                    setLoadingData(false);
+                  }}
+                  className="font-data-label text-[10px] uppercase border border-slate-900 dark:border-white px-3 py-1.5 hover:bg-slate-50 dark:hover:bg-surface-bright transition-colors"
+                >
+                  Sincronizar Logs
+                </button>
+              </div>
+
+              <div className="overflow-x-auto w-full">
+                <table className="w-full border-collapse text-left text-sm">
+                  <thead>
+                    <tr className="border-b border-slate-900 dark:border-white font-data-label text-[11px] text-slate-500 uppercase tracking-widest">
+                      <th className="py-3 px-4">Fecha / Hora</th>
+                      <th className="py-3 px-4">Operación</th>
+                      <th className="py-3 px-4">Usuario</th>
+                      <th className="py-3 px-4">Entidad</th>
+                      <th className="py-3 px-4">ID Registro</th>
+                      <th className="py-3 px-4">IP / Endpoint</th>
+                      <th className="py-3 px-4 text-right">Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200 dark:divide-white/10 font-body-sm text-xs">
+                    {auditLogs.map((log, idx) => (
+                      <tr key={log._id || idx} className="hover:bg-slate-50 dark:hover:bg-surface-bright/50">
+                        <td className="py-3 px-4 font-mono text-slate-500 whitespace-nowrap">
+                          {new Date(log.timestamp).toLocaleString()}
+                        </td>
+                        <td className="py-3 px-4">
+                          <span className={`px-2 py-0.5 text-[9px] font-bold uppercase rounded-sm border ${
+                            log.operation === 'CREATE'
+                              ? 'bg-[#00FF66]/15 text-[#00FF66] border-[#00FF66]/30'
+                              : log.operation === 'UPDATE'
+                              ? 'bg-data-blue/15 text-data-blue border-data-blue/30'
+                              : log.operation === 'DELETE'
+                              ? 'bg-error/15 text-error border-error/30'
+                              : 'bg-accent-pink/15 text-accent-pink border-accent-pink/30'
+                          }`}>
+                            {log.operation}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 font-semibold text-slate-900 dark:text-white uppercase whitespace-nowrap">
+                          {log.username || 'Sistema'}
+                        </td>
+                        <td className="py-3 px-4 font-mono uppercase text-[10px] text-slate-400">
+                          {log.entity}
+                        </td>
+                        <td className="py-3 px-4 font-mono text-slate-500">
+                          {log.recordId ? `${log.recordId.slice(0, 8)}...` : 'N/A'}
+                        </td>
+                        <td className="py-3 px-4 font-mono text-[10px] text-slate-400">
+                          <div>{log.ipAddress || '127.0.0.1'}</div>
+                          <div className="text-[9px] text-slate-500 truncate max-w-[180px]" title={log.endpoint}>
+                            {log.endpoint || '/'}
+                          </div>
+                        </td>
+                        <td className="py-3 px-4 text-right">
+                          <span className={`font-data-label text-[9px] uppercase ${
+                            log.status === 'success' ? 'text-[#00FF66]' : 'text-error'
+                          }`}>
+                            {log.status === 'success' ? 'Éxito' : 'Fallo'}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                    {auditLogs.length === 0 && (
+                      <tr>
+                        <td colSpan={7} className="py-10 text-center text-slate-500">
+                          No hay logs de auditoría registrados en MongoDB Atlas.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
 
           </div>

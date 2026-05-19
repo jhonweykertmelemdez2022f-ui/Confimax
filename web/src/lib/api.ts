@@ -240,6 +240,12 @@ class ApiClient {
     return this.request('/auth/users', { method: 'GET' });
   }
 
+  // Audit Logs (MongoDB - Admin Only)
+  async getAuditLogs(params?: { limit?: number; offset?: number; operation?: string; entity?: string }) {
+    const queryString = params ? `?${new URLSearchParams(params as any).toString()}` : '';
+    return this.request(`/backend/audit${queryString}`, { method: 'GET' });
+  }
+
   async createUser(data: { username: string; email: string; password?: string; role: string }) {
     return this.request('/auth/users', {
       method: 'POST',

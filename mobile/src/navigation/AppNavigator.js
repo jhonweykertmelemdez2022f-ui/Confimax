@@ -25,6 +25,7 @@ import NewSaleScreen from '../screens/sales/NewSaleScreen';
 import NewProductScreen from '../screens/inventory/NewProductScreen';
 import UsersScreen from '../screens/users/UsersScreen';
 import NewUserScreen from '../screens/users/NewUserScreen';
+import AuditLogsScreen from '../screens/users/AuditLogsScreen';
 
 
 const Stack = createNativeStackNavigator();
@@ -191,6 +192,11 @@ function AppNavigator() {
         name="NewUser"
         component={NewUserScreen}
         options={({ route }) => ({ title: route.params?.user ? 'Editar Usuario' : 'Registrar Usuario' })}
+      />
+      <Stack.Screen
+        name="AuditLogs"
+        component={AuditLogsScreen}
+        options={{title: 'Auditoría MongoDB'}}
       />
     </Stack.Navigator>
   );

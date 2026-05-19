@@ -116,4 +116,8 @@ export const notificationsAPI = {
   updateSettings: (userId, settings) => api.put(`/notifications/settings/${userId}`, settings),
 };
 
+export const auditAPI = {
+  getAuditLogs: (params) => api.get('/backend/audit', { params }),
+};
+
 export default api;
