@@ -86,15 +86,19 @@ const Product = {
   async create(productData) {
     const {
       name, sku, description, category_id,
-      price, cost, is_active
+      price, cost, is_active, expiration_date
     } = productData;
 
     const result = await pool.query(
       `INSERT INTO inventory.products 
-       (name, sku, description, category_id, price, cost, is_active) 
-       VALUES ($1, $2, $3, $4, $5, $6, $7) 
+       (name, sku, description, category_id, price, cost, is_active, expiration_date) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8) 
        RETURNING *`,
-      [name, sku, description, category_id, price, cost, is_active !== undefined ? is_active : true]
+      [
+        name, sku, description, category_id, price, cost, 
+        is_active !== undefined ? is_active : true, 
+        expiration_date || null
+      ]
     );
     return result.rows[0];
   },
@@ -161,6 +165,21 @@ const Product = {
       [productId]
     );
     return result.rows[0]?.total_stock || 0;
+  },
+
+  async getExpiring(daysAhead = 30) {
+    const result = await pool.query(
+      `SELECT p.*, c.name as category_name 
+       FROM inventory.products p 
+       LEFT JOIN inventory.categories c ON p.category_id = c.id 
+       WHERE p.is_active = true 
+         AND p.expiration_date IS NOT NULL 
+         AND p.expiration_date >= CURRENT_DATE 
+         AND p.expiration_date <= CURRENT_DATE + CAST($1 AS INTEGER)
+       ORDER BY p.expiration_date ASC`,
+      [daysAhead]
+    );
+    return result.rows;
   },
 };
 

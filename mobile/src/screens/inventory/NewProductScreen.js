@@ -8,6 +8,7 @@ function NewProductScreen({navigation}) {
   const [name, setName] = useState('');
   const [sku, setSku] = useState('');
   const [price, setPrice] = useState('');
+  const [expirationDate, setExpirationDate] = useState('');
   const {colors} = useTheme();
   const [loading, setLoading] = useState(false);
 
@@ -30,6 +31,7 @@ function NewProductScreen({navigation}) {
         name,
         sku,
         price: priceFloat,
+        expiration_date: expirationDate ? expirationDate : null,
       });
       Alert.alert('Éxito', 'Producto registrado correctamente en el inventario.', [
         { text: 'OK', onPress: () => navigation.goBack() }
@@ -76,6 +78,15 @@ function NewProductScreen({navigation}) {
           value={price}
           onChangeText={setPrice}
           keyboardType="numeric"
+        />
+
+        <Text style={dynamicStyles.label}>FECHA DE VENCIMIENTO (Opcional - YYYY-MM-DD)</Text>
+        <TextInput
+          style={dynamicStyles.input}
+          placeholder="Ej: 2026-12-31"
+          placeholderTextColor={colors.secondary}
+          value={expirationDate}
+          onChangeText={setExpirationDate}
         />
 
         <TouchableOpacity 

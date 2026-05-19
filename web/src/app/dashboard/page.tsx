@@ -20,6 +20,7 @@ interface Product {
   category: string;
   description: string;
   image?: string;
+  expiration_date?: string;
 }
 
 interface Sale {
@@ -62,7 +63,8 @@ export default function DashboardPage() {
     stock: "",
     category: "despensa",
     description: "",
-    image: ""
+    image: "",
+    expiration_date: ""
   });
 
   // Formulario nuevo cliente
@@ -112,7 +114,8 @@ export default function DashboardPage() {
         stock: parseInt(p.stock || p.stock_quantity || 0),
         category: p.category || "despensa",
         description: p.description || "",
-        image: p.image_url || p.image || "/confimax-fondo-animado.png"
+        image: p.image_url || p.image || "/confimax-fondo-animado.png",
+        expiration_date: p.expiration_date || null
       }));
 
       // Mapear ventas
@@ -241,7 +244,8 @@ export default function DashboardPage() {
         stock: stockVal,
         category: newProduct.category,
         description: newProduct.description.trim(),
-        image: newProduct.image.trim() || undefined
+        image: newProduct.image.trim() || undefined,
+        expiration_date: newProduct.expiration_date.trim() || undefined
       });
 
       setSuccessMsg(`¡Producto "${nameTrim}" insertado con éxito en PostgreSQL (Supabase)!`);
@@ -252,7 +256,8 @@ export default function DashboardPage() {
         stock: "",
         category: "despensa",
         description: "",
-        image: ""
+        image: "",
+        expiration_date: ""
       });
 
       // Recargar datos actualizados
@@ -500,6 +505,7 @@ export default function DashboardPage() {
                       <th className="py-3 px-4">Categoría</th>
                       <th className="py-3 px-4">Precio</th>
                       <th className="py-3 px-4">Stock</th>
+                      <th className="py-3 px-4">Vencimiento</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-200 dark:divide-white/10 font-body-sm">
@@ -511,6 +517,9 @@ export default function DashboardPage() {
                         <td className="py-3.5 px-4 font-mono font-bold">${p.price.toFixed(2)}</td>
                         <td className={`py-3.5 px-4 font-mono font-bold ${p.stock <= 10 ? "text-error" : "text-[#00FF66]"}`}>
                           {p.stock} U
+                        </td>
+                        <td className="py-3.5 px-4 font-mono text-xs">
+                          {p.expiration_date ? new Date(p.expiration_date).toLocaleDateString() : "NO VENCE"}
                         </td>
                       </tr>
                     ))}
@@ -622,6 +631,19 @@ export default function DashboardPage() {
                     onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })}
                     placeholder="Escribe detalles del producto aquí..."
                     rows={2}
+                    className="w-full bg-slate-50 dark:bg-surface-dim border border-slate-900 dark:border-white py-2 px-3 focus:outline-none focus:border-data-blue text-sm font-body-sm"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="prod-expiration" className="font-data-label text-xs uppercase text-slate-500 block mb-1">
+                    Fecha de Vencimiento
+                  </label>
+                  <input
+                    type="date"
+                    id="prod-expiration"
+                    value={newProduct.expiration_date}
+                    onChange={(e) => setNewProduct({ ...newProduct, expiration_date: e.target.value })}
                     className="w-full bg-slate-50 dark:bg-surface-dim border border-slate-900 dark:border-white py-2 px-3 focus:outline-none focus:border-data-blue text-sm font-body-sm"
                   />
                 </div>

@@ -155,6 +155,7 @@ class ApiClient {
     stock: number;
     category: string;
     image?: string;
+    expiration_date?: string;
   }) {
     return this.request('/products', {
       method: 'POST',
@@ -162,10 +163,13 @@ class ApiClient {
         name: data.name,
         sku: data.sku,
         description: data.description,
-        unit_price: data.price,
+        price: data.price,
+        cost: data.price * 0.7, // Costo estimado para el servicio
+        is_active: true,
         stock_quantity: data.stock,
-        category: data.category,
-        image_url: data.image
+        category_id: data.category === 'despensa' ? 'de0a6464-94e8-468b-90f7-5db18863fce9' : '3b9bbcbd-fb12-ae26-d332-b951dc649bd6', // Mapear a UUID de categoría por defecto
+        image_url: data.image,
+        expiration_date: data.expiration_date || null
       }),
     });
   }

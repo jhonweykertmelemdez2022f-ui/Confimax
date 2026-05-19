@@ -145,6 +145,19 @@ function ProductDetailScreen({route, navigation}) {
           </View>
         </View>
 
+        {product.expiration_date && (
+          <>
+            <View style={dynamicStyles.divider} />
+            <Text style={dynamicStyles.label}>FECHA DE VENCIMIENTO</Text>
+            <View style={{flexDirection: 'row', alignItems: 'center', marginTop: 4}}>
+              <MaterialIcons name="calendar-today" size={18} color={colors.secondary} style={{marginRight: 6}} />
+              <Text style={{fontSize: 16, fontWeight: 'bold', color: colors.primary}}>
+                {new Date(product.expiration_date).toLocaleDateString()}
+              </Text>
+            </View>
+          </>
+        )}
+
         <View style={dynamicStyles.divider} />
 
         <Text style={dynamicStyles.label}>DESCRIPCIÓN DEL ARTÍCULO</Text>

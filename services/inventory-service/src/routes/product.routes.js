@@ -34,6 +34,12 @@ router.get(
 );
 
 router.get(
+  '/alerts/expiring',
+  authenticate,
+  productController.checkExpiringProducts
+);
+
+router.get(
   '/:id',
   [
     param('id').isUUID().withMessage('Valid UUID required'),

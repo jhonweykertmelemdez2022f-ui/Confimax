@@ -141,6 +141,12 @@ services:
           type: web
           envVarKey: JWT_SECRET
 
+      - key: NOTIFICATIONS_SERVICE_URL
+        fromService:
+          name: confimax-notifications-service
+          type: web
+          envVarKey: RENDER_EXTERNAL_URL
+
   # ============================================================================
   # SERVICIO 4: Confimax Sales Service
   # ============================================================================

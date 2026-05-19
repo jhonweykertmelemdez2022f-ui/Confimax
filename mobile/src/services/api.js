@@ -5,7 +5,7 @@ import * as SecureStore from 'expo-secure-store';
 // Cambia USE_PRODUCTION a:
 //   - true: Para conectarte al servidor central de producción en la nube (Supabase + Render)
 //   - false: Para conectarte al backend de desarrollo local ejecutándose en tu PC en Docker
-const USE_PRODUCTION = false; 
+const USE_PRODUCTION = true; 
 
 // Para conexión local: cambia esta IP por la IP local de tu PC en tu red WiFi
 const LOCAL_IP = '192.168.101.4'; 
@@ -80,7 +80,7 @@ export const inventoryAPI = {
   searchProductsABC: (prefix) => api.get('/products/search-abc', { params: { prefix } }),
   adjustStock: (id, data) => api.patch(`/products/${id}/stock`, data),
   getLowStock: () => api.get('/products/low-stock'),
-  getExpiring: (days) => api.get('/products/expiring', { params: { days } }),
+  getExpiring: (days) => api.get('/products/alerts/expiring', { params: { days } }),
   createProduct: (data) => api.post('/products', data),
   getProductStockItems: (productId) => api.get(`/inventory/stock/product/${productId}`),
   createStockItem: (data) => api.post('/inventory/stock', data),

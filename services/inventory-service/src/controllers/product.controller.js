@@ -48,6 +48,41 @@ const productController = {
     try { res.json({ product_id: req.params.id, total_stock: parseInt(await InventoryService.getProductTotalStock(req.params.id)) }); }
     catch (e) { next(e); }
   },
+  async checkExpiringProducts(req, res, next) {
+    try {
+      const daysAhead = parseInt(req.query.days || 30);
+      const products = await InventoryService.getExpiringProducts(daysAhead);
+      
+      // Intentar notificar al servicio de notificaciones si hay productos por expirar
+      if (products.length > 0) {
+        const notificationsUrl = process.env.NOTIFICATIONS_SERVICE_URL || 'http://localhost:3005';
+        const authHeader = req.headers.authorization;
+        
+        for (const product of products) {
+          try {
+            // Disparar llamada asíncrona no-bloqueante al servicio de notificaciones
+            fetch(`${notificationsUrl}/`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': authHeader
+              },
+              body: JSON.stringify({
+                type: 'stock_expiring',
+                title: 'Alerta: Producto por vencer',
+                message: `El producto "${product.name}" (SKU: ${product.sku}) vencerá el ${new Date(product.expiration_date).toLocaleDateString()}.`,
+                user_id: req.user ? req.user.id : '00000000-0000-0000-0000-000000000000' // ID del sistema o usuario actual
+              })
+            }).catch(err => console.error('[INVENTORY] Error enviando alerta al notificador:', err.message));
+          } catch (err) {
+            console.error('[INVENTORY] Error intentando notificar:', err.message);
+          }
+        }
+      }
+
+      res.json(products);
+    } catch (e) { next(e); }
+  },
 };
 
 module.exports = productController;

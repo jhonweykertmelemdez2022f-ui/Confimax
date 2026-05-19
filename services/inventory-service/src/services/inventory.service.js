@@ -184,6 +184,10 @@ const InventoryService = {
   async getStockMovementStats(productId) {
     return await StockMovement.getStats(productId);
   },
+
+  async getExpiringProducts(daysAhead = 30) {
+    return await Product.getExpiring(daysAhead);
+  },
 };
 
 module.exports = InventoryService;
