@@ -28,6 +28,7 @@ services:
       
       # Upstash Redis para el Rate Limiting (Render le pedirá al usuario ingresar este valor)
       - key: REDIS_URL
+        sync: false
       
       # Enlace dinámico de Render al URL externo del Backend
       - key: BACKEND_SERVICE_URL
@@ -55,11 +56,15 @@ services:
       
       # PostgreSQL (Supabase - Render le pedirá al usuario ingresar este valor)
       - key: DATABASE_URL
+        sync: false
       
       # Redis (Upstash - Render le pedirá al usuario ingresar este valor)
       - key: REDIS_URL
+        sync: false
       
       # MongoDB (Atlas - Render le pedirá al usuario ingresar este valor)
       - key: MONGO_URL
+        sync: false
+      
       - key: MONGO_DB
         value: confimax
