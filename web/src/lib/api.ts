@@ -15,8 +15,18 @@
  *   /api/notifications/* -> notifications-service:3005
  */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 
+let rawBaseUrl = process.env.NEXT_PUBLIC_API_URL || 
   (typeof window !== 'undefined' ? '/api' : 'http://api-gateway:8080/api');
+
+// Asegurar de forma robusta que la URL base termine con /api si es una URL absoluta y no lo tiene
+if (rawBaseUrl.startsWith('http') && !rawBaseUrl.endsWith('/api') && !rawBaseUrl.includes('/api/')) {
+  if (rawBaseUrl.endsWith('/')) {
+    rawBaseUrl = rawBaseUrl.slice(0, -1);
+  }
+  rawBaseUrl = `${rawBaseUrl}/api`;
+}
+
+const API_BASE_URL = rawBaseUrl;
 
 interface ApiResponse<T> {
   data?: T;
