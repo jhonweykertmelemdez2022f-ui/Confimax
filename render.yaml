@@ -54,6 +54,8 @@ services:
       - fromGroup: confimax-cloud-credentials
       - key: NODE_ENV
         value: production
+      - key: PORT
+        value: 10000
       - key: MONOLITH_MODE
         value: "false"
 
@@ -109,6 +111,8 @@ services:
       - fromGroup: confimax-cloud-credentials
       - key: NODE_ENV
         value: production
+      - key: PORT
+        value: 10000
       
       # Genera automáticamente una clave JWT aleatoria y segura al desplegar
       - key: JWT_SECRET
@@ -128,6 +132,8 @@ services:
       - fromGroup: confimax-cloud-credentials
       - key: NODE_ENV
         value: production
+      - key: PORT
+        value: 10000
       
       - key: JWT_SECRET
         fromService:
@@ -149,6 +155,8 @@ services:
       - fromGroup: confimax-cloud-credentials
       - key: NODE_ENV
         value: production
+      - key: PORT
+        value: 10000
       
       - key: JWT_SECRET
         fromService:
@@ -170,6 +178,8 @@ services:
       - fromGroup: confimax-cloud-credentials
       - key: NODE_ENV
         value: production
+      - key: PORT
+        value: 10000
       
       - key: JWT_SECRET
         fromService:
@@ -191,6 +201,8 @@ services:
       - fromGroup: confimax-cloud-credentials
       - key: NODE_ENV
         value: production
+      - key: PORT
+        value: 10000
       
       - key: JWT_SECRET
         fromService:
