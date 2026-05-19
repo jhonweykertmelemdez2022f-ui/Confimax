@@ -53,7 +53,7 @@ app.use('/sales', saleRoutes);
 
 app.use(errorHandler);
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`Sales Service running on port ${PORT}`);
 });
 

@@ -59,7 +59,7 @@ app.use('/stock-movements', stockMovementRoutes);
 
 app.use(errorHandler);
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`Inventory Service running on port ${PORT}`);
 });
 
