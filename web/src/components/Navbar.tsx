@@ -273,29 +273,63 @@ export default function Navbar() {
           </div>
         </div>
 
+        {/* Sidebar Overlay */}
         {isMobileMenuOpen && (
-          <div
-            ref={(el) => {
-              if (el) {
-                gsap.fromTo(el, { height: 0, opacity: 0 }, { height: "auto", opacity: 1, duration: 0.3, ease: "power2.out" });
-              }
-            }}
-            className="md:hidden overflow-hidden bg-white/90 dark:bg-surface/90 backdrop-blur-sm border-b border-slate-900 dark:border-white"
-          >
-            <div className="p-4 flex flex-col gap-4">
-              {[...navLinks, { name: "Contacto", href: "/contacto" }].map((link) => (
-                <Link
-                  key={link.name}
-                  href={link.href}
-                  className={`${isActive(link.href) ? "text-data-blue" : "text-slate-900 dark:text-white"} hover:bg-slate-100 dark:hover:bg-surface-bright font-data-label text-data-label uppercase py-2 border-b border-slate-200 dark:border-white/20`}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  {link.name}
-                </Link>
-              ))}
-            </div>
-          </div>
+          <div 
+            className="fixed inset-0 z-40 bg-black/50 md:hidden" 
+            onClick={() => setIsMobileMenuOpen(false)} 
+          />
         )}
+
+        {/* Sidebar Drawer */}
+        <div
+          ref={(el) => {
+            if (el) {
+              if (isMobileMenuOpen) {
+                gsap.to(el, { x: 0, duration: 0.3, ease: "power3.out" });
+              } else {
+                gsap.to(el, { x: "-100%", duration: 0.3, ease: "power3.in" });
+              }
+            }
+          }}
+          className="fixed top-0 left-0 bottom-0 z-50 w-3/4 max-w-sm bg-white dark:bg-surface shadow-2xl border-r border-slate-900 dark:border-white transform -translate-x-full md:hidden flex flex-col"
+        >
+          <div className="flex items-center justify-between p-4 border-b border-slate-900 dark:border-white">
+            <span className="font-headline-lg-mobile text-headline-lg-mobile text-slate-900 dark:text-white uppercase tracking-tighter">
+              CONFIMAX
+            </span>
+            <button
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="p-2 border border-slate-900 dark:border-white hover:bg-slate-900 hover:text-white dark:hover:bg-white dark:hover:text-background transition-colors"
+              aria-label="Cerrar menú"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+          
+          <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-2 mt-2">
+            {[...navLinks, { name: "Contacto", href: "/contacto" }].map((link) => (
+              <Link
+                key={link.name}
+                href={link.href}
+                className={`${isActive(link.href) ? "text-data-blue border-l-4 border-data-blue bg-blue-50/50 dark:bg-blue-900/10 pl-3 font-bold" : "text-slate-700 dark:text-slate-300 pl-4 border-l-4 border-transparent"} hover:bg-slate-100 dark:hover:bg-surface-bright font-data-label text-data-label uppercase py-4 transition-colors`}
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                {link.name}
+              </Link>
+            ))}
+          </div>
+
+          <div className="p-4 border-t border-slate-200 dark:border-white/10 flex items-center justify-between">
+            <p className="text-xs text-slate-500 dark:text-secondary text-center uppercase font-data-label">Confimax v1.0</p>
+            <button
+              className="theme-toggle text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors duration-200 p-2 rounded-full"
+              onClick={(event) => toggleTheme({ x: event.clientX, y: event.clientY })}
+            >
+              {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
+          </div>
+        </div>
       </nav>
       <CartDrawer />
     </>

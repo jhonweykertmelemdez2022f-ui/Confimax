@@ -178,8 +178,37 @@ class ApiClient {
     });
   }
 
+  async updateProduct(id: string, data: any) {
+    return this.request(`/products/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteProduct(id: string) {
+    return this.request(`/products/${id}`, { method: 'DELETE' });
+  }
+
   async getCategories() {
     return this.request('/inventory/categories');
+  }
+
+  async createCategory(data: { name: string; description?: string }) {
+    return this.request('/inventory/categories', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateCategory(id: string, data: { name?: string; description?: string }) {
+    return this.request(`/inventory/categories/${id}`, {
+      method: 'PUT', // or PATCH depending on the backend, using PUT as standard
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteCategory(id: string) {
+    return this.request(`/inventory/categories/${id}`, { method: 'DELETE' });
   }
 
   async searchProducts(query: string) {
@@ -207,6 +236,17 @@ class ApiClient {
     return this.request(`/sales/${id}`);
   }
 
+  async updateSale(id: string, data: any) {
+    return this.request(`/sales/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteSale(id: string) {
+    return this.request(`/sales/${id}`, { method: 'DELETE' });
+  }
+
   // Customers Service
   async getCustomers(params?: { limit?: number; offset?: number }) {
     const queryString = params ? `?${new URLSearchParams(params as any).toString()}` : '';
@@ -227,6 +267,17 @@ class ApiClient {
       method: 'POST',
       body: JSON.stringify(data),
     });
+  }
+
+  async updateCustomer(id: string, data: any) {
+    return this.request(`/customers/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteCustomer(id: string) {
+    return this.request(`/customers/${id}`, { method: 'DELETE' });
   }
 
   // Notifications Service

@@ -36,7 +36,7 @@ export default function ProductCard({ product, viewMode }: ProductCardProps) {
   // List View
   if (viewMode === "list") {
     return (
-      <article className="bg-white dark:bg-surface border border-slate-900 dark:border-white overflow-hidden hover:border-data-blue transition-all group">
+      <article className="bg-white dark:bg-surface border border-slate-900 dark:border-white overflow-hidden hover:border-data-blue hover:-translate-y-1 hover:shadow-lg transition-all duration-300 group">
         <div className="flex flex-col sm:flex-row">
           {/* Image */}
           <div className="relative sm:w-56 h-48 sm:h-auto flex-shrink-0">
@@ -127,7 +127,7 @@ export default function ProductCard({ product, viewMode }: ProductCardProps) {
 
   // Grid View
   return (
-    <article className="bg-white dark:bg-surface border border-slate-900 dark:border-white overflow-hidden hover:border-data-blue transition-all group">
+    <article className="bg-white dark:bg-surface border border-slate-900 dark:border-white overflow-hidden hover:border-data-blue hover:-translate-y-1 hover:shadow-lg transition-all duration-300 group">
       {/* Image */}
       <div className="relative h-48 overflow-hidden">
         <img
