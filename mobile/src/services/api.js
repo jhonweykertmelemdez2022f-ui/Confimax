@@ -5,7 +5,7 @@ import * as SecureStore from 'expo-secure-store';
 // Cambia USE_PRODUCTION a:
 //   - true: Para conectarte al servidor central de producción en la nube (Supabase + Render)
 //   - false: Para conectarte al backend de desarrollo local ejecutándose en tu PC en Docker
-const USE_PRODUCTION = true; 
+const USE_PRODUCTION = false; 
 
 // Para conexión local: cambia esta IP por la IP local de tu PC en tu red WiFi
 const LOCAL_IP = '192.168.101.4'; 
@@ -48,6 +48,13 @@ api.interceptors.response.use(
   async (error) => {
     if (error.response?.status === 401) {
       await SecureStore.deleteItemAsync('confimax_auth');
+      try {
+        // Importación perezosa (lazy) para evitar dependencia circular
+        const { useAuthStore } = require('../stores/authStore');
+        useAuthStore.getState().logout();
+      } catch (e) {
+        console.log('Error forcing logout:', e.message);
+      }
     }
     return Promise.reject(error);
   }

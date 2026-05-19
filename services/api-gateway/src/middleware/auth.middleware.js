@@ -15,6 +15,7 @@ const PUBLIC_PATHS = [
   /^\/api\/auth\/login/,
   /^\/api\/auth\/register/,
   /^\/api\/auth\/refresh/,
+  /^\/api\/auth\/health/,
   /^\/health/,
 ];
 

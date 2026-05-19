@@ -1,10 +1,18 @@
-# Render Blueprint Specification for Confimax Deploy
+# Render Blueprint Specification for Confimax Microservices Architecture
 # Documentación: https://render.com/docs/blueprints
+#
+# Esta plantilla de blueprint define la constelación de microservicios independientes
+# para cumplir con los lineamientos de la UPTAI (Arquitectura Distribuida y Desacoplada)
+# usando la capa gratuita de Render.
+#
+# Cada servicio es tratado como un proceso y contenedor independiente, con su propio
+# ciclo de vida, persistencia y comunicación por red externa/interna.
 
 services:
   # ============================================================================
   # SERVICIO 1: Confimax API Gateway
-  # Recibe el tráfico público de la web y la app móvil, aplica rate limiting y rutea.
+  # Único punto de entrada público. Gestiona CORS, rate limiting, validación JWT y
+  # proxy inverso hacia los microservicios correspondientes.
   # ============================================================================
   - type: web
     name: confimax-api-gateway
@@ -13,58 +21,209 @@ services:
     # Root Directory vacío para poder acceder a dependencias compartidas globales
     buildCommand: npm install && cd services/api-gateway && npm install
     startCommand: cd services/api-gateway && npm start
+    healthCheckPath: /health
     envVars:
       - key: NODE_ENV
         value: production
+      - key: PORT
+        value: 8080
       - key: MONOLITH_MODE
-        value: "true" # Activa el modo monolito dinámico en el gateway
+        value: "false" # Asegura el enrutamiento a microservicios distribuidos
       
-      # Enlace dinámico al JWT_SECRET generado en el backend unificado
+      # JWT Secret compartido dinámicamente desde el auth-service
       - key: JWT_SECRET
         fromService:
-          name: confimax-backend-unified
+          name: confimax-auth-service
           type: web
           envVarKey: JWT_SECRET
-      
-      # Upstash Redis para el Rate Limiting (Render le pedirá al usuario ingresar este valor)
+
+      # Redis para Rate Limiting
       - key: REDIS_URL
         sync: false
-      
-      # Enlace dinámico de Render al URL externo del Backend
-      - key: BACKEND_SERVICE_URL
+
+      # Direcciones dinámicas de los microservicios asignadas automáticamente por Render
+      - key: AUTH_SERVICE_URL
         fromService:
-          name: confimax-backend-unified
+          name: confimax-auth-service
+          type: web
+          envVarKey: RENDER_EXTERNAL_URL
+
+      - key: INVENTORY_SERVICE_URL
+        fromService:
+          name: confimax-inventory-service
+          type: web
+          envVarKey: RENDER_EXTERNAL_URL
+
+      - key: SALES_SERVICE_URL
+        fromService:
+          name: confimax-sales-service
+          type: web
+          envVarKey: RENDER_EXTERNAL_URL
+
+      - key: CUSTOMERS_SERVICE_URL
+        fromService:
+          name: confimax-customers-service
+          type: web
+          envVarKey: RENDER_EXTERNAL_URL
+
+      - key: NOTIFICATIONS_SERVICE_URL
+        fromService:
+          name: confimax-notifications-service
           type: web
           envVarKey: RENDER_EXTERNAL_URL
 
   # ============================================================================
-  # SERVICIO 2: Confimax Backend Unificado (Monolito)
-  # Centraliza Auth, Inventario, Ventas, Clientes, Sincronización Móvil y Auditoría.
+  # SERVICIO 2: Confimax Auth Service
+  # Gestiona la autenticación, registro de usuarios y emisión de JWTs.
   # ============================================================================
   - type: web
-    name: confimax-backend-unified
+    name: confimax-auth-service
     runtime: node
     plan: free
-    # Root Directory vacío para poder resolver 'services/shared' correctamente
-    buildCommand: npm install && cd services/backend && npm install
-    startCommand: cd services/backend && npm start
+    buildCommand: npm install && cd services/auth-service && npm install
+    startCommand: cd services/auth-service && npm start
+    healthCheckPath: /health
     envVars:
       - key: NODE_ENV
         value: production
-      - key: JWT_SECRET
-        generateValue: true # Render generará una contraseña segura automáticamente
+      - key: PORT
+        value: 3001
       
-      # PostgreSQL (Supabase - Render le pedirá al usuario ingresar este valor)
+      # Genera automáticamente una clave JWT aleatoria y segura al desplegar
+      - key: JWT_SECRET
+        generateValue: true
+
+      # Supabase PostgreSQL (SQL transaccional)
       - key: DATABASE_URL
         sync: false
-      
-      # Redis (Upstash - Render le pedirá al usuario ingresar este valor)
+
+      # Upstash Redis
       - key: REDIS_URL
         sync: false
+
+  # ============================================================================
+  # SERVICIO 3: Confimax Inventory Service
+  # Gestiona stock, productos, categorías y movimientos de inventario.
+  # ============================================================================
+  - type: web
+    name: confimax-inventory-service
+    runtime: node
+    plan: free
+    buildCommand: npm install && cd services/inventory-service && npm install
+    startCommand: cd services/inventory-service && npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3002
       
-      # MongoDB (Atlas - Render le pedirá al usuario ingresar este valor)
+      - key: JWT_SECRET
+        fromService:
+          name: confimax-auth-service
+          type: web
+          envVarKey: JWT_SECRET
+
+      # Supabase PostgreSQL (SQL transaccional)
+      - key: DATABASE_URL
+        sync: false
+
+      # Upstash Redis
+      - key: REDIS_URL
+        sync: false
+
+  # ============================================================================
+  # SERVICIO 4: Confimax Sales Service
+  # Gestiona las transacciones de ventas y facturación.
+  # ============================================================================
+  - type: web
+    name: confimax-sales-service
+    runtime: node
+    plan: free
+    buildCommand: npm install && cd services/sales-service && npm install
+    startCommand: cd services/sales-service && npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3003
+      
+      - key: JWT_SECRET
+        fromService:
+          name: confimax-auth-service
+          type: web
+          envVarKey: JWT_SECRET
+
+      # Supabase PostgreSQL (SQL transaccional)
+      - key: DATABASE_URL
+        sync: false
+
+      # Upstash Redis
+      - key: REDIS_URL
+        sync: false
+
+  # ============================================================================
+  # SERVICIO 5: Confimax Customers Service
+  # Gestiona la base de clientes y su historial.
+  # ============================================================================
+  - type: web
+    name: confimax-customers-service
+    runtime: node
+    plan: free
+    buildCommand: npm install && cd services/customers-service && npm install
+    startCommand: cd services/customers-service && npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3004
+      
+      - key: JWT_SECRET
+        fromService:
+          name: confimax-auth-service
+          type: web
+          envVarKey: JWT_SECRET
+
+      # Supabase PostgreSQL (SQL transaccional)
+      - key: DATABASE_URL
+        sync: false
+
+      # Upstash Redis
+      - key: REDIS_URL
+        sync: false
+
+  # ============================================================================
+  # SERVICIO 6: Confimax Notifications Service
+  # Gestiona auditoría de eventos y notificaciones asíncronas. Persistencia NoSQL.
+  # ============================================================================
+  - type: web
+    name: confimax-notifications-service
+    runtime: node
+    plan: free
+    buildCommand: npm install && cd services/notifications-service && npm install
+    startCommand: cd services/notifications-service && npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3005
+      
+      - key: JWT_SECRET
+        fromService:
+          name: confimax-auth-service
+          type: web
+          envVarKey: JWT_SECRET
+
+      # Persistencia NoSQL (MongoDB Atlas)
       - key: MONGO_URL
         sync: false
-      
+
       - key: MONGO_DB
         value: confimax
+
+      # Upstash Redis
+      - key: REDIS_URL
+        sync: false

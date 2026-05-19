@@ -21,12 +21,13 @@ export const useAuthStore = create((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const response = await authAPI.login({ username, password });
-      const { user, accessToken, refreshToken } = response.data;
+      const { user, accessToken, refreshToken, token } = response.data;
+      const finalToken = accessToken || token;
 
       // Guardar tokens de autenticación
       await SecureStore.setItemAsync(
         'confimax_auth',
-        JSON.stringify({ token: accessToken, refreshToken })
+        JSON.stringify({ token: finalToken, refreshToken: refreshToken || null })
       );
 
       // Guardar credenciales de forma encriptada para el Login Biométrico
@@ -35,7 +36,7 @@ export const useAuthStore = create((set, get) => ({
         JSON.stringify({ username, password })
       );
 
-      set({ user, token: accessToken, refreshToken, isAuthenticated: true, isLoading: false });
+      set({ user, token: finalToken, refreshToken: refreshToken || null, isAuthenticated: true, isLoading: false });
       await SyncService.syncAll();
       return true;
     } catch (error) {
