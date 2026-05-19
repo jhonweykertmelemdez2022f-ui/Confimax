@@ -136,7 +136,7 @@ const createServiceProxy = (name, config) => {
 // ============================================================
 // PROXY ROUTING (Monolith Mode vs Microservices Mode)
 // ============================================================
-const MONOLITH_MODE = process.env.MONOLITH_MODE === 'true' || !!process.env.BACKEND_SERVICE_URL;
+const MONOLITH_MODE = process.env.MONOLITH_MODE === 'true';
 
 if (MONOLITH_MODE) {
   const backendTarget = process.env.BACKEND_SERVICE_URL || 'http://backend:3006';
