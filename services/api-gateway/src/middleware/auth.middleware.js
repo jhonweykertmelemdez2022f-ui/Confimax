@@ -23,8 +23,8 @@ function isPublicPath(path) {
 }
 
 const authenticateGateway = (req, res, next) => {
-  // Saltar auth para rutas publicas
-  if (isPublicPath(req.path)) {
+  // Saltar auth para rutas publicas (verificando path relativo y original)
+  if (isPublicPath(req.path) || isPublicPath(req.originalUrl)) {
     return next();
   }
 
