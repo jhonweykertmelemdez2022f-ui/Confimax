@@ -93,6 +93,10 @@ function MainTabs() {
             iconName = 'point-of-sale';
           } else if (route.name === 'Clientes') {
             iconName = 'people';
+          } else if (route.name === 'Usuarios') {
+            iconName = 'admin-panel-settings';
+          } else if (route.name === 'Auditoría') {
+            iconName = 'security';
           } else if (route.name === 'Perfil') {
             iconName = 'person';
           }
@@ -109,11 +113,30 @@ function MainTabs() {
         },
         headerShown: false,
       })}>
-      <Tab.Screen name="Inicio" component={HomeScreen} />
-      <Tab.Screen name="Productos" component={ProductsScreen} />
-      {user?.role !== 'customer' && <Tab.Screen name="Ventas" component={SalesScreen} />}
-      {user?.role !== 'customer' && <Tab.Screen name="Clientes" component={CustomersScreen} />}
-      <Tab.Screen name="Perfil" component={ProfileScreen} />
+      
+      {/* Pestañas Adaptativas por Rol */}
+      {user?.role === 'admin' ? (
+        <>
+          <Tab.Screen name="Inicio" component={HomeScreen} />
+          <Tab.Screen name="Auditoría" component={AuditLogsScreen} />
+          <Tab.Screen name="Usuarios" component={UsersScreen} />
+          <Tab.Screen name="Perfil" component={ProfileScreen} />
+        </>
+      ) : user?.role === 'customer' ? (
+        <>
+          <Tab.Screen name="Inicio" component={HomeScreen} />
+          <Tab.Screen name="Productos" component={ProductsScreen} />
+          <Tab.Screen name="Perfil" component={ProfileScreen} />
+        </>
+      ) : (
+        <>
+          <Tab.Screen name="Inicio" component={HomeScreen} />
+          <Tab.Screen name="Productos" component={ProductsScreen} />
+          <Tab.Screen name="Ventas" component={SalesScreen} />
+          <Tab.Screen name="Clientes" component={CustomersScreen} />
+          <Tab.Screen name="Perfil" component={ProfileScreen} />
+        </>
+      )}
     </Tab.Navigator>
   );
 }
