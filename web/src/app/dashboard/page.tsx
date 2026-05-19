@@ -198,23 +198,53 @@ export default function DashboardPage() {
     setErrorMsg("");
     setSuccessMsg("");
 
-    if (!newProduct.name || !newProduct.sku || !newProduct.price || !newProduct.stock) {
-      setErrorMsg("Por favor completa los campos requeridos del producto.");
+    const nameTrim = newProduct.name.trim();
+    const skuTrim = newProduct.sku.trim().toUpperCase();
+    const priceVal = parseFloat(newProduct.price);
+    const stockVal = parseInt(newProduct.stock, 10);
+
+    // Validar Campos Obligatorios
+    if (!nameTrim || !skuTrim || !newProduct.price || !newProduct.stock) {
+      setErrorMsg("Por favor completa todos los campos requeridos marcados con (*).");
+      return;
+    }
+
+    // Validar Formato del SKU (Alfanumérico y guiones)
+    const skuRegex = /^[A-Z0-9-_]+$/;
+    if (!skuRegex.test(skuTrim)) {
+      setErrorMsg("El código SKU solo puede contener letras, números, guiones (-) y guiones bajos (_).");
+      return;
+    }
+
+    if (skuTrim.length < 3) {
+      setErrorMsg("El código SKU debe tener al menos 3 caracteres.");
+      return;
+    }
+
+    // Validar Precio Positivo
+    if (isNaN(priceVal) || priceVal <= 0) {
+      setErrorMsg("El precio del producto debe ser un número positivo mayor a 0.");
+      return;
+    }
+
+    // Validar Stock No Negativo
+    if (isNaN(stockVal) || stockVal < 0) {
+      setErrorMsg("El stock inicial no puede ser un número negativo.");
       return;
     }
 
     try {
       await api.createProduct({
-        name: newProduct.name,
-        sku: newProduct.sku,
-        price: parseFloat(newProduct.price),
-        stock: parseInt(newProduct.stock),
+        name: nameTrim,
+        sku: skuTrim,
+        price: priceVal,
+        stock: stockVal,
         category: newProduct.category,
-        description: newProduct.description,
-        image: newProduct.image || undefined
+        description: newProduct.description.trim(),
+        image: newProduct.image.trim() || undefined
       });
 
-      setSuccessMsg("¡Producto insertado con éxito en PostgreSQL (Supabase)!");
+      setSuccessMsg(`¡Producto "${nameTrim}" insertado con éxito en PostgreSQL (Supabase)!`);
       setNewProduct({
         name: "",
         sku: "",

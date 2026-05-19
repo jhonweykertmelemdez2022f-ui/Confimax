@@ -15,10 +15,72 @@ const Product = {
   },
 
   async create(data) {
-    const { name, sku, barcode, description, category_id, unit_price, cost_price, min_stock_level, expiration_date, image_url } = data;
+    const { 
+      name, 
+      sku, 
+      barcode, 
+      description, 
+      category_id, 
+      category, 
+      unit_price, 
+      cost_price, 
+      stock_quantity, 
+      stock,
+      min_stock_level, 
+      expiration_date, 
+      image_url 
+    } = data;
+
+    // 1. Resolver category_id dinámicamente si no se provee pero se envía el nombre de la categoría
+    let finalCategoryId = category_id || null;
+    if (!finalCategoryId && category) {
+      try {
+        const catRes = await query('SELECT id FROM categories WHERE name ILIKE $1', [category.trim()]);
+        if (catRes.rows.length > 0) {
+          finalCategoryId = catRes.rows[0].id;
+        } else {
+          // Crear la categoría si no existe para mantener la integridad referencial
+          const newCat = await query(
+            'INSERT INTO categories (name, active) VALUES ($1, true) RETURNING id',
+            [category.trim()]
+          );
+          finalCategoryId = newCat.rows[0].id;
+        }
+      } catch (catErr) {
+        console.error('Error al resolver categoría en Product.create:', catErr.message);
+      }
+    }
+
+    // 2. Establecer valores por defecto seguros para evitar violaciones de NOT NULL en Supabase
+    const finalMinStockLevel = (min_stock_level !== undefined && min_stock_level !== null && min_stock_level !== '')
+      ? parseInt(min_stock_level, 10)
+      : 10;
+
+    const finalStockQuantity = (stock_quantity !== undefined && stock_quantity !== null && stock_quantity !== '')
+      ? parseInt(stock_quantity, 10)
+      : (stock !== undefined && stock !== null && stock !== '') 
+        ? parseInt(stock, 10) 
+        : 0;
+
+    const finalCostPrice = (cost_price !== undefined && cost_price !== null && cost_price !== '')
+      ? parseFloat(cost_price)
+      : (unit_price ? parseFloat(unit_price) * 0.7 : 0.0);
+
     const { rows } = await query(
-      'INSERT INTO products (name, sku, barcode, description, category_id, unit_price, cost_price, min_stock_level, expiration_date, image_url) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *',
-      [name, sku, barcode, description, category_id, unit_price, cost_price, min_stock_level, expiration_date, image_url]
+      'INSERT INTO products (name, sku, barcode, description, category_id, unit_price, cost_price, stock_quantity, min_stock_level, expiration_date, image_url) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING *',
+      [
+        name, 
+        sku, 
+        barcode || null, 
+        description || null, 
+        finalCategoryId, 
+        unit_price ? parseFloat(unit_price) : 0.0, 
+        finalCostPrice, 
+        finalStockQuantity,
+        finalMinStockLevel, 
+        expiration_date || null, 
+        image_url || null
+      ]
     );
     return rows[0];
   },
