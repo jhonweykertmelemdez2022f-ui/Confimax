@@ -99,7 +99,7 @@ services:
 
       - key: BACKEND_SERVICE_URL
         fromService:
-          name: confimax-backend
+          name: confimax-notifications-service
           type: web
           envVarKey: RENDER_EXTERNAL_URL
 
@@ -222,25 +222,3 @@ services:
           type: web
           envVarKey: JWT_SECRET
 
-  # ============================================================================
-  # SERVICIO 7: Confimax Backend (Audit Logs MongoDB)
-  # ============================================================================
-  - type: web
-    name: confimax-backend
-    runtime: node
-    plan: free
-    buildCommand: npm install && cd services/backend && npm install
-    startCommand: cd services/backend && npm start
-    healthCheckPath: /api/health
-    envVars:
-      - fromGroup: confimax-cloud-credentials
-      - key: NODE_ENV
-        value: production
-      - key: PORT
-        value: 10000
-      
-      - key: JWT_SECRET
-        fromService:
-          name: confimax-auth-service
-          type: web
-          envVarKey: JWT_SECRET

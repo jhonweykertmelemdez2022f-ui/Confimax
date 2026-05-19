@@ -83,6 +83,52 @@ app.get('/api/data/:collection', async (req, res) => {
   }
 });
 
+// --- ENLACE A AUDITORÍA INTEGRADO (PARA PRESERVAR ARQUITECTURA ORIGINAL) ---
+app.get('/api/audit', async (req, res) => {
+  try {
+    const { limit = 100, offset = 0, operation, userId, entity, recordId, start_date, end_date } = req.query;
+    const query = {};
+
+    if (operation) query.operation = operation;
+    if (userId) query.userId = userId;
+    if (entity) query.entity = entity;
+    if (recordId) query.recordId = recordId;
+
+    if (start_date || end_date) {
+      query.timestamp = {};
+      if (start_date) query.timestamp.$gte = new Date(start_date);
+      if (end_date) query.timestamp.$lte = new Date(end_date);
+    }
+
+    const logs = await mongoose.connection.db.collection('audit_logs')
+      .find(query)
+      .sort({ timestamp: -1 })
+      .skip(parseInt(offset))
+      .limit(parseInt(limit))
+      .toArray();
+
+    res.json(logs);
+  } catch (err) {
+    res.status(500).json({ error: 'Error fetching audit logs', details: err.message });
+  }
+});
+
+app.get('/api/audit/user/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { limit = 50 } = req.query;
+    const logs = await mongoose.connection.db.collection('audit_logs')
+      .find({ userId })
+      .sort({ timestamp: -1 })
+      .limit(parseInt(limit))
+      .toArray();
+
+    res.json(logs);
+  } catch (err) {
+    res.status(500).json({ error: 'Error fetching user activity', details: err.message });
+  }
+});
+
 app.get('/', (req, res) => {
   const html = `
     <!DOCTYPE html>
