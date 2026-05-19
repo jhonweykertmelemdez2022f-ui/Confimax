@@ -4,42 +4,67 @@
 # Esta plantilla de blueprint define la constelación de microservicios independientes
 # para cumplir con los lineamientos de la UPTAI (Arquitectura Distribuida y Desacoplada)
 # usando la capa gratuita de Render.
-#
-# Cada servicio es tratado como un proceso y contenedor independiente, con su propio
-# ciclo de vida, persistencia y comunicación por red externa/interna.
+
+# ============================================================================
+# GRUPO DE VARIABLES DE ENTORNO COMPARTIDAS (Credenciales Cloud Centralizadas)
+# ============================================================================
+envVarGroups:
+  - name: confimax-cloud-credentials
+    envVars:
+      # 1. 🐘 SUPABASE (PostgreSQL Cloud)
+      - key: DATABASE_URL
+        value: "postgresql://postgres.tlrliqbgtdplwdvbxqxv:Jackwell2019*2424@aws-1-us-west-2.pooler.supabase.com:5432/postgres?schema=public"
+      - key: POSTGRES_HOST
+        value: "aws-1-us-west-2.pooler.supabase.com"
+      - key: POSTGRES_PORT
+        value: "5432"
+      - key: POSTGRES_USER
+        value: "postgres.tlrliqbgtdplwdvbxqxv"
+      - key: POSTGRES_PASSWORD
+        value: "Jackwell2019*2424"
+      - key: POSTGRES_DB
+        value: "postgres"
+      - key: POSTGRES_SSL
+        value: "true"
+      - key: USE_SUPABASE
+        value: "true"
+
+      # 2. ⚡ UPSTASH (Redis Cloud)
+      - key: REDIS_URL
+        value: "rediss://default:gQAAAAAAAdIgAAIgcDFhNDRkNmE3OTg5YjA0MDBlODE4MzQxMGY5NGVjNmU0Mg@good-iguana-119328.upstash.io:6379"
+
+      # 3. 🍃 MONGODB ATLAS (MongoDB Cloud)
+      - key: MONGO_URL
+        value: "mongodb://jak:jema2019@ac-s1gj562-shard-00-00.tedq2nv.mongodb.net:27017,ac-s1gj562-shard-00-01.tedq2nv.mongodb.net:27017,ac-s1gj562-shard-00-02.tedq2nv.mongodb.net:27017/confimax_logs?ssl=true&replicaSet=atlas-mrqwtn-shard-0&authSource=admin&appName=Confimax"
+      - key: MONGO_DB
+        value: "confimax_logs"
 
 services:
   # ============================================================================
   # SERVICIO 1: Confimax API Gateway
-  # Único punto de entrada público. Gestiona CORS, rate limiting, validación JWT y
-  # proxy inverso hacia los microservicios correspondientes.
   # ============================================================================
   - type: web
     name: confimax-api-gateway
     runtime: node
     plan: free
-    # Root Directory vacío para poder acceder a dependencias compartidas globales
     buildCommand: npm install && cd services/api-gateway && npm install
     startCommand: cd services/api-gateway && npm start
     healthCheckPath: /health
     envVars:
+      - fromGroup: confimax-cloud-credentials
       - key: NODE_ENV
         value: production
       - key: PORT
         value: 8080
       - key: MONOLITH_MODE
-        value: "false" # Asegura el enrutamiento a microservicios distribuidos
-      
+        value: "false"
+
       # JWT Secret compartido dinámicamente desde el auth-service
       - key: JWT_SECRET
         fromService:
           name: confimax-auth-service
           type: web
           envVarKey: JWT_SECRET
-
-      # Redis para Rate Limiting
-      - key: REDIS_URL
-        sync: false
 
       # Direcciones dinámicas de los microservicios asignadas automáticamente por Render
       - key: AUTH_SERVICE_URL
@@ -74,7 +99,6 @@ services:
 
   # ============================================================================
   # SERVICIO 2: Confimax Auth Service
-  # Gestiona la autenticación, registro de usuarios y emisión de JWTs.
   # ============================================================================
   - type: web
     name: confimax-auth-service
@@ -84,6 +108,7 @@ services:
     startCommand: cd services/auth-service && npm start
     healthCheckPath: /health
     envVars:
+      - fromGroup: confimax-cloud-credentials
       - key: NODE_ENV
         value: production
       - key: PORT
@@ -93,17 +118,8 @@ services:
       - key: JWT_SECRET
         generateValue: true
 
-      # Supabase PostgreSQL (SQL transaccional)
-      - key: DATABASE_URL
-        sync: false
-
-      # Upstash Redis
-      - key: REDIS_URL
-        sync: false
-
   # ============================================================================
   # SERVICIO 3: Confimax Inventory Service
-  # Gestiona stock, productos, categorías y movimientos de inventario.
   # ============================================================================
   - type: web
     name: confimax-inventory-service
@@ -113,6 +129,7 @@ services:
     startCommand: cd services/inventory-service && npm start
     healthCheckPath: /health
     envVars:
+      - fromGroup: confimax-cloud-credentials
       - key: NODE_ENV
         value: production
       - key: PORT
@@ -124,17 +141,8 @@ services:
           type: web
           envVarKey: JWT_SECRET
 
-      # Supabase PostgreSQL (SQL transaccional)
-      - key: DATABASE_URL
-        sync: false
-
-      # Upstash Redis
-      - key: REDIS_URL
-        sync: false
-
   # ============================================================================
   # SERVICIO 4: Confimax Sales Service
-  # Gestiona las transacciones de ventas y facturación.
   # ============================================================================
   - type: web
     name: confimax-sales-service
@@ -144,6 +152,7 @@ services:
     startCommand: cd services/sales-service && npm start
     healthCheckPath: /health
     envVars:
+      - fromGroup: confimax-cloud-credentials
       - key: NODE_ENV
         value: production
       - key: PORT
@@ -155,17 +164,8 @@ services:
           type: web
           envVarKey: JWT_SECRET
 
-      # Supabase PostgreSQL (SQL transaccional)
-      - key: DATABASE_URL
-        sync: false
-
-      # Upstash Redis
-      - key: REDIS_URL
-        sync: false
-
   # ============================================================================
   # SERVICIO 5: Confimax Customers Service
-  # Gestiona la base de clientes y su historial.
   # ============================================================================
   - type: web
     name: confimax-customers-service
@@ -175,6 +175,7 @@ services:
     startCommand: cd services/customers-service && npm start
     healthCheckPath: /health
     envVars:
+      - fromGroup: confimax-cloud-credentials
       - key: NODE_ENV
         value: production
       - key: PORT
@@ -186,17 +187,8 @@ services:
           type: web
           envVarKey: JWT_SECRET
 
-      # Supabase PostgreSQL (SQL transaccional)
-      - key: DATABASE_URL
-        sync: false
-
-      # Upstash Redis
-      - key: REDIS_URL
-        sync: false
-
   # ============================================================================
   # SERVICIO 6: Confimax Notifications Service
-  # Gestiona auditoría de eventos y notificaciones asíncronas. Persistencia NoSQL.
   # ============================================================================
   - type: web
     name: confimax-notifications-service
@@ -206,6 +198,7 @@ services:
     startCommand: cd services/notifications-service && npm start
     healthCheckPath: /health
     envVars:
+      - fromGroup: confimax-cloud-credentials
       - key: NODE_ENV
         value: production
       - key: PORT
@@ -216,14 +209,3 @@ services:
           name: confimax-auth-service
           type: web
           envVarKey: JWT_SECRET
-
-      # Persistencia NoSQL (MongoDB Atlas)
-      - key: MONGO_URL
-        sync: false
-
-      - key: MONGO_DB
-        value: confimax
-
-      # Upstash Redis
-      - key: REDIS_URL
-        sync: false
