@@ -1,0 +1,64 @@
+# Render Blueprint Specification for Confimax Deploy
+# Documentación: https://render.com/docs/blueprints
+
+services:
+  # ============================================================================
+  # SERVICIO 1: Confimax API Gateway
+  # Recibe el tráfico público de la web y la app móvil, aplica rate limiting y rutea.
+  # ============================================================================
+  - type: web
+    name: confimax-api-gateway
+    runtime: node
+    plan: free
+    # Root Directory vacío para poder acceder a dependencias compartidas globales
+    buildCommand: npm install && cd services/api-gateway && npm install
+    startCommand: cd services/api-gateway && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONOLITH_MODE
+        value: "true" # Activa el modo monolito dinámico en el gateway
+      - key: JWT_SECRET
+        sync: true # Se vincula automáticamente al secreto del backend unificado
+      
+      # Upstash Redis para el Rate Limiting centralizado
+      - key: REDIS_URL
+        sync: false # Reemplaza con tu cadena de Upstash Redis
+      
+      # Enlace dinámico de Render al URL externo del Backend
+      - key: BACKEND_SERVICE_URL
+        fromService:
+          name: confimax-backend-unified
+          type: web
+          envVarKey: RENDER_EXTERNAL_URL
+
+  # ============================================================================
+  # SERVICIO 2: Confimax Backend Unificado (Monolito)
+  # Centraliza Auth, Inventario, Ventas, Clientes, Sincronización Móvil y Auditoría.
+  # ============================================================================
+  - type: web
+    name: confimax-backend-unified
+    runtime: node
+    plan: free
+    # Root Directory vacío para poder resolver 'services/shared' correctamente
+    buildCommand: npm install && cd services/backend && npm install
+    startCommand: cd services/backend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true # Render generará una contraseña segura automáticamente
+      
+      # PostgreSQL (Supabase)
+      - key: DATABASE_URL
+        sync: false # Reemplaza con tu URI de Supabase
+      
+      # Redis (Upstash)
+      - key: REDIS_URL
+        sync: false # Reemplaza con tu URI de Upstash Redis
+      
+      # MongoDB (Atlas)
+      - key: MONGO_URL
+        sync: false # Reemplaza con tu URI de MongoDB Atlas
+      - key: MONGO_DB
+        value: confimax

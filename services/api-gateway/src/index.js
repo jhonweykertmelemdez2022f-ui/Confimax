@@ -25,7 +25,7 @@ require('dotenv').config();
 const { authenticateGateway } = require('./middleware/auth.middleware');
 
 const app = express();
-const PORT = process.env.GATEWAY_PORT || 8080;
+const PORT = process.env.GATEWAY_PORT || process.env.PORT || 8080;
 
 // ============================================================
 // CONFIGURACION DE SERVICIOS DESTINO
@@ -133,42 +133,60 @@ const createServiceProxy = (name, config) => {
   return proxy;
 };
 
-// Auth service (login/register publicos, resto protegido)
-app.use('/api/auth', createServiceProxy('auth', SERVICES.auth));
+// ============================================================
+// PROXY ROUTING (Monolith Mode vs Microservices Mode)
+// ============================================================
+const MONOLITH_MODE = process.env.MONOLITH_MODE === 'true' || !!process.env.BACKEND_SERVICE_URL;
 
-// Rutas Directas Compatibles con el Móvil (Mapeos Transparentes)
-app.use('/api/products', authenticateGateway, createServiceProxy('inventory', {
-  target: SERVICES.inventory.target,
-  pathRewrite: { '^/api/products': '/products' },
-  changeOrigin: true,
-}));
+if (MONOLITH_MODE) {
+  const backendTarget = process.env.BACKEND_SERVICE_URL || 'http://backend:3006';
+  console.log(`[GATEWAY] 🚀 Running in MONOLITH MODE: Proxying all /api/* -> ${backendTarget}`);
 
-app.use('/api/sales', authenticateGateway, createServiceProxy('sales', {
-  target: SERVICES.sales.target,
-  pathRewrite: { '^/api/sales': '/sales' },
-  changeOrigin: true,
-}));
+  // Enrutar todo /api directamente al backend unificado (protegido por JWT en rutas privadas)
+  app.use('/api', authenticateGateway, createServiceProxy('backend-monolith', {
+    target: backendTarget,
+    changeOrigin: true,
+  }));
+} else {
+  console.log(`[GATEWAY] 🧩 Running in MICROSERVICES MODE`);
 
-app.use('/api/customers', authenticateGateway, createServiceProxy('customers', {
-  target: SERVICES.customers.target,
-  pathRewrite: { '^/api/customers': '/customers' },
-  changeOrigin: true,
-}));
+  // Auth service (login/register publicos, resto protegido)
+  app.use('/api/auth', createServiceProxy('auth', SERVICES.auth));
 
-app.use('/api/notifications', authenticateGateway, createServiceProxy('notifications', {
-  target: SERVICES.notifications.target,
-  pathRewrite: { '^/api/notifications': '/notifications' },
-  changeOrigin: true,
-}));
+  // Rutas Directas Compatibles con el Móvil (Mapeos Transparentes)
+  app.use('/api/products', authenticateGateway, createServiceProxy('inventory', {
+    target: SERVICES.inventory.target,
+    pathRewrite: { '^/api/products': '/products' },
+    changeOrigin: true,
+  }));
 
-// Backend unificado (protegido por JWT)
-app.use('/api/backend', authenticateGateway, createServiceProxy('backend', SERVICES.backend));
+  app.use('/api/sales', authenticateGateway, createServiceProxy('sales', {
+    target: SERVICES.sales.target,
+    pathRewrite: { '^/api/sales': '/sales' },
+    changeOrigin: true,
+  }));
 
-// Servicios protegidos por JWT (Rutas con prefijos de Microservicio tradicionales)
-app.use('/api/inventory', authenticateGateway, createServiceProxy('inventory', SERVICES.inventory));
-app.use('/api/sales-legacy', authenticateGateway, createServiceProxy('sales', SERVICES.sales));
-app.use('/api/customers-legacy', authenticateGateway, createServiceProxy('customers', SERVICES.customers));
-app.use('/api/notifications-legacy', authenticateGateway, createServiceProxy('notifications', SERVICES.notifications));
+  app.use('/api/customers', authenticateGateway, createServiceProxy('customers', {
+    target: SERVICES.customers.target,
+    pathRewrite: { '^/api/customers': '/customers' },
+    changeOrigin: true,
+  }));
+
+  app.use('/api/notifications', authenticateGateway, createServiceProxy('notifications', {
+    target: SERVICES.notifications.target,
+    pathRewrite: { '^/api/notifications': '/notifications' },
+    changeOrigin: true,
+  }));
+
+  // Backend unificado (protegido por JWT)
+  app.use('/api/backend', authenticateGateway, createServiceProxy('backend', SERVICES.backend));
+
+  // Servicios protegidos por JWT (Rutas con prefijos de Microservicio tradicionales)
+  app.use('/api/inventory', authenticateGateway, createServiceProxy('inventory', SERVICES.inventory));
+  app.use('/api/sales-legacy', authenticateGateway, createServiceProxy('sales', SERVICES.sales));
+  app.use('/api/customers-legacy', authenticateGateway, createServiceProxy('customers', SERVICES.customers));
+  app.use('/api/notifications-legacy', authenticateGateway, createServiceProxy('notifications', SERVICES.notifications));
+}
 
 // ============================================================
 // RUTAS DIRECTAS A DASHBOARDS (sin rewrite)
