@@ -142,6 +142,13 @@ if (MONOLITH_MODE) {
   const backendTarget = process.env.BACKEND_SERVICE_URL || 'http://backend:3006';
   console.log(`[GATEWAY] 🚀 Running in MONOLITH MODE: Proxying all /api/* -> ${backendTarget}`);
 
+  // Compatibilidad de rutas unificadas (/api/backend/audit -> /api/audit)
+  app.use('/api/backend', authenticateGateway, createServiceProxy('backend-monolith-compat', {
+    target: backendTarget,
+    pathRewrite: { '^/api/backend': '/api' },
+    changeOrigin: true,
+  }));
+
   // Enrutar todo /api directamente al backend unificado (protegido por JWT en rutas privadas)
   app.use('/api', authenticateGateway, createServiceProxy('backend-monolith', {
     target: backendTarget,
