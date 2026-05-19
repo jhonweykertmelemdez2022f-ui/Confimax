@@ -174,7 +174,7 @@ export default function DashboardPage() {
         activityFeed.push({
           id: `sale-${s.id}`,
           type: "sale",
-          title: `Facturación Emitida #${s.id.slice(0, 6).toUpperCase()}`,
+          title: `Facturación Emitida #${(s.id || "").slice(0, 6).toUpperCase()}`,
           desc: `Método: ${s.paymentMethod}`,
           meta: `$${s.total.toFixed(2)}`,
           date: new Date(s.created_at).toLocaleDateString(),
@@ -938,7 +938,7 @@ export default function DashboardPage() {
                   <tbody className="divide-y divide-slate-200 dark:divide-white/10 font-body-sm">
                     {systemUsers.map((u) => (
                       <tr key={u.id} className="hover:bg-slate-50 dark:hover:bg-surface-bright/50">
-                        <td className="py-3.5 px-4 font-semibold text-slate-900 dark:text-white uppercase">{u.username}</td>
+                        <td className="py-3.5 px-4 font-semibold text-slate-900 dark:text-white uppercase">{u.name || u.username}</td>
                         <td className="py-3.5 px-4 font-mono text-xs">{u.email}</td>
                         <td className="py-3.5 px-4">
                           <span className={`px-2 py-0.5 text-[10px] font-bold uppercase rounded-sm border ${
@@ -952,9 +952,9 @@ export default function DashboardPage() {
                           </span>
                         </td>
                         <td className="py-3.5 px-4 text-right">
-                          {u.username.toLowerCase() !== user.name.toLowerCase() ? (
+                          {(u.name || u.username || "").toLowerCase() !== (user?.name || "").toLowerCase() ? (
                             <button
-                              onClick={() => handleDeleteUser(u.id, u.username)}
+                              onClick={() => handleDeleteUser(u.id, u.name || u.username)}
                               className="text-error hover:text-white hover:bg-error uppercase font-data-label text-[10px] border border-error px-2.5 py-1 rounded-sm transition-colors"
                             >
                               Eliminar

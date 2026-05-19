@@ -44,7 +44,7 @@ function FadeInUpCard({ children, delay = 0, duration = 400 }) {
   );
 }
 
-function HomeScreen() {
+function HomeScreen({ navigation }) {
   const {user} = useAuthStore();
   const {colors, typography, spacing} = useTheme();
   const [loading, setLoading] = useState(true);
@@ -181,6 +181,31 @@ function HomeScreen() {
           </FadeInUpCard>
         )}
       </View>
+
+      {/* Panel de Control de Administrador (Solo Admin) */}
+      {user?.role === 'admin' && (
+        <FadeInUpCard delay={350} duration={400}>
+          <TouchableOpacity 
+            style={[dynamicStyles.statCard, { borderColor: colors.dataBlue, borderWidth: 1.5, marginBottom: 16, marginHorizontal: 20 }]}
+            onPress={() => navigation.navigate('Users')}
+          >
+            <View style={dynamicStyles.statHeader}>
+              <MaterialIcons name="admin-panel-settings" size={26} color={colors.dataBlue} />
+              <Text style={[dynamicStyles.statId, { color: colors.dataBlue }]}>ADMINISTRACIÓN // PANEL DE CONTROL</Text>
+            </View>
+            <Text style={[dynamicStyles.welcome, { fontSize: 18, textAlign: 'left', color: colors.primary, marginBottom: 4 }]}>
+              Gestionar Usuarios (CRUD)
+            </Text>
+            <Text style={{ color: colors.secondary, fontSize: 13, lineHeight: 18, marginBottom: 12 }}>
+              Accede a la consola de usuarios del sistema para dar de alta, editar o desactivar cuentas.
+            </Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Text style={{ color: colors.dataBlue, fontWeight: 'bold', fontSize: 13 }}>ABRIR CONSOLA</Text>
+              <MaterialIcons name="chevron-right" size={18} color={colors.dataBlue} style={{ marginLeft: 4 }} />
+            </View>
+          </TouchableOpacity>
+        </FadeInUpCard>
+      )}
 
       {/* Sección Dinámica según Rol */}
       {user?.role !== 'customer' ? (
