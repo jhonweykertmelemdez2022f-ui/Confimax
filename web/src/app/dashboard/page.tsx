@@ -11,6 +11,7 @@ import {
   Database, Activity
 } from "lucide-react";
 import { gsap } from "gsap";
+import { SquarePenIcon, DeleteIcon } from "@/components/AnimatedIcons";
 
 interface Product {
   id: string;
@@ -710,11 +711,11 @@ export default function DashboardPage() {
                           {p.expiration_date ? new Date(p.expiration_date).toLocaleDateString() : "NO VENCE"}
                         </td>
                         <td className="py-3.5 px-4 text-right space-x-2">
-                          <button onClick={() => setEditingProduct(p)} className="p-1.5 bg-data-blue/10 text-data-blue hover:bg-data-blue hover:text-white transition-colors" title="Editar Producto">
-                            <span className="material-symbols-outlined text-sm">edit</span>
+                          <button onClick={() => setEditingProduct(p)} className="p-1.5 bg-data-blue/10 text-data-blue hover:bg-data-blue hover:text-white transition-colors rounded group" title="Editar Producto">
+                            <SquarePenIcon className="w-4 h-4" size={16} />
                           </button>
-                          <button onClick={() => handleDeleteProduct(p.id, p.name)} className="p-1.5 bg-error/10 text-error hover:bg-error hover:text-white transition-colors" title="Eliminar Producto">
-                            <Trash2 className="w-4 h-4" />
+                          <button onClick={() => handleDeleteProduct(p.id, p.name)} className="p-1.5 bg-error/10 text-error hover:bg-error hover:text-white transition-colors rounded group" title="Eliminar Producto">
+                            <DeleteIcon className="w-4 h-4" size={16} />
                           </button>
                         </td>
                       </tr>
@@ -906,8 +907,8 @@ export default function DashboardPage() {
                       </td>
                       <td className="py-3.5 px-4 font-mono font-bold text-data-blue">${s.total.toFixed(2)}</td>
                       <td className="py-3.5 px-4 text-right">
-                        <button onClick={() => handleDeleteSale(s.id)} className="p-1.5 bg-error/10 text-error hover:bg-error hover:text-white transition-colors rounded" title="Anular Venta">
-                          <Trash2 className="w-4 h-4" />
+                        <button onClick={() => handleDeleteSale(s.id)} className="p-1.5 bg-error/10 text-error hover:bg-error hover:text-white transition-colors rounded group" title="Anular Venta">
+                          <DeleteIcon className="w-4 h-4" size={16} />
                         </button>
                       </td>
                     </tr>
@@ -956,11 +957,11 @@ export default function DashboardPage() {
                           {c.address || "No especificada"}
                         </td>
                         <td className="py-3.5 px-4 text-right space-x-2">
-                          <button onClick={() => setEditingCustomer(c)} className="p-1.5 bg-data-blue/10 text-data-blue hover:bg-data-blue hover:text-white transition-colors rounded" title="Editar Cliente">
-                            <span className="material-symbols-outlined text-sm">edit</span>
+                          <button onClick={() => setEditingCustomer(c)} className="p-1.5 bg-data-blue/10 text-data-blue hover:bg-data-blue hover:text-white transition-colors rounded group" title="Editar Cliente">
+                            <SquarePenIcon className="w-4 h-4" size={16} />
                           </button>
-                          <button onClick={() => handleDeleteCustomer(c.id, c.name)} className="p-1.5 bg-error/10 text-error hover:bg-error hover:text-white transition-colors rounded" title="Eliminar Cliente">
-                            <Trash2 className="w-4 h-4" />
+                          <button onClick={() => handleDeleteCustomer(c.id, c.name)} className="p-1.5 bg-error/10 text-error hover:bg-error hover:text-white transition-colors rounded group" title="Eliminar Cliente">
+                            <DeleteIcon className="w-4 h-4" size={16} />
                           </button>
                         </td>
                       </tr>
@@ -1092,15 +1093,15 @@ export default function DashboardPage() {
                           </span>
                         </td>
                         <td className="py-3.5 px-4 text-right space-x-2">
-                          <button onClick={() => setEditingUser(u)} className="p-1.5 bg-data-blue/10 text-data-blue hover:bg-data-blue hover:text-white transition-colors rounded" title="Editar Usuario">
-                            <span className="material-symbols-outlined text-sm">edit</span>
+                          <button onClick={() => setEditingUser(u)} className="p-1.5 bg-data-blue/10 text-data-blue hover:bg-data-blue hover:text-white transition-colors rounded group" title="Editar Usuario">
+                            <SquarePenIcon className="w-4 h-4" size={16} />
                           </button>
                           {(u.name || u.username || "").toLowerCase() !== (user?.name || "").toLowerCase() ? (
                             <button
                               onClick={() => handleDeleteUser(u.id, u.name || u.username)}
-                              className="p-1.5 bg-error/10 text-error hover:bg-error hover:text-white transition-colors rounded" title="Eliminar Usuario"
+                              className="p-1.5 bg-error/10 text-error hover:bg-error hover:text-white transition-colors rounded group" title="Eliminar Usuario"
                             >
-                              <Trash2 className="w-4 h-4" />
+                              <DeleteIcon className="w-4 h-4" size={16} />
                             </button>
                           ) : (
                             <span className="font-data-label text-[10px] text-slate-500 uppercase px-2">Actual</span>
