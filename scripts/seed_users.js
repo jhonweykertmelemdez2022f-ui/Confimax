@@ -15,6 +15,21 @@
 const fs = require('fs');
 const path = require('path');
 const { Client } = require('pg');
+let bcrypt;
+try {
+  bcrypt = require('bcryptjs');
+} catch (e) {
+  try {
+    bcrypt = require(path.join(__dirname, '../services/backend/node_modules/bcryptjs'));
+  } catch (err) {
+    try {
+      bcrypt = require(path.join(__dirname, '../services/auth-service/node_modules/bcryptjs'));
+    } catch (err2) {
+      console.error('❌ No se encontró bcryptjs. Asegúrate de correr npm install primero.');
+      process.exit(1);
+    }
+  }
+}
 
 let databaseUrl = null;
 
@@ -153,9 +168,10 @@ async function runWithHost(hostToUse, snName) {
     `);
     console.log('📋 Tabla "public.users" asegurada.');
 
-    console.log('\n🌾 Sembrando usuarios en public.users...');
+    console.log('\n🌾 Sembrando usuarios en public.users con hash de bcrypt...');
     for (const u of usersToSeed) {
       try {
+        const hashedPassword = await bcrypt.hash(u.password, 10);
         const query = {
           text: `
             INSERT INTO public.users (username, email, password, role, active)
@@ -164,7 +180,7 @@ async function runWithHost(hostToUse, snName) {
             DO UPDATE SET email = EXCLUDED.email, password = EXCLUDED.password, role = EXCLUDED.role
             RETURNING id, username, email, role;
           `,
-          values: [u.username, u.email, u.password, u.role]
+          values: [u.username, u.email, hashedPassword, u.role]
         };
 
         const res = await client.query(query);
