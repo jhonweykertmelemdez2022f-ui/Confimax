@@ -59,6 +59,18 @@ services:
         reservations:
           memory: 256M
 
+  # Blackbox Exporter - Monitoreo sintético (Pings a Render)
+  blackbox-exporter:
+    image: prom/blackbox-exporter:v0.24.0
+    container_name: monitoring-blackbox
+    ports:
+      - "9115:9115"
+    networks:
+      - monitoring-network
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/blackbox_exporter/config.yml'
+
   # Grafana - Dashboards
   grafana:
     image: grafana/grafana:10.2.0

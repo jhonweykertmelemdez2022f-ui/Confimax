@@ -97,6 +97,11 @@ export default function DashboardPage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const statsRef = useRef<HTMLDivElement>(null);
 
+  // Estado para Edición (CRUD)
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
+  const [editingUser, setEditingUser] = useState<SystemUser | null>(null);
+
   // 1. Proteger ruta: solo administradores y vendedores
   useEffect(() => {
     if (!authLoading) {
@@ -379,6 +384,102 @@ export default function DashboardPage() {
     }
   };
 
+  // --- CRUD Adicional: Productos ---
+  const handleDeleteProduct = async (id: string, name: string) => {
+    if (!confirm(`¿Estás seguro de que deseas eliminar el producto "${name}"?`)) return;
+    setErrorMsg(""); setSuccessMsg("");
+    try {
+      await api.deleteProduct(id);
+      setSuccessMsg(`¡Producto "${name}" eliminado exitosamente!`);
+      await loadDashboardData();
+    } catch (err: any) {
+      setErrorMsg(err.message || "Error al eliminar el producto.");
+    }
+  };
+
+  const handleUpdateProduct = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingProduct) return;
+    setErrorMsg(""); setSuccessMsg("");
+    try {
+      await api.updateProduct(editingProduct.id, {
+        name: editingProduct.name,
+        price: parseFloat(editingProduct.price.toString()),
+        stock_quantity: parseInt(editingProduct.stock.toString(), 10),
+        description: editingProduct.description
+      });
+      setSuccessMsg(`¡Producto "${editingProduct.name}" actualizado exitosamente!`);
+      setEditingProduct(null);
+      await loadDashboardData();
+    } catch (err: any) {
+      setErrorMsg(err.message || "Error al actualizar el producto.");
+    }
+  };
+
+  // --- CRUD Adicional: Clientes ---
+  const handleDeleteCustomer = async (id: string, name: string) => {
+    if (!confirm(`¿Estás seguro de que deseas eliminar el cliente "${name}"?`)) return;
+    setErrorMsg(""); setSuccessMsg("");
+    try {
+      await api.deleteCustomer(id);
+      setSuccessMsg(`¡Cliente "${name}" eliminado exitosamente!`);
+      await loadDashboardData();
+    } catch (err: any) {
+      setErrorMsg(err.message || "Error al eliminar el cliente.");
+    }
+  };
+
+  const handleUpdateCustomer = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingCustomer) return;
+    setErrorMsg(""); setSuccessMsg("");
+    try {
+      await api.updateCustomer(editingCustomer.id, {
+        name: editingCustomer.name,
+        email: editingCustomer.email,
+        phone: editingCustomer.phone,
+        address: editingCustomer.address
+      });
+      setSuccessMsg(`¡Cliente "${editingCustomer.name}" actualizado exitosamente!`);
+      setEditingCustomer(null);
+      await loadDashboardData();
+    } catch (err: any) {
+      setErrorMsg(err.message || "Error al actualizar el cliente.");
+    }
+  };
+
+  // --- CRUD Adicional: Usuarios ---
+  const handleUpdateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingUser) return;
+    setErrorMsg(""); setSuccessMsg("");
+    try {
+      await api.updateUser(editingUser.id, {
+        username: editingUser.username,
+        email: editingUser.email,
+        role: editingUser.role
+      });
+      setSuccessMsg(`¡Usuario "${editingUser.username}" actualizado exitosamente!`);
+      setEditingUser(null);
+      await loadDashboardData();
+    } catch (err: any) {
+      setErrorMsg(err.message || "Error al actualizar el usuario.");
+    }
+  };
+
+  // --- CRUD Adicional: Ventas ---
+  const handleDeleteSale = async (id: string) => {
+    if (!confirm(`¿Estás seguro de que deseas anular esta venta? Esta acción no se puede deshacer y el inventario no se restaurará automáticamente.`)) return;
+    setErrorMsg(""); setSuccessMsg("");
+    try {
+      await api.deleteSale(id);
+      setSuccessMsg(`¡Venta anulada exitosamente!`);
+      await loadDashboardData();
+    } catch (err: any) {
+      setErrorMsg(err.message || "Error al anular la venta.");
+    }
+  };
+
   // Pantalla de carga técnica ultra premium
   if (authLoading || (user && user.role !== "cliente" && loadingData)) {
     return (
@@ -592,6 +693,7 @@ export default function DashboardPage() {
                       <th className="py-3 px-4">Precio</th>
                       <th className="py-3 px-4">Stock</th>
                       <th className="py-3 px-4">Vencimiento</th>
+                      <th className="py-3 px-4 text-right">Acciones</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-200 dark:divide-white/10 font-body-sm">
@@ -606,6 +708,14 @@ export default function DashboardPage() {
                         </td>
                         <td className="py-3.5 px-4 font-mono text-xs">
                           {p.expiration_date ? new Date(p.expiration_date).toLocaleDateString() : "NO VENCE"}
+                        </td>
+                        <td className="py-3.5 px-4 text-right space-x-2">
+                          <button onClick={() => setEditingProduct(p)} className="p-1.5 bg-data-blue/10 text-data-blue hover:bg-data-blue hover:text-white transition-colors" title="Editar Producto">
+                            <span className="material-symbols-outlined text-sm">edit</span>
+                          </button>
+                          <button onClick={() => handleDeleteProduct(p.id, p.name)} className="p-1.5 bg-error/10 text-error hover:bg-error hover:text-white transition-colors" title="Eliminar Producto">
+                            <Trash2 className="w-4 h-4" />
+                          </button>
                         </td>
                       </tr>
                     ))}
@@ -777,6 +887,7 @@ export default function DashboardPage() {
                     <th className="py-3 px-4">Método de Pago</th>
                     <th className="py-3 px-4">Fecha</th>
                     <th className="py-3 px-4">Monto Facturado</th>
+                    <th className="py-3 px-4 text-right">Acciones</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 dark:divide-white/10 font-body-sm">
@@ -794,11 +905,16 @@ export default function DashboardPage() {
                         {new Date(s.created_at).toLocaleString()}
                       </td>
                       <td className="py-3.5 px-4 font-mono font-bold text-data-blue">${s.total.toFixed(2)}</td>
+                      <td className="py-3.5 px-4 text-right">
+                        <button onClick={() => handleDeleteSale(s.id)} className="p-1.5 bg-error/10 text-error hover:bg-error hover:text-white transition-colors rounded" title="Anular Venta">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </td>
                     </tr>
                   ))}
                   {sales.length === 0 && (
                     <tr>
-                      <td colSpan={5} className="py-10 text-center text-slate-500">
+                      <td colSpan={6} className="py-10 text-center text-slate-500">
                         No hay registros de facturación almacenados en el ledger transaccional.
                       </td>
                     </tr>
@@ -827,6 +943,7 @@ export default function DashboardPage() {
                       <th className="py-3 px-4">Email</th>
                       <th className="py-3 px-4">Teléfono</th>
                       <th className="py-3 px-4">Dirección</th>
+                      <th className="py-3 px-4 text-right">Acciones</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-200 dark:divide-white/10 font-body-sm">
@@ -838,11 +955,19 @@ export default function DashboardPage() {
                         <td className="py-3.5 px-4 text-slate-500 uppercase text-xs truncate max-w-[200px]" title={c.address}>
                           {c.address || "No especificada"}
                         </td>
+                        <td className="py-3.5 px-4 text-right space-x-2">
+                          <button onClick={() => setEditingCustomer(c)} className="p-1.5 bg-data-blue/10 text-data-blue hover:bg-data-blue hover:text-white transition-colors rounded" title="Editar Cliente">
+                            <span className="material-symbols-outlined text-sm">edit</span>
+                          </button>
+                          <button onClick={() => handleDeleteCustomer(c.id, c.name)} className="p-1.5 bg-error/10 text-error hover:bg-error hover:text-white transition-colors rounded" title="Eliminar Cliente">
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </td>
                       </tr>
                     ))}
                     {customers.length === 0 && (
                       <tr>
-                        <td colSpan={4} className="py-10 text-center text-slate-500">
+                        <td colSpan={5} className="py-10 text-center text-slate-500">
                           No hay clientes vinculados a la base de datos centralizada de Supabase.
                         </td>
                       </tr>
@@ -947,7 +1072,7 @@ export default function DashboardPage() {
                       <th className="py-3 px-4">Usuario</th>
                       <th className="py-3 px-4">Email</th>
                       <th className="py-3 px-4">Rol de Acceso</th>
-                      <th className="py-3 px-4 text-right">Acción</th>
+                      <th className="py-3 px-4 text-right">Acciones</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-200 dark:divide-white/10 font-body-sm">
@@ -966,16 +1091,19 @@ export default function DashboardPage() {
                             {u.role}
                           </span>
                         </td>
-                        <td className="py-3.5 px-4 text-right">
+                        <td className="py-3.5 px-4 text-right space-x-2">
+                          <button onClick={() => setEditingUser(u)} className="p-1.5 bg-data-blue/10 text-data-blue hover:bg-data-blue hover:text-white transition-colors rounded" title="Editar Usuario">
+                            <span className="material-symbols-outlined text-sm">edit</span>
+                          </button>
                           {(u.name || u.username || "").toLowerCase() !== (user?.name || "").toLowerCase() ? (
                             <button
                               onClick={() => handleDeleteUser(u.id, u.name || u.username)}
-                              className="text-error hover:text-white hover:bg-error uppercase font-data-label text-[10px] border border-error px-2.5 py-1 rounded-sm transition-colors"
+                              className="p-1.5 bg-error/10 text-error hover:bg-error hover:text-white transition-colors rounded" title="Eliminar Usuario"
                             >
-                              Eliminar
+                              <Trash2 className="w-4 h-4" />
                             </button>
                           ) : (
-                            <span className="font-data-label text-[10px] text-slate-500 uppercase">Actual</span>
+                            <span className="font-data-label text-[10px] text-slate-500 uppercase px-2">Actual</span>
                           )}
                         </td>
                       </tr>
@@ -1207,6 +1335,106 @@ export default function DashboardPage() {
         )}
 
       </div>
+
+      {/* --- Modales de Edición --- */}
+      {/* Modal Editar Producto */}
+      {editingProduct && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-white dark:bg-surface border border-slate-900 dark:border-white p-6 max-w-lg w-full shadow-2xl">
+            <h3 className="font-headline-lg-mobile uppercase mb-4 text-slate-900 dark:text-white border-b border-slate-900 dark:border-white pb-2">Editar Producto</h3>
+            <form onSubmit={handleUpdateProduct} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-data-label uppercase text-slate-500 mb-1">Nombre</label>
+                  <input type="text" required value={editingProduct.name} onChange={e => setEditingProduct({...editingProduct, name: e.target.value})} className="w-full bg-slate-50 dark:bg-background border border-slate-900/20 dark:border-white/20 p-2 font-body-sm text-slate-900 dark:text-white" />
+                </div>
+                <div>
+                  <label className="block text-xs font-data-label uppercase text-slate-500 mb-1">Precio ($)</label>
+                  <input type="number" step="0.01" required value={editingProduct.price} onChange={e => setEditingProduct({...editingProduct, price: parseFloat(e.target.value)})} className="w-full bg-slate-50 dark:bg-background border border-slate-900/20 dark:border-white/20 p-2 font-body-sm text-slate-900 dark:text-white" />
+                </div>
+                <div>
+                  <label className="block text-xs font-data-label uppercase text-slate-500 mb-1">Stock (Unidades)</label>
+                  <input type="number" required value={editingProduct.stock} onChange={e => setEditingProduct({...editingProduct, stock: parseInt(e.target.value)})} className="w-full bg-slate-50 dark:bg-background border border-slate-900/20 dark:border-white/20 p-2 font-body-sm text-slate-900 dark:text-white" />
+                </div>
+                <div className="col-span-2">
+                  <label className="block text-xs font-data-label uppercase text-slate-500 mb-1">Descripción</label>
+                  <textarea rows={3} value={editingProduct.description} onChange={e => setEditingProduct({...editingProduct, description: e.target.value})} className="w-full bg-slate-50 dark:bg-background border border-slate-900/20 dark:border-white/20 p-2 font-body-sm text-slate-900 dark:text-white" />
+                </div>
+              </div>
+              <div className="flex justify-end gap-2 pt-4">
+                <button type="button" onClick={() => setEditingProduct(null)} className="px-4 py-2 border border-slate-900 dark:border-white text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-surface-bright transition-colors font-data-label text-xs uppercase">Cancelar</button>
+                <button type="submit" className="px-4 py-2 bg-data-blue text-white hover:bg-blue-600 transition-colors font-data-label text-xs uppercase">Guardar Cambios</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Editar Cliente */}
+      {editingCustomer && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-white dark:bg-surface border border-slate-900 dark:border-white p-6 max-w-lg w-full shadow-2xl">
+            <h3 className="font-headline-lg-mobile uppercase mb-4 text-slate-900 dark:text-white border-b border-slate-900 dark:border-white pb-2">Editar Cliente</h3>
+            <form onSubmit={handleUpdateCustomer} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="col-span-2">
+                  <label className="block text-xs font-data-label uppercase text-slate-500 mb-1">Nombre Completo</label>
+                  <input type="text" required value={editingCustomer.name} onChange={e => setEditingCustomer({...editingCustomer, name: e.target.value})} className="w-full bg-slate-50 dark:bg-background border border-slate-900/20 dark:border-white/20 p-2 font-body-sm text-slate-900 dark:text-white" />
+                </div>
+                <div>
+                  <label className="block text-xs font-data-label uppercase text-slate-500 mb-1">Email</label>
+                  <input type="email" required value={editingCustomer.email} onChange={e => setEditingCustomer({...editingCustomer, email: e.target.value})} className="w-full bg-slate-50 dark:bg-background border border-slate-900/20 dark:border-white/20 p-2 font-body-sm text-slate-900 dark:text-white" />
+                </div>
+                <div>
+                  <label className="block text-xs font-data-label uppercase text-slate-500 mb-1">Teléfono</label>
+                  <input type="text" required value={editingCustomer.phone} onChange={e => setEditingCustomer({...editingCustomer, phone: e.target.value})} className="w-full bg-slate-50 dark:bg-background border border-slate-900/20 dark:border-white/20 p-2 font-body-sm text-slate-900 dark:text-white" />
+                </div>
+                <div className="col-span-2">
+                  <label className="block text-xs font-data-label uppercase text-slate-500 mb-1">Dirección</label>
+                  <input type="text" value={editingCustomer.address || ""} onChange={e => setEditingCustomer({...editingCustomer, address: e.target.value})} className="w-full bg-slate-50 dark:bg-background border border-slate-900/20 dark:border-white/20 p-2 font-body-sm text-slate-900 dark:text-white" />
+                </div>
+              </div>
+              <div className="flex justify-end gap-2 pt-4">
+                <button type="button" onClick={() => setEditingCustomer(null)} className="px-4 py-2 border border-slate-900 dark:border-white text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-surface-bright transition-colors font-data-label text-xs uppercase">Cancelar</button>
+                <button type="submit" className="px-4 py-2 bg-data-blue text-white hover:bg-blue-600 transition-colors font-data-label text-xs uppercase">Guardar Cambios</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Editar Usuario */}
+      {editingUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-white dark:bg-surface border border-slate-900 dark:border-white p-6 max-w-lg w-full shadow-2xl">
+            <h3 className="font-headline-lg-mobile uppercase mb-4 text-slate-900 dark:text-white border-b border-slate-900 dark:border-white pb-2">Editar Usuario</h3>
+            <form onSubmit={handleUpdateUser} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-data-label uppercase text-slate-500 mb-1">Nombre de Usuario</label>
+                  <input type="text" required value={editingUser.username} onChange={e => setEditingUser({...editingUser, username: e.target.value})} className="w-full bg-slate-50 dark:bg-background border border-slate-900/20 dark:border-white/20 p-2 font-body-sm text-slate-900 dark:text-white" />
+                </div>
+                <div>
+                  <label className="block text-xs font-data-label uppercase text-slate-500 mb-1">Email</label>
+                  <input type="email" required value={editingUser.email} onChange={e => setEditingUser({...editingUser, email: e.target.value})} className="w-full bg-slate-50 dark:bg-background border border-slate-900/20 dark:border-white/20 p-2 font-body-sm text-slate-900 dark:text-white" />
+                </div>
+                <div className="col-span-2">
+                  <label className="block text-xs font-data-label uppercase text-slate-500 mb-1">Rol</label>
+                  <select required value={editingUser.role} onChange={e => setEditingUser({...editingUser, role: e.target.value})} className="w-full bg-slate-50 dark:bg-background border border-slate-900/20 dark:border-white/20 p-2 font-body-sm text-slate-900 dark:text-white">
+                    <option value="vendor">Vendedor (Limitado)</option>
+                    <option value="admin">Administrador (Total)</option>
+                    <option value="cliente">Cliente (Solo Compras)</option>
+                  </select>
+                </div>
+              </div>
+              <div className="flex justify-end gap-2 pt-4">
+                <button type="button" onClick={() => setEditingUser(null)} className="px-4 py-2 border border-slate-900 dark:border-white text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-surface-bright transition-colors font-data-label text-xs uppercase">Cancelar</button>
+                <button type="submit" className="px-4 py-2 bg-data-blue text-white hover:bg-blue-600 transition-colors font-data-label text-xs uppercase">Guardar Cambios</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

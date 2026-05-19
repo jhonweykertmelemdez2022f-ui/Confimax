@@ -82,6 +82,8 @@ export const inventoryAPI = {
   getLowStock: () => api.get('/products/low-stock'),
   getExpiring: (days) => api.get('/products/alerts/expiring', { params: { days } }),
   createProduct: (data) => api.post('/products', data),
+  updateProduct: (id, data) => api.patch(`/products/${id}`, data),
+  deleteProduct: (id) => api.delete(`/products/${id}`),
   getProductStockItems: (productId) => api.get(`/inventory/stock/product/${productId}`),
   createStockItem: (data) => api.post('/inventory/stock', data),
   updateStockItem: (id, data) => api.put(`/inventory/stock/${id}`, data),
@@ -94,6 +96,8 @@ export const salesAPI = {
   getSaleItems: (id) => api.get(`/sales/${id}/items`),
   getDailySales: (date) => api.get('/sales/daily', { params: { date } }),
   getSalesSummary: (params) => api.get('/sales/summary', { params }),
+  updateSale: (id, data) => api.patch(`/sales/${id}`, data),
+  deleteSale: (id) => api.delete(`/sales/${id}`),
   getExchangeRates: () => api.get('/sales/exchange-rates'),
   convertPrice: (params) => api.get('/sales/convert', { params }),
 };
@@ -103,6 +107,8 @@ export const customersAPI = {
   getCustomer: (id) => api.get(`/customers/${id}`),
   searchCustomers: (query) => api.get('/customers/search', { params: { q: query } }),
   createCustomer: (data) => api.post('/customers', data),
+  updateCustomer: (id, data) => api.patch(`/customers/${id}`, data),
+  deleteCustomer: (id) => api.delete(`/customers/${id}`),
   getCustomerDebt: (id) => api.get(`/customers/${id}/debt`),
   getCustomerCredits: (id) => api.get(`/customers/${id}/credits`),
 };

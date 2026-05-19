@@ -29,6 +29,11 @@ function ProductDetailScreen({route, navigation}) {
   const [stockItem, setStockItem] = useState(null);
   const [updatingStock, setUpdatingStock] = useState(false);
 
+  // Estados para Edición de Producto
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [editForm, setEditForm] = useState({ name: '', price: '', description: '' });
+  const [updatingProduct, setUpdatingProduct] = useState(false);
+
   useEffect(() => {
     loadProduct();
   }, [id]);
@@ -38,6 +43,11 @@ function ProductDetailScreen({route, navigation}) {
       const response = await inventoryAPI.getProduct(id);
       if (response.data) {
         setProduct(response.data);
+        setEditForm({
+          name: response.data.name || '',
+          price: (response.data.price || '').toString(),
+          description: response.data.description || '',
+        });
         
         // Cargar registro de stock asociado
         const stockRes = await inventoryAPI.getProductStockItems(id);
@@ -58,6 +68,49 @@ function ProductDetailScreen({route, navigation}) {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleUpdateProduct = async () => {
+    if (!editForm.name || !editForm.price) {
+      Alert.alert('Error', 'El nombre y el precio son obligatorios.');
+      return;
+    }
+    setUpdatingProduct(true);
+    try {
+      await inventoryAPI.updateProduct(id, {
+        name: editForm.name,
+        price: parseFloat(editForm.price),
+        description: editForm.description
+      });
+      setEditModalVisible(false);
+      loadProduct(); // Recargar datos actualizados
+    } catch (error) {
+      Alert.alert('Error', 'No se pudo actualizar el producto.');
+    } finally {
+      setUpdatingProduct(false);
+    }
+  };
+
+  const handleDeleteProduct = () => {
+    Alert.alert(
+      'Confirmar Eliminación',
+      '¿Estás seguro de que deseas eliminar este producto? Esta acción no se puede deshacer.',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        { 
+          text: 'Eliminar', 
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await inventoryAPI.deleteProduct(id);
+              navigation.goBack();
+            } catch (error) {
+              Alert.alert('Error', 'No se pudo eliminar el producto.');
+            }
+          }
+        }
+      ]
+    );
   };
 
   const handleAdjustStock = async () => {
@@ -167,12 +220,30 @@ function ProductDetailScreen({route, navigation}) {
       </View>
 
       {user?.role !== 'customer' && (
-        <TouchableOpacity 
-          style={dynamicStyles.actionButton}
-          onPress={() => setStockModalVisible(true)}>
-          <MaterialIcons name="edit" size={20} color="#ffffff" style={{marginRight: 8}} />
-          <Text style={dynamicStyles.actionButtonText}>MODIFICAR INVENTARIO</Text>
-        </TouchableOpacity>
+        <View style={{ marginTop: 20 }}>
+          <TouchableOpacity 
+            style={dynamicStyles.actionButton}
+            onPress={() => setStockModalVisible(true)}>
+            <MaterialIcons name="inventory" size={20} color="#ffffff" style={{marginRight: 8}} />
+            <Text style={dynamicStyles.actionButtonText}>AJUSTAR STOCK</Text>
+          </TouchableOpacity>
+          
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 10 }}>
+            <TouchableOpacity 
+              style={[dynamicStyles.actionButton, { flex: 1, marginRight: 5, backgroundColor: colors.dataBlue }]}
+              onPress={() => setEditModalVisible(true)}>
+              <MaterialIcons name="edit" size={20} color="#ffffff" style={{marginRight: 8}} />
+              <Text style={dynamicStyles.actionButtonText}>EDITAR</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={[dynamicStyles.actionButton, { flex: 1, marginLeft: 5, backgroundColor: colors.error }]}
+              onPress={handleDeleteProduct}>
+              <MaterialIcons name="delete" size={20} color="#ffffff" style={{marginRight: 8}} />
+              <Text style={dynamicStyles.actionButtonText}>ELIMINAR</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       )}
 
       {/* Modal de Ajuste de Stock */}
@@ -217,6 +288,73 @@ function ProductDetailScreen({route, navigation}) {
                   <ActivityIndicator color="#ffffff" />
                 ) : (
                   <Text style={dynamicStyles.modalSaveText}>CONFIRMAR</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Modal de Edición de Producto */}
+      <Modal
+        visible={editModalVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setEditModalVisible(false)}
+      >
+        <View style={dynamicStyles.modalOverlay}>
+          <View style={dynamicStyles.modalContent}>
+            <Text style={dynamicStyles.modalTitle}>EDITAR PRODUCTO</Text>
+            <Text style={dynamicStyles.modalSub}>
+              Actualiza la información general de este artículo.
+            </Text>
+
+            <Text style={dynamicStyles.modalLabel}>NOMBRE DEL PRODUCTO</Text>
+            <TextInput
+              style={dynamicStyles.modalInput}
+              value={editForm.name}
+              onChangeText={(t) => setEditForm({...editForm, name: t})}
+              placeholder="Ej: Lata de Atún"
+              placeholderTextColor={colors.secondary}
+            />
+
+            <Text style={dynamicStyles.modalLabel}>PRECIO UNITARIO ($)</Text>
+            <TextInput
+              style={dynamicStyles.modalInput}
+              value={editForm.price}
+              onChangeText={(t) => setEditForm({...editForm, price: t})}
+              keyboardType="numeric"
+              placeholder="Ej: 50.00"
+              placeholderTextColor={colors.secondary}
+            />
+
+            <Text style={dynamicStyles.modalLabel}>DESCRIPCIÓN</Text>
+            <TextInput
+              style={[dynamicStyles.modalInput, { height: 80, textAlignVertical: 'top' }]}
+              value={editForm.description}
+              onChangeText={(t) => setEditForm({...editForm, description: t})}
+              multiline
+              placeholder="Detalles del producto..."
+              placeholderTextColor={colors.secondary}
+            />
+
+            <View style={dynamicStyles.modalButtons}>
+              <TouchableOpacity 
+                style={dynamicStyles.modalBtnCancel}
+                onPress={() => setEditModalVisible(false)}
+              >
+                <Text style={dynamicStyles.modalBtnCancelText}>CANCELAR</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={dynamicStyles.modalBtnConfirm}
+                onPress={handleUpdateProduct}
+                disabled={updatingProduct}
+              >
+                {updatingProduct ? (
+                  <ActivityIndicator size="small" color="#ffffff" />
+                ) : (
+                  <Text style={dynamicStyles.modalBtnConfirmText}>GUARDAR</Text>
                 )}
               </TouchableOpacity>
             </View>
