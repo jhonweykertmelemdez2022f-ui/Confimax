@@ -35,7 +35,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   if (isLoading || !user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-[#0a0a0a]">
-        <div className="w-16 h-16 border-4 border-green-500 border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -62,7 +62,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       >
         <Menu className="w-6 h-6" />
       </button>
-
+ 
       {/* Overlay móvil */}
       {isSidebarOpen && (
         <div 
@@ -81,7 +81,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       `}>
         <div className="p-6 flex items-center justify-between border-b border-gray-100 dark:border-[#222]">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center shadow-lg shadow-green-500/30">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg shadow-blue-500/30">
               <span className="text-xl font-bold text-white">C</span>
             </div>
             <div>
@@ -100,7 +100,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <div className="mb-6 p-4 rounded-2xl bg-gradient-to-br from-gray-100 to-gray-50 dark:from-[#1a1a1a] dark:to-[#111] border border-gray-200 dark:border-[#222]">
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Bienvenido,</p>
             <p className="font-semibold text-lg truncate">{user.name}</p>
-            <span className="inline-block mt-2 px-2.5 py-1 text-xs font-bold rounded-lg bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-400 border border-green-200 dark:border-green-500/30 capitalize">
+            <span className="inline-block mt-2 px-2.5 py-1 text-xs font-bold rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400 border border-blue-200 dark:border-blue-500/30 capitalize">
               {user.role}
             </span>
           </div>
@@ -117,7 +117,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   className={`
                     sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all duration-200
                     ${isActive 
-                      ? 'bg-green-500 text-white shadow-md shadow-green-500/20' 
+                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md shadow-blue-500/20' 
                       : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-[#1a1a1a] hover:text-gray-900 dark:hover:text-white'}
                   `}
                 >

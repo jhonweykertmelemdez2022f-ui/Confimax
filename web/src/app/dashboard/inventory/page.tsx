@@ -141,7 +141,7 @@ export default function InventoryPage() {
             onClick={() => loadProducts()}
             className="p-2.5 rounded-xl border border-gray-200 dark:border-[#333] bg-white dark:bg-[#111] text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#222] transition-colors"
           >
-            <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin text-green-500' : ''}`} />
+            <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin text-blue-500' : ''}`} />
           </button>
           
           <button
@@ -150,7 +150,7 @@ export default function InventoryPage() {
               setFormData({ name: "", sku: "", price: "", stock: "", category: "despensa", description: "", image: "", expiration_date: "" });
               setShowModal(true);
             }}
-            className="flex items-center gap-2 px-4 py-2.5 bg-green-500 hover:bg-green-600 text-white rounded-xl font-medium transition-all shadow-md shadow-green-500/20"
+            className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl font-medium transition-all shadow-md shadow-blue-500/20"
           >
             <Plus className="w-5 h-5" />
             <span>Nuevo Producto</span>
@@ -166,8 +166,8 @@ export default function InventoryPage() {
       )}
 
       {successMsg && (
-        <div className="p-4 bg-green-50 dark:bg-green-500/10 border border-green-200 dark:border-green-500/20 rounded-2xl flex items-center gap-3 text-green-600 dark:text-green-400">
-          <CheckCircle className="w-5 h-5" />
+        <div className="p-4 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-500/20 rounded-2xl flex items-center gap-3 text-blue-600 dark:text-blue-400">
+          <CheckCircle className="w-5 h-5 text-blue-500" />
           <span className="font-medium">{successMsg}</span>
         </div>
       )}
@@ -181,7 +181,7 @@ export default function InventoryPage() {
               placeholder="Buscar por nombre o SKU..." 
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-[#0a0a0a] border border-gray-200 dark:border-[#333] rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all dark:text-white"
+              className="w-full pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-[#0a0a0a] border border-gray-200 dark:border-[#333] rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all dark:text-white"
             />
           </div>
         </div>
@@ -225,9 +225,9 @@ export default function InventoryPage() {
                     </td>
                     <td className="p-4">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        product.stock > 10 ? 'bg-green-100 text-green-800 dark:bg-green-500/20 dark:text-green-400' :
-                        product.stock > 0 ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-500/20 dark:text-yellow-400' :
-                        'bg-red-100 text-red-800 dark:bg-red-500/20 dark:text-red-400'
+                        product.stock > 10 ? 'bg-purple-100 text-purple-800 dark:bg-purple-500/20 dark:text-purple-400' :
+                        product.stock > 0 ? 'bg-blue-100 text-blue-800 dark:bg-blue-500/20 dark:text-blue-400' :
+                        'bg-slate-100 text-slate-800 dark:bg-slate-500/20 dark:text-slate-400'
                       }`}>
                         {product.stock} unds.
                       </span>
@@ -282,30 +282,30 @@ export default function InventoryPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="col-span-2 sm:col-span-1">
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nombre</label>
-                  <input required type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-[#333] bg-gray-50 dark:bg-[#0a0a0a] dark:text-white focus:ring-2 focus:ring-green-500 outline-none" />
+                  <input required type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-[#333] bg-gray-50 dark:bg-[#0a0a0a] dark:text-white focus:ring-2 focus:ring-purple-500 outline-none" />
                 </div>
                 <div className="col-span-2 sm:col-span-1">
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">SKU</label>
-                  <input required type="text" value={formData.sku} onChange={e => setFormData({...formData, sku: e.target.value})} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-[#333] bg-gray-50 dark:bg-[#0a0a0a] dark:text-white focus:ring-2 focus:ring-green-500 outline-none" />
+                  <input required type="text" value={formData.sku} onChange={e => setFormData({...formData, sku: e.target.value})} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-[#333] bg-gray-50 dark:bg-[#0a0a0a] dark:text-white focus:ring-2 focus:ring-purple-500 outline-none" />
                 </div>
                 <div className="col-span-2 sm:col-span-1">
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Precio ($)</label>
-                  <input required type="number" step="0.01" value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-[#333] bg-gray-50 dark:bg-[#0a0a0a] dark:text-white focus:ring-2 focus:ring-green-500 outline-none" />
+                  <input required type="number" step="0.01" value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-[#333] bg-gray-50 dark:bg-[#0a0a0a] dark:text-white focus:ring-2 focus:ring-purple-500 outline-none" />
                 </div>
                 <div className="col-span-2 sm:col-span-1">
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Stock</label>
-                  <input required type="number" value={formData.stock} onChange={e => setFormData({...formData, stock: e.target.value})} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-[#333] bg-gray-50 dark:bg-[#0a0a0a] dark:text-white focus:ring-2 focus:ring-green-500 outline-none" />
+                  <input required type="number" value={formData.stock} onChange={e => setFormData({...formData, stock: e.target.value})} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-[#333] bg-gray-50 dark:bg-[#0a0a0a] dark:text-white focus:ring-2 focus:ring-purple-500 outline-none" />
                 </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Descripción</label>
-                <textarea rows={3} value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-[#333] bg-gray-50 dark:bg-[#0a0a0a] dark:text-white focus:ring-2 focus:ring-green-500 outline-none"></textarea>
+                <textarea rows={3} value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-[#333] bg-gray-50 dark:bg-[#0a0a0a] dark:text-white focus:ring-2 focus:ring-purple-500 outline-none"></textarea>
               </div>
               <div className="pt-4 flex justify-end gap-3 border-t border-gray-100 dark:border-[#222]">
                 <button type="button" onClick={() => setShowModal(false)} className="px-5 py-2.5 rounded-xl font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#222]">
                   Cancelar
                 </button>
-                <button type="submit" disabled={loading} className="px-5 py-2.5 rounded-xl font-medium text-white bg-green-500 hover:bg-green-600 shadow-md shadow-green-500/20 disabled:opacity-50">
+                <button type="submit" disabled={loading} className="px-5 py-2.5 rounded-xl font-medium text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-md shadow-blue-500/20 disabled:opacity-50">
                   {loading ? 'Guardando...' : 'Guardar Producto'}
                 </button>
               </div>

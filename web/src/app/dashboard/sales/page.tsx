@@ -95,8 +95,8 @@ export default function SalesPage() {
       )}
 
       {successMsg && (
-        <div className="p-4 bg-green-50 dark:bg-green-500/10 border border-green-200 dark:border-green-500/20 rounded-2xl flex items-center gap-3 text-green-600 dark:text-green-400">
-          <CheckCircle className="w-5 h-5" />
+        <div className="p-4 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-500/20 rounded-2xl flex items-center gap-3 text-blue-600 dark:text-blue-400">
+          <CheckCircle className="w-5 h-5 text-blue-500" />
           <span className="font-medium">{successMsg}</span>
         </div>
       )}

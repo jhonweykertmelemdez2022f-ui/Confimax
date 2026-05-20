@@ -3,8 +3,12 @@
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
-import { Package, DollarSign, Users, AlertTriangle, Activity } from "lucide-react";
+import { 
+  Package, DollarSign, Users, Activity, Plus, 
+  ShoppingCart, UserPlus, ShieldAlert, CheckCircle2 
+} from "lucide-react";
 import { gsap } from "gsap";
+import Link from "next/link";
 
 export default function DashboardOverviewPage() {
   const { user } = useAuth();
@@ -62,17 +66,17 @@ export default function DashboardOverviewPage() {
 
   if (loading) {
     return (
-      <div className="h-full flex items-center justify-center">
-        <div className="w-12 h-12 border-4 border-green-500 border-t-transparent rounded-full animate-spin"></div>
+      <div className="h-full min-h-[400px] flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
 
   const statCards = [
-    { title: "Total Productos", value: stats.totalProducts, icon: Package, color: "from-blue-500 to-cyan-400" },
-    { title: "Ventas Registradas", value: stats.totalSales, icon: DollarSign, color: "from-green-500 to-emerald-400" },
-    { title: "Clientes", value: stats.totalCustomers, icon: Users, color: "from-purple-500 to-fuchsia-400" },
-    { title: "Alertas de Stock", value: stats.lowStockCount, icon: AlertTriangle, color: "from-orange-500 to-red-400" }
+    { title: "Total Productos", value: stats.totalProducts, icon: Package, color: "from-blue-500 to-indigo-500" },
+    { title: "Ventas Registradas", value: stats.totalSales, icon: DollarSign, color: "from-purple-600 to-indigo-500" },
+    { title: "Clientes", value: stats.totalCustomers, icon: Users, color: "from-indigo-600 to-blue-500" },
+    { title: "Alertas de Stock", value: stats.lowStockCount, icon: ShieldAlert, color: "from-slate-600 to-indigo-800" }
   ];
 
   return (
@@ -82,6 +86,7 @@ export default function DashboardOverviewPage() {
         <p className="text-gray-500 dark:text-gray-400 mt-1">Bienvenido al resumen de la plataforma Confimax.</p>
       </div>
 
+      {/* Tarjetas de Estadísticas */}
       <div ref={statsRef} className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
         {statCards.map((stat, i) => (
           <div key={i} className="stat-card relative overflow-hidden bg-white dark:bg-[#111] rounded-3xl p-6 border border-gray-100 dark:border-[#222] shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
@@ -99,6 +104,61 @@ export default function DashboardOverviewPage() {
         ))}
       </div>
 
+      {/* Panel de Acciones Rápidas */}
+      <div className="bg-white dark:bg-[#111] border border-gray-100 dark:border-[#222] rounded-3xl p-6 shadow-sm">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="p-2 bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 rounded-xl">
+            <Plus className="w-5 h-5" />
+          </div>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white">Acciones Rápidas</h2>
+        </div>
+        
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Link href="/dashboard/sales" className="group flex items-center gap-4 p-4 rounded-2xl border border-gray-100 dark:border-[#222] bg-gray-50 hover:bg-gradient-to-br hover:from-blue-600 hover:to-purple-600 dark:bg-[#161616] hover:text-white transition-all duration-300 shadow-sm hover:shadow-lg hover:-translate-y-0.5">
+            <div className="w-12 h-12 rounded-xl bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 flex items-center justify-center group-hover:bg-white/20 group-hover:text-white transition-colors">
+              <ShoppingCart className="w-6 h-6" />
+            </div>
+            <div>
+              <h4 className="font-semibold text-gray-900 dark:text-white group-hover:text-white transition-colors">Registrar Venta</h4>
+              <p className="text-xs text-gray-500 dark:text-gray-400 group-hover:text-white/80 transition-colors">Generar nueva transacción</p>
+            </div>
+          </Link>
+
+          <Link href="/dashboard/inventory" className="group flex items-center gap-4 p-4 rounded-2xl border border-gray-100 dark:border-[#222] bg-gray-50 hover:bg-gradient-to-br hover:from-blue-600 hover:to-purple-600 dark:bg-[#161616] hover:text-white transition-all duration-300 shadow-sm hover:shadow-lg hover:-translate-y-0.5">
+            <div className="w-12 h-12 rounded-xl bg-purple-100 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400 flex items-center justify-center group-hover:bg-white/20 group-hover:text-white transition-colors">
+              <Package className="w-6 h-6" />
+            </div>
+            <div>
+              <h4 className="font-semibold text-gray-900 dark:text-white group-hover:text-white transition-colors">Nuevo Producto</h4>
+              <p className="text-xs text-gray-500 dark:text-gray-400 group-hover:text-white/80 transition-colors">Agregar item al inventario</p>
+            </div>
+          </Link>
+
+          <Link href="/dashboard/customers" className="group flex items-center gap-4 p-4 rounded-2xl border border-gray-100 dark:border-[#222] bg-gray-50 hover:bg-gradient-to-br hover:from-blue-600 hover:to-purple-600 dark:bg-[#161616] hover:text-white transition-all duration-300 shadow-sm hover:shadow-lg hover:-translate-y-0.5">
+            <div className="w-12 h-12 rounded-xl bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center group-hover:bg-white/20 group-hover:text-white transition-colors">
+              <Users className="w-6 h-6" />
+            </div>
+            <div>
+              <h4 className="font-semibold text-gray-900 dark:text-white group-hover:text-white transition-colors">Nuevo Cliente</h4>
+              <p className="text-xs text-gray-500 dark:text-gray-400 group-hover:text-white/80 transition-colors">Registrar en el directorio</p>
+            </div>
+          </Link>
+
+          {user?.role === "admin" && (
+            <Link href="/dashboard/users" className="group flex items-center gap-4 p-4 rounded-2xl border border-gray-100 dark:border-[#222] bg-gray-50 hover:bg-gradient-to-br hover:from-blue-600 hover:to-purple-600 dark:bg-[#161616] hover:text-white transition-all duration-300 shadow-sm hover:shadow-lg hover:-translate-y-0.5">
+              <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-500/20 text-slate-600 dark:text-slate-400 flex items-center justify-center group-hover:bg-white/20 group-hover:text-white transition-colors">
+                <UserPlus className="w-6 h-6" />
+              </div>
+              <div>
+                <h4 className="font-semibold text-gray-900 dark:text-white group-hover:text-white transition-colors">Añadir Usuario</h4>
+                <p className="text-xs text-gray-500 dark:text-gray-400 group-hover:text-white/80 transition-colors">Administrar accesos de personal</p>
+              </div>
+            </Link>
+          )}
+        </div>
+      </div>
+
+      {/* Actividad y Atención Requerida */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white dark:bg-[#111] border border-gray-100 dark:border-[#222] rounded-3xl p-6 shadow-sm">
           <div className="flex items-center gap-3 mb-6">
@@ -115,25 +175,25 @@ export default function DashboardOverviewPage() {
 
         <div className="bg-white dark:bg-[#111] border border-gray-100 dark:border-[#222] rounded-3xl p-6 shadow-sm">
           <div className="flex items-center gap-3 mb-6">
-            <div className="p-2 bg-orange-100 dark:bg-orange-500/20 text-orange-600 dark:text-orange-400 rounded-xl">
-              <AlertTriangle className="w-5 h-5" />
+            <div className="p-2 bg-purple-100 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400 rounded-xl">
+              <ShieldAlert className="w-5 h-5" />
             </div>
             <h2 className="text-xl font-bold text-gray-900 dark:text-white">Atención Requerida</h2>
           </div>
           {stats.lowStockCount > 0 ? (
-            <div className="p-4 bg-orange-50 dark:bg-orange-500/10 border border-orange-200 dark:border-orange-500/20 rounded-2xl">
+            <div className="p-4 bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-500/20 rounded-2xl">
               <div className="flex items-start gap-3">
-                <AlertTriangle className="w-5 h-5 text-orange-500 mt-0.5" />
+                <ShieldAlert className="w-5 h-5 text-purple-600 dark:text-purple-400 mt-0.5" />
                 <div>
-                  <h4 className="font-semibold text-orange-800 dark:text-orange-400">Stock Bajo Detectado</h4>
-                  <p className="text-sm text-orange-600 dark:text-orange-300 mt-1">Hay {stats.lowStockCount} producto(s) con inventario bajo. Revisa la sección de Inventario para reabastecer.</p>
+                  <h4 className="font-semibold text-purple-800 dark:text-purple-400">Stock Bajo Detectado</h4>
+                  <p className="text-sm text-purple-600 dark:text-purple-300 mt-1">Hay {stats.lowStockCount} producto(s) con inventario bajo. Revisa la sección de Inventario para reabastecer.</p>
                 </div>
               </div>
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center py-12 text-center">
-              <div className="w-16 h-16 bg-green-100 dark:bg-green-500/20 rounded-full flex items-center justify-center mb-4">
-                <Package className="w-8 h-8 text-green-600 dark:text-green-400" />
+              <div className="w-16 h-16 bg-blue-100 dark:bg-blue-500/20 rounded-full flex items-center justify-center mb-4">
+                <CheckCircle2 className="w-8 h-8 text-blue-600 dark:text-blue-400" />
               </div>
               <p className="text-gray-500 dark:text-gray-400 font-medium">Todo está en orden.</p>
               <p className="text-sm text-gray-400 mt-1">El stock es saludable.</p>

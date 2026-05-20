@@ -145,7 +145,7 @@ export default function UsersPage() {
               setFormData({ username: "", name: "", email: "", password: "", role: "vendor" });
               setShowModal(true);
             }}
-            className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#5548e0] to-[#e84d8a] dark:from-[#6c63ff] dark:to-[#ff6b9d] text-white rounded-xl font-medium transition-all shadow-md hover:shadow-lg shadow-[#5548e0]/20 dark:shadow-[#6c63ff]/20 hover:scale-[1.02] active:scale-[0.98]"
+            className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-500 dark:to-purple-500 text-white rounded-xl font-medium transition-all shadow-md hover:shadow-lg shadow-blue-500/20 dark:shadow-purple-500/20 hover:scale-[1.02] active:scale-[0.98]"
           >
             <Plus className="w-5 h-5" />
             <span>Añadir Usuario</span>
@@ -161,8 +161,8 @@ export default function UsersPage() {
       )}
 
       {successMsg && (
-        <div className="p-4 bg-green-50 dark:bg-green-500/10 border border-green-200 dark:border-green-500/20 rounded-2xl flex items-center gap-3 text-green-600 dark:text-green-400">
-          <CheckCircle className="w-5 h-5" />
+        <div className="p-4 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-500/20 rounded-2xl flex items-center gap-3 text-blue-600 dark:text-blue-400">
+          <CheckCircle className="w-5 h-5 text-blue-500" />
           <span className="font-medium">{successMsg}</span>
         </div>
       )}
@@ -203,7 +203,7 @@ export default function UsersPage() {
                   <tr key={u.id} className="user-row hover:bg-[#5548e0]/5 dark:hover:bg-[#6c63ff]/5 transition-colors group">
                     <td className="p-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#5548e0] to-[#e84d8a] dark:from-[#6c63ff] dark:to-[#ff6b9d] text-white flex items-center justify-center font-bold">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-600 to-purple-600 dark:from-blue-500 dark:to-purple-500 text-white flex items-center justify-center font-bold">
                           {u.username.charAt(0).toUpperCase()}
                         </div>
                         <div>
@@ -215,10 +215,10 @@ export default function UsersPage() {
                     <td className="p-4">
                       <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border capitalize ${
                         u.role === 'admin' 
-                          ? 'bg-red-500/10 text-red-600 border-red-500/20 dark:text-red-400'
+                          ? 'bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-500/20 dark:text-purple-400 dark:border-purple-500/30'
                           : u.role === 'manager'
-                          ? 'bg-[#e84d8a]/10 text-[#e84d8a] border-[#e84d8a]/20 dark:bg-[#ff6b9d]/10 dark:text-[#ff6b9d] dark:border-[#ff6b9d]/20'
-                          : 'bg-[#5548e0]/10 text-[#5548e0] border-[#5548e0]/20 dark:bg-[#6c63ff]/10 dark:text-[#6c63ff] dark:border-[#6c63ff]/20'
+                          ? 'bg-indigo-100 text-indigo-700 border-indigo-200 dark:bg-indigo-500/20 dark:text-indigo-400 dark:border-indigo-500/30'
+                          : 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-500/20 dark:text-blue-400 dark:border-blue-500/30'
                       }`}>
                         {u.role === 'admin' && <ShieldCheck className="w-3.5 h-3.5" />}
                         {u.role === 'manager' && <UserCog className="w-3.5 h-3.5" />}
@@ -303,7 +303,7 @@ export default function UsersPage() {
                 <button type="button" onClick={() => setShowModal(false)} className="px-5 py-2.5 rounded-xl font-medium text-gray-500 dark:text-gray-400 hover:bg-[#e0e0f0] dark:hover:bg-[#2a2a3a]">
                   Cancelar
                 </button>
-                <button type="submit" disabled={loading} className="px-5 py-2.5 rounded-xl font-medium text-white bg-gradient-to-r from-[#5548e0] to-[#e84d8a] dark:from-[#6c63ff] dark:to-[#ff6b9d] shadow-md shadow-[#5548e0]/20 dark:shadow-[#6c63ff]/20 hover:scale-[1.02] active:scale-[0.98] transition-transform disabled:opacity-50">
+                <button type="submit" disabled={loading} className="px-5 py-2.5 rounded-xl font-medium text-white bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-500 dark:to-purple-500 shadow-md shadow-blue-500/20 dark:shadow-purple-500/20 hover:scale-[1.02] active:scale-[0.98] transition-transform disabled:opacity-50">
                   {loading ? 'Guardando...' : 'Guardar Usuario'}
                 </button>
               </div>

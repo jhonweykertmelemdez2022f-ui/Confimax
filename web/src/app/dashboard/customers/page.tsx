@@ -151,8 +151,8 @@ export default function CustomersPage() {
       )}
 
       {successMsg && (
-        <div className="p-4 bg-green-50 dark:bg-green-500/10 border border-green-200 dark:border-green-500/20 rounded-2xl flex items-center gap-3 text-green-600 dark:text-green-400">
-          <CheckCircle className="w-5 h-5" />
+        <div className="p-4 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-500/20 rounded-2xl flex items-center gap-3 text-blue-600 dark:text-blue-400">
+          <CheckCircle className="w-5 h-5 text-blue-500" />
           <span className="font-medium">{successMsg}</span>
         </div>
       )}
@@ -177,7 +177,7 @@ export default function CustomersPage() {
         ) : (
           filteredCustomers.map((customer) => (
             <div key={customer.id} className="customer-card bg-white dark:bg-[#111] rounded-3xl border border-gray-100 dark:border-[#222] p-6 shadow-sm hover:shadow-xl transition-all duration-300 group relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-purple-500 to-fuchsia-400 rounded-full blur-2xl opacity-10 dark:opacity-20 -mr-6 -mt-6 pointer-events-none"></div>
+              <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-purple-600 to-blue-500 rounded-full blur-2xl opacity-10 dark:opacity-20 -mr-6 -mt-6 pointer-events-none"></div>
               
               <div className="flex justify-between items-start mb-4">
                 <div className="w-12 h-12 rounded-xl bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center font-bold text-xl uppercase shadow-sm">
