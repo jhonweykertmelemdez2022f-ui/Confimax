@@ -16,10 +16,10 @@ const rateLimiter = async (req, res, next) => {
       await redisClient.expire(key, 60);
     }
 
-    res.setHeader('X-RateLimit-Limit', 1000);
-    res.setHeader('X-RateLimit-Remaining', Math.max(0, 1000 - current));
+    res.setHeader('X-RateLimit-Limit', 1500);
+    res.setHeader('X-RateLimit-Remaining', Math.max(0, 1500 - current));
 
-    if (current > 1000) {
+    if (current > 1500) {
       return res.status(429).json({
         message: 'Too many requests',
         error: true
