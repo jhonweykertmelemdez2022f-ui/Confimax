@@ -42,7 +42,7 @@ export default function InventoryPage() {
   const loadProducts = async () => {
     try {
       setLoading(true);
-      const res = await api.getProducts();
+      const res = await api.getProducts() as any;
       const data = Array.isArray(res.data || res) ? (res.data || res) : [];
       setProducts(data.map((p: any) => ({
         id: p.id || p.product_id,
@@ -80,7 +80,7 @@ export default function InventoryPage() {
         name: formData.name,
         sku: formData.sku,
         price: parseFloat(formData.price),
-        stock_quantity: parseInt(formData.stock),
+        stock: parseInt(formData.stock),
         category: formData.category,
         description: formData.description
       };

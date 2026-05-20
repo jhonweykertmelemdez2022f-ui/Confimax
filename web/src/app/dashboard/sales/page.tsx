@@ -31,7 +31,7 @@ export default function SalesPage() {
   const loadSales = async () => {
     try {
       setLoading(true);
-      const res = await api.getSales();
+      const res = await api.getSales() as any;
       const data = Array.isArray(res.data || res) ? (res.data || res) : [];
       setSales(data.map((s: any) => ({
         id: s.id || String(s.sale_id),

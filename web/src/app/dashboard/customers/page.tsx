@@ -39,7 +39,7 @@ export default function CustomersPage() {
   const loadCustomers = async () => {
     try {
       setLoading(true);
-      const res = await api.getCustomers();
+      const res = await api.getCustomers() as any;
       const data = Array.isArray(res.data || res) ? (res.data || res) : [];
       setCustomers(data.map((c: any) => ({
         id: c.id,

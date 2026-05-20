@@ -29,7 +29,7 @@ export default function AuditPage() {
   const loadAuditLogs = async () => {
     try {
       setLoading(true);
-      const res = await api.getAuditLogs();
+      const res = await api.getAuditLogs() as any;
       const logs = Array.isArray(res.data || res) ? (res.data || res) : [];
       setAuditLogs(logs);
     } catch (err) {

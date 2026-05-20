@@ -45,7 +45,7 @@ export default function UsersPage() {
   const loadUsers = async () => {
     try {
       setLoading(true);
-      const res = await api.getUsers();
+      const res = await api.getUsers() as any;
       const data = Array.isArray(res.data || res) ? (res.data || res) : [];
       setSystemUsers(data.map((u: any) => ({
         id: u.id,
@@ -79,7 +79,7 @@ export default function UsersPage() {
         await api.updateUser(editingUser.id, formData);
         setSuccessMsg("Usuario actualizado con éxito");
       } else {
-        await api.register(formData.username, formData.email, formData.password, formData.role, formData.name);
+        await api.createUser(formData);
         setSuccessMsg("Usuario registrado con éxito");
       }
       

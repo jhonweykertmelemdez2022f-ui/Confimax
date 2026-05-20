@@ -27,11 +27,11 @@ export default function DashboardOverviewPage() {
     if (!user) return;
     try {
       setLoading(true);
-      const [productsRes, salesRes, customersRes] = await Promise.all([
+      const [productsRes, salesRes, customersRes] = (await Promise.all([
         api.getProducts().catch(() => []),
         api.getSales().catch(() => []),
         api.getCustomers().catch(() => [])
-      ]);
+      ])) as any[];
 
       const products = Array.isArray(productsRes.data || productsRes) ? (productsRes.data || productsRes) : [];
       const sales = Array.isArray(salesRes.data || salesRes) ? (salesRes.data || salesRes) : [];
