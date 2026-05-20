@@ -3,6 +3,7 @@ import {View, Text, StyleSheet, ActivityIndicator, ScrollView, TouchableOpacity,
 import {customersAPI} from '../../services/api';
 import { useTheme } from '../../theme';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useAuthStore } from '../../stores/authStore';
 
 function CustomerDetailScreen({route, navigation}) {
   const {id} = route.params;

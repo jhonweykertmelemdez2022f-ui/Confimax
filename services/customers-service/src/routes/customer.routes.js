@@ -56,7 +56,7 @@ router.post(
   authorize('admin', 'manager'),
   [
     body('name').trim().notEmpty().withMessage('Name required'),
-    body('rif').trim().notEmpty().withMessage('RIF required'),
+    body('rif').optional().trim(),
     body('email').optional().isEmail().withMessage('Valid email required'),
     body('credit_limit').optional().isFloat({ min: 0 }).withMessage('Valid credit limit required'),
   ],
