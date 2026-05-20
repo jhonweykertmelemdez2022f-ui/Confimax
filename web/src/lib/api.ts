@@ -72,10 +72,20 @@ class ApiClient {
         headers,
       });
 
-      const data = await response.json();
+      let data;
+      const text = await response.text();
+      if (text) {
+        try {
+          data = JSON.parse(text);
+        } catch (e) {
+          data = { message: text };
+        }
+      } else {
+        data = {};
+      }
 
       if (!response.ok) {
-        throw new Error(data.error || data.message || 'Error en la petición');
+        throw new Error(data.error || data.message || `Error en la petición: ${response.status}`);
       }
 
       // Guardar token si viene en la respuesta
@@ -180,7 +190,7 @@ class ApiClient {
 
   async updateProduct(id: string, data: any) {
     return this.request(`/products/${id}`, {
-      method: 'PATCH',
+      method: 'PUT',
       body: JSON.stringify(data),
     });
   }
