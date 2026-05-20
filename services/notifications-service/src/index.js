@@ -115,6 +115,36 @@ app.get('/api/audit', async (req, res) => {
   }
 });
 
+// Endpoint para que otros microservicios envíen logs de auditoría
+app.post('/api/audit', async (req, res) => {
+  try {
+    const payload = req.body;
+    
+    // Preparar el documento según el esquema original de audit.model.js
+    const auditDoc = {
+      entity: payload.entity || 'Unknown',
+      operation: payload.operation || 'UNKNOWN',
+      recordId: payload.recordId ? String(payload.recordId) : null,
+      oldData: payload.oldData,
+      newData: payload.newData,
+      userId: payload.userId || null,
+      username: payload.username || null,
+      ipAddress: payload.ip || null,
+      endpoint: payload.endpoint || null,
+      userAgent: payload.userAgent || null,
+      status: payload.status || 'success',
+      errorMessage: payload.errorMessage || null,
+      timestamp: new Date()
+    };
+
+    await mongoose.connection.db.collection('audit_logs').insertOne(auditDoc);
+    res.status(201).json({ success: true });
+  } catch (err) {
+    console.error('[AUDIT-API] Error saving audit log:', err.message);
+    res.status(500).json({ error: 'Failed to save audit log' });
+  }
+});
+
 app.get('/api/audit/user/:userId', async (req, res) => {
   try {
     const { userId } = req.params;

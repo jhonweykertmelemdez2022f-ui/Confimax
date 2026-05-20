@@ -1,4 +1,26 @@
 const InventoryService = require('../services/inventory.service');
+const axios = require('axios');
+
+// Helper para enviar auditoría a Notifications Service
+const sendAudit = async (req, operation, entity, recordId, newData = null, oldData = null) => {
+  try {
+    const notificationsUrl = process.env.NOTIFICATIONS_SERVICE_URL || 'http://localhost:3005';
+    await axios.post(`${notificationsUrl}/api/audit`, {
+      entity,
+      operation,
+      recordId,
+      newData,
+      oldData,
+      userId: req.user?.id,
+      username: req.user?.username,
+      ip: req.ip,
+      endpoint: req.originalUrl,
+      userAgent: req.headers['user-agent']
+    });
+  } catch (err) {
+    console.error('[INVENTORY] Failed to send audit log:', err.message);
+  }
+};
 
 const productController = {
   async getProduct(req, res, next) {
@@ -24,18 +46,29 @@ const productController = {
     catch (e) { next(e); }
   },
   async createProduct(req, res, next) {
-    try { res.status(201).json(await InventoryService.createProduct(req.body)); }
+    try { 
+      const product = await InventoryService.createProduct(req.body);
+      await sendAudit(req, 'CREATE', 'Product', product.id, product);
+      res.status(201).json(product); 
+    }
     catch (e) { next(e); }
   },
   async updateProduct(req, res, next) {
     try {
+      const oldProduct = await InventoryService.getProduct(req.params.id, false);
       const product = await InventoryService.updateProduct(req.params.id, req.body);
       if (!product) return res.status(404).json({ message: 'Product not found' });
+      await sendAudit(req, 'UPDATE', 'Product', product.id, product, oldProduct);
       res.json(product);
     } catch (e) { next(e); }
   },
   async deleteProduct(req, res, next) {
-    try { await InventoryService.deleteProduct(req.params.id); res.status(204).send(); }
+    try { 
+      const oldProduct = await InventoryService.getProduct(req.params.id, false);
+      await InventoryService.deleteProduct(req.params.id); 
+      if (oldProduct) await sendAudit(req, 'DELETE', 'Product', req.params.id, null, oldProduct);
+      res.status(204).send(); 
+    }
     catch (e) { next(e); }
   },
   async listProducts(req, res, next) {
