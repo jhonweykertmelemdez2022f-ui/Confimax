@@ -9,6 +9,7 @@ function SaleDetailScreen({route, navigation}) {
   const [sale, setSale] = useState(null);
   const [loading, setLoading] = useState(true);
   const {colors} = useTheme();
+  const {user} = useAuthStore();
 
   useEffect(() => {
     loadSale();
@@ -28,6 +29,29 @@ function SaleDetailScreen({route, navigation}) {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleDeleteSale = () => {
+    Alert.alert(
+      'Anular Venta',
+      '¿Estás seguro de que deseas anular esta venta? Esta acción no se puede deshacer.',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        { 
+          text: 'Anular Venta', 
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await salesAPI.deleteSale(id);
+              Alert.alert('Éxito', 'La venta ha sido anulada exitosamente.');
+              navigation.goBack();
+            } catch (error) {
+              Alert.alert('Error', 'No se pudo anular la venta.');
+            }
+          }
+        }
+      ]
+    );
   };
 
   const dynamicStyles = createStyles(colors);
@@ -93,12 +117,23 @@ function SaleDetailScreen({route, navigation}) {
         </View>
       </View>
 
-      <TouchableOpacity 
-        style={dynamicStyles.actionButton}
-        onPress={() => Alert.alert('Éxito', 'Comprobante enviado')}>
-        <MaterialIcons name="share" size={20} color="#ffffff" style={{marginRight: 8}} />
-        <Text style={dynamicStyles.actionButtonText}>COMPARTIR COMPROBANTE</Text>
-      </TouchableOpacity>
+      <View style={{ marginTop: 10, marginBottom: 30, marginHorizontal: 15, flexDirection: 'row', justifyContent: 'space-between' }}>
+        <TouchableOpacity 
+          style={[dynamicStyles.actionButton, { flex: 1, marginRight: 5, backgroundColor: colors.dataBlue, marginTop: 0, marginHorizontal: 0 }]}
+          onPress={() => Alert.alert('Éxito', 'Comprobante enviado')}>
+          <MaterialIcons name="share" size={20} color="#ffffff" style={{marginRight: 8}} />
+          <Text style={dynamicStyles.actionButtonText}>COMPARTIR</Text>
+        </TouchableOpacity>
+
+        {user?.role !== 'customer' && (
+          <TouchableOpacity 
+            style={[dynamicStyles.actionButton, { flex: 1, marginLeft: 5, backgroundColor: colors.error, marginTop: 0, marginHorizontal: 0 }]}
+            onPress={handleDeleteSale}>
+            <MaterialIcons name="delete" size={20} color="#ffffff" style={{marginRight: 8}} />
+            <Text style={dynamicStyles.actionButtonText}>ANULAR</Text>
+          </TouchableOpacity>
+        )}
+      </View>
     </ScrollView>
   );
 }

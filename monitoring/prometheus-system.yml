@@ -22,6 +22,11 @@ scrape_configs:
     static_configs:
       - targets:
         - https://confimax-api-gateway.onrender.com/health
+        - https://confimax-auth-service.onrender.com/health
+        - https://confimax-inventory-service.onrender.com/health
+        - https://confimax-sales-service.onrender.com/health
+        - https://confimax-customers-service.onrender.com/health
+        - https://confimax-notifications-service.onrender.com/health
     relabel_configs:
       - source_labels: [__address__]
         target_label: __param_target
