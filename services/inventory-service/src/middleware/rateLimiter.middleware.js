@@ -1,29 +1,28 @@
-const config = require('../config');
 const { getRedisClient } = require('../services/redis.service');
 
 const rateLimiter = async (req, res, next) => {
-  const ip = req.ip || req.connection.remoteAddress;
+  const ip = req.headers['x-forwarded-for'] || req.ip || req.connection.remoteAddress;
   const key = `ratelimit:${ip}`;
   const redisClient = getRedisClient();
 
   if (!redisClient) {
-    // Si Redis no está disponible, omitir silenciosamente el rate limit y continuar
     return next();
   }
 
   try {
     const current = await redisClient.incr(key);
-
+    
     if (current === 1) {
       await redisClient.expire(key, 60);
     }
 
-    res.setHeader('X-RateLimit-Limit', 100);
-    res.setHeader('X-RateLimit-Remaining', Math.max(0, 100 - current));
+    res.setHeader('X-RateLimit-Limit', 1000);
+    res.setHeader('X-RateLimit-Remaining', Math.max(0, 1000 - current));
 
-    if (current > 100) {
+    if (current > 1000) {
       return res.status(429).json({
         message: 'Too many requests',
+        error: true
       });
     }
   } catch (error) {
