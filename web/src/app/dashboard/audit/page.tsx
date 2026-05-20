@@ -14,6 +14,8 @@ export default function AuditPage() {
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [filterOp, setFilterOp] = useState("");
+  const [filterRole, setFilterRole] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
 
   const listRef = useRef<HTMLDivElement>(null);
@@ -49,11 +51,15 @@ export default function AuditPage() {
     }
   }, [loading, auditLogs]);
 
-  const filteredLogs = auditLogs.filter(log => 
-    (log.operation && log.operation.toLowerCase().includes(search.toLowerCase())) || 
-    (log.entity && log.entity.toLowerCase().includes(search.toLowerCase())) ||
-    (log.username && log.username.toLowerCase().includes(search.toLowerCase()))
-  );
+  const filteredLogs = auditLogs.filter(log => {
+    const matchesSearch = (log.operation && log.operation.toLowerCase().includes(search.toLowerCase())) || 
+                          (log.entity && log.entity.toLowerCase().includes(search.toLowerCase())) ||
+                          (log.username && log.username.toLowerCase().includes(search.toLowerCase()));
+    const matchesOp = filterOp ? log.operation === filterOp : true;
+    const logRole = log.role || (log.username === 'admin' ? 'admin' : 'usuario');
+    const matchesRole = filterRole ? logRole === filterRole : true;
+    return matchesSearch && matchesOp && matchesRole;
+  });
 
   if (user?.role !== "admin") return null;
 
@@ -90,15 +96,37 @@ export default function AuditPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input 
               type="text" 
-              placeholder="Buscar por acción, usuario o entidad..." 
+              placeholder="Buscar..." 
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-[#12121a] border border-[#e0e0f0] dark:border-[#2a2a3a] rounded-xl focus:ring-2 focus:ring-[#5548e0] dark:focus:ring-[#6c63ff] focus:border-transparent outline-none transition-all text-[#0a0a1f] dark:text-[#f0f0ff] text-sm"
             />
           </div>
+          <div className="flex gap-2">
+            <select 
+              value={filterOp} 
+              onChange={(e) => setFilterOp(e.target.value)}
+              className="px-3 py-2.5 bg-white dark:bg-[#12121a] border border-[#e0e0f0] dark:border-[#2a2a3a] rounded-xl text-sm outline-none"
+            >
+              <option value="">Todas las Operaciones</option>
+              <option value="CREATE">Crear</option>
+              <option value="UPDATE">Actualizar</option>
+              <option value="DELETE">Eliminar</option>
+              <option value="LOGIN">Login</option>
+            </select>
+            <select 
+              value={filterRole} 
+              onChange={(e) => setFilterRole(e.target.value)}
+              className="px-3 py-2.5 bg-white dark:bg-[#12121a] border border-[#e0e0f0] dark:border-[#2a2a3a] rounded-xl text-sm outline-none"
+            >
+              <option value="">Todos los Roles</option>
+              <option value="admin">Admin</option>
+              <option value="usuario">Usuario</option>
+            </select>
+          </div>
           <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 bg-white dark:bg-[#12121a] px-4 py-2 rounded-xl border border-[#e0e0f0] dark:border-[#2a2a3a] self-start sm:self-auto shadow-sm">
             <Activity className="w-4 h-4 text-[#5548e0] dark:text-[#6c63ff]" />
-            <span className="font-semibold">{filteredLogs.length} eventos registrados</span>
+            <span className="font-semibold">{filteredLogs.length} eventos</span>
           </div>
         </div>
 
@@ -111,44 +139,35 @@ export default function AuditPage() {
           ) : (
             <div className="space-y-4">
               {filteredLogs.map((log: any, idx: number) => (
-                <div key={idx} className="audit-row p-4 rounded-2xl bg-[#fafafe] dark:bg-[#1a1a26] border border-[#e0e0f0] dark:border-[#2a2a3a] hover:border-[#5548e0]/40 dark:hover:border-[#6c63ff]/40 hover:shadow-md transition-all group">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3 border-b border-[#e0e0f0] dark:border-[#2a2a3a] pb-2 text-xs">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className={`px-3 py-1 rounded-full text-xs font-extrabold tracking-wide uppercase border ${
-                        log.operation === 'CREATE' ? 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20' :
-                        log.operation === 'UPDATE' ? 'bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-500/10 dark:text-purple-400 dark:border-purple-500/20' :
-                        log.operation === 'DELETE' ? 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-500/10 dark:text-slate-400 dark:border-slate-500/20' :
-                        'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-500/10 dark:text-slate-400 dark:border-slate-500/20'
-                      }`}>
-                        {log.operation}
-                      </span>
-                      <span className="text-gray-300 dark:text-gray-700">|</span>
-                      <span className="text-[#5548e0] dark:text-[#6c63ff] font-bold tracking-wider">{log.entity}</span>
-                      <span className="text-gray-300 dark:text-gray-700">|</span>
-                      <span className="text-purple-600 dark:text-purple-400 font-semibold">User: {log.username || 'Sistema'}</span>
-                    </div>
-                    <span className="text-gray-400 dark:text-gray-500 font-medium">
-                      {new Date(log.timestamp).toLocaleString('es-ES', { dateStyle: 'medium', timeStyle: 'medium' })}
+                <div key={idx} className="audit-row p-4 rounded-2xl bg-[#fafafe] dark:bg-[#1a1a26] border border-[#e0e0f0] dark:border-[#2a2a3a] hover:border-[#5548e0]/40 dark:hover:border-[#6c63ff]/40 hover:shadow-md transition-all group flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                    <span className={`px-4 py-1.5 rounded-full text-xs font-bold tracking-wide border ${
+                      log.operation === 'CREATE' ? 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20' :
+                      log.operation === 'UPDATE' ? 'bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-500/10 dark:text-purple-400 dark:border-purple-500/20' :
+                      log.operation === 'DELETE' ? 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-500/10 dark:text-slate-400 dark:border-slate-500/20' :
+                      'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-500/10 dark:text-slate-400 dark:border-slate-500/20'
+                    }`}>
+                      {log.operation}
                     </span>
+                    <div>
+                      <p className="text-sm font-semibold text-[#0a0a1f] dark:text-[#f0f0ff]">
+                        {log.username || 'Sistema'} 
+                        <span className="text-xs font-normal text-gray-500 ml-2 px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded-md">
+                          Rol: {log.role || (log.username === 'admin' ? 'admin' : 'usuario')}
+                        </span>
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        Entidad afectada: <span className="font-medium text-[#5548e0] dark:text-[#6c63ff]">{log.entity}</span>
+                      </p>
+                    </div>
                   </div>
-                  
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-2">
-                    {log.oldData && Object.keys(log.oldData).length > 0 && (
-                      <div className="bg-[#f5f5ff] dark:bg-[#0a0a0f] p-3 rounded-xl border border-[#e0e0f0] dark:border-[#2a2a3a]">
-                        <span className="text-xs font-semibold text-purple-600 dark:text-purple-400 mb-1.5 block uppercase tracking-wider">Estado Anterior:</span>
-                        <pre className="text-xs font-mono text-[#0a0a1f] dark:text-[#f0f0ff]/80 whitespace-pre-wrap break-words max-h-48 overflow-y-auto bg-white/50 dark:bg-black/20 p-2 rounded-lg border border-[#e0e0f0]/60 dark:border-black/30">
-                          {JSON.stringify(log.oldData, null, 2)}
-                        </pre>
-                      </div>
-                    )}
-                    {log.newData && Object.keys(log.newData).length > 0 && (
-                      <div className="bg-[#f5f5ff] dark:bg-[#0a0a0f] p-3 rounded-xl border border-[#e0e0f0] dark:border-[#2a2a3a] lg:col-start-2">
-                        <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 mb-1.5 block uppercase tracking-wider">Nuevo Estado:</span>
-                        <pre className="text-xs font-mono text-[#0a0a1f] dark:text-[#f0f0ff]/80 whitespace-pre-wrap break-words max-h-48 overflow-y-auto bg-white/50 dark:bg-black/20 p-2 rounded-lg border border-[#e0e0f0]/60 dark:border-black/30">
-                          {JSON.stringify(log.newData, null, 2)}
-                        </pre>
-                      </div>
-                    )}
+                  <div className="text-left sm:text-right">
+                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      {new Date(log.timestamp).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                      {new Date(log.timestamp).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                    </p>
                   </div>
                 </div>
               ))}
