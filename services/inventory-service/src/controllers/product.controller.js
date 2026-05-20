@@ -11,8 +11,8 @@ const sendAudit = async (req, operation, entity, recordId, newData = null, oldDa
       recordId,
       newData,
       oldData,
-      userId: req.user?.id,
-      username: req.user?.username,
+      userId: req.user?.userId || req.user?.id,
+      username: req.user?.name || req.user?.username,
       ip: req.ip,
       endpoint: req.originalUrl,
       userAgent: req.headers['user-agent']
