@@ -49,8 +49,8 @@ export default function UsersPage() {
       const data = Array.isArray(res.data || res) ? (res.data || res) : [];
       setSystemUsers(data.map((u: any) => ({
         id: u.id,
-        username: u.username,
-        name: u.name || "",
+        username: u.name || u.username || "",
+        name: u.name || u.username || "",
         email: u.email || "",
         role: u.role || "vendor"
       })));
@@ -124,8 +124,8 @@ export default function UsersPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white flex items-center gap-3">
-            <ShieldCheck className="w-8 h-8 text-blue-500" />
+          <h1 className="text-3xl font-bold tracking-tight text-[#0a0a1f] dark:text-[#f0f0ff] flex items-center gap-3">
+            <ShieldCheck className="w-8 h-8 text-[#5548e0] dark:text-[#6c63ff]" />
             Usuarios del Sistema
           </h1>
           <p className="text-gray-500 dark:text-gray-400 mt-1">Administra accesos, roles y permisos de la plataforma.</p>
@@ -134,9 +134,9 @@ export default function UsersPage() {
         <div className="flex items-center gap-3">
           <button 
             onClick={() => loadUsers()}
-            className="p-2.5 rounded-xl border border-gray-200 dark:border-[#333] bg-white dark:bg-[#111] text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#222] transition-colors"
+            className="p-2.5 rounded-xl border border-[#e0e0f0] dark:border-[#2a2a3a] bg-[#fafafe] dark:bg-[#1a1a26] text-gray-600 dark:text-gray-300 hover:bg-[#5548e0]/10 dark:hover:bg-[#6c63ff]/10 transition-colors"
           >
-            <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin text-blue-500' : ''}`} />
+            <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin text-[#5548e0] dark:text-[#6c63ff]' : ''}`} />
           </button>
           
           <button
@@ -145,7 +145,7 @@ export default function UsersPage() {
               setFormData({ username: "", name: "", email: "", password: "", role: "vendor" });
               setShowModal(true);
             }}
-            className="flex items-center gap-2 px-4 py-2.5 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-medium transition-all shadow-md shadow-blue-500/20"
+            className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#5548e0] to-[#e84d8a] dark:from-[#6c63ff] dark:to-[#ff6b9d] text-white rounded-xl font-medium transition-all shadow-md hover:shadow-lg shadow-[#5548e0]/20 dark:shadow-[#6c63ff]/20 hover:scale-[1.02] active:scale-[0.98]"
           >
             <Plus className="w-5 h-5" />
             <span>Añadir Usuario</span>
@@ -167,8 +167,8 @@ export default function UsersPage() {
         </div>
       )}
 
-      <div className="bg-white dark:bg-[#111] rounded-3xl border border-gray-100 dark:border-[#222] shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-gray-100 dark:border-[#222] flex items-center">
+      <div className="bg-[#fafafe] dark:bg-[#1a1a26] rounded-3xl border border-[#e0e0f0] dark:border-[#2a2a3a] shadow-sm overflow-hidden">
+        <div className="p-4 border-b border-[#e0e0f0] dark:border-[#2a2a3a] flex items-center">
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input 
@@ -176,7 +176,7 @@ export default function UsersPage() {
               placeholder="Buscar usuario por nombre o correo..." 
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-[#0a0a0a] border border-gray-200 dark:border-[#333] rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all dark:text-white"
+              className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-[#12121a] border border-[#e0e0f0] dark:border-[#2a2a3a] rounded-xl focus:ring-2 focus:ring-[#5548e0] dark:focus:ring-[#6c63ff] focus:border-transparent outline-none transition-all text-[#0a0a1f] dark:text-[#f0f0ff]"
             />
           </div>
         </div>
@@ -184,14 +184,14 @@ export default function UsersPage() {
         <div className="overflow-x-auto" ref={listRef}>
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-gray-50 dark:bg-[#0a0a0a] border-b border-gray-100 dark:border-[#222]">
+              <tr className="bg-[#f5f5ff] dark:bg-[#12121a] border-b border-[#e0e0f0] dark:border-[#2a2a3a]">
                 <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Usuario</th>
                 <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Rol de Acceso</th>
                 <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Email</th>
                 <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">Acciones</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100 dark:divide-[#222]">
+            <tbody className="divide-y divide-[#e0e0f0] dark:divide-[#2a2a3a]">
               {filteredUsers.length === 0 ? (
                 <tr>
                   <td colSpan={4} className="p-8 text-center text-gray-500 dark:text-gray-400">
@@ -200,10 +200,10 @@ export default function UsersPage() {
                 </tr>
               ) : (
                 filteredUsers.map((u) => (
-                  <tr key={u.id} className="user-row hover:bg-gray-50 dark:hover:bg-[#1a1a1a] transition-colors group">
+                  <tr key={u.id} className="user-row hover:bg-[#5548e0]/5 dark:hover:bg-[#6c63ff]/5 transition-colors group">
                     <td className="p-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-500 to-cyan-400 text-white flex items-center justify-center font-bold">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#5548e0] to-[#e84d8a] dark:from-[#6c63ff] dark:to-[#ff6b9d] text-white flex items-center justify-center font-bold">
                           {u.username.charAt(0).toUpperCase()}
                         </div>
                         <div>
@@ -215,10 +215,10 @@ export default function UsersPage() {
                     <td className="p-4">
                       <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border capitalize ${
                         u.role === 'admin' 
-                          ? 'bg-red-50 text-red-700 border-red-200 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20'
+                          ? 'bg-red-500/10 text-red-600 border-red-500/20 dark:text-red-400'
                           : u.role === 'manager'
-                          ? 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-500/10 dark:text-purple-400 dark:border-purple-500/20'
-                          : 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20'
+                          ? 'bg-[#e84d8a]/10 text-[#e84d8a] border-[#e84d8a]/20 dark:bg-[#ff6b9d]/10 dark:text-[#ff6b9d] dark:border-[#ff6b9d]/20'
+                          : 'bg-[#5548e0]/10 text-[#5548e0] border-[#5548e0]/20 dark:bg-[#6c63ff]/10 dark:text-[#6c63ff] dark:border-[#6c63ff]/20'
                       }`}>
                         {u.role === 'admin' && <ShieldCheck className="w-3.5 h-3.5" />}
                         {u.role === 'manager' && <UserCog className="w-3.5 h-3.5" />}
@@ -240,7 +240,7 @@ export default function UsersPage() {
                               });
                               setShowModal(true);
                             }}
-                            className="p-2 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-lg transition-colors"
+                            className="p-2 text-[#5548e0] dark:text-[#6c63ff] hover:bg-[#5548e0]/10 dark:hover:bg-[#6c63ff]/10 rounded-lg transition-colors"
                           >
                             <SquarePenIcon />
                           </button>
@@ -262,9 +262,9 @@ export default function UsersPage() {
       </div>
 
       {showModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-white dark:bg-[#111] rounded-3xl w-full max-w-xl shadow-2xl border border-gray-100 dark:border-[#222] overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-100 dark:border-[#222] flex items-center justify-between">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md">
+          <div className="bg-white dark:bg-[#1a1a26] rounded-3xl w-full max-w-xl shadow-2xl border border-[#e0e0f0] dark:border-[#2a2a3a] overflow-hidden">
+            <div className="px-6 py-4 border-b border-[#e0e0f0] dark:border-[#2a2a3a] flex items-center justify-between">
               <h2 className="text-xl font-bold text-gray-900 dark:text-white">
                 {editingUser ? 'Editar Usuario' : 'Añadir Usuario'}
               </h2>
@@ -276,34 +276,34 @@ export default function UsersPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="col-span-2 sm:col-span-1">
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Username</label>
-                  <input required type="text" value={formData.username} onChange={e => setFormData({...formData, username: e.target.value})} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-[#333] bg-gray-50 dark:bg-[#0a0a0a] dark:text-white focus:ring-2 focus:ring-blue-500 outline-none" />
+                  <input required type="text" value={formData.username} onChange={e => setFormData({...formData, username: e.target.value})} className="w-full px-4 py-2.5 rounded-xl border border-[#e0e0f0] dark:border-[#2a2a3a] bg-[#f5f5ff]/50 dark:bg-[#12121a] text-[#0a0a1f] dark:text-[#f0f0ff] focus:ring-2 focus:ring-[#5548e0] dark:focus:ring-[#6c63ff] outline-none" />
                 </div>
                 <div className="col-span-2 sm:col-span-1">
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nombre Real</label>
-                  <input type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-[#333] bg-gray-50 dark:bg-[#0a0a0a] dark:text-white focus:ring-2 focus:ring-blue-500 outline-none" />
+                  <input type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full px-4 py-2.5 rounded-xl border border-[#e0e0f0] dark:border-[#2a2a3a] bg-[#f5f5ff]/50 dark:bg-[#12121a] text-[#0a0a1f] dark:text-[#f0f0ff] focus:ring-2 focus:ring-[#5548e0] dark:focus:ring-[#6c63ff] outline-none" />
                 </div>
                 <div className="col-span-2">
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Correo Electrónico</label>
-                  <input required type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-[#333] bg-gray-50 dark:bg-[#0a0a0a] dark:text-white focus:ring-2 focus:ring-blue-500 outline-none" />
+                  <input required type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} className="w-full px-4 py-2.5 rounded-xl border border-[#e0e0f0] dark:border-[#2a2a3a] bg-[#f5f5ff]/50 dark:bg-[#12121a] text-[#0a0a1f] dark:text-[#f0f0ff] focus:ring-2 focus:ring-[#5548e0] dark:focus:ring-[#6c63ff] outline-none" />
                 </div>
                 <div className="col-span-2 sm:col-span-1">
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Contraseña {editingUser && '(Dejar vacío para no cambiar)'}</label>
-                  <input type="password" required={!editingUser} value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-[#333] bg-gray-50 dark:bg-[#0a0a0a] dark:text-white focus:ring-2 focus:ring-blue-500 outline-none" />
+                  <input type="password" required={!editingUser} value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} className="w-full px-4 py-2.5 rounded-xl border border-[#e0e0f0] dark:border-[#2a2a3a] bg-[#f5f5ff]/50 dark:bg-[#12121a] text-[#0a0a1f] dark:text-[#f0f0ff] focus:ring-2 focus:ring-[#5548e0] dark:focus:ring-[#6c63ff] outline-none" />
                 </div>
                 <div className="col-span-2 sm:col-span-1">
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Rol de Acceso</label>
-                  <select value={formData.role} onChange={e => setFormData({...formData, role: e.target.value})} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-[#333] bg-gray-50 dark:bg-[#0a0a0a] dark:text-white focus:ring-2 focus:ring-blue-500 outline-none">
+                  <select value={formData.role} onChange={e => setFormData({...formData, role: e.target.value})} className="w-full px-4 py-2.5 rounded-xl border border-[#e0e0f0] dark:border-[#2a2a3a] bg-[#f5f5ff]/50 dark:bg-[#12121a] text-[#0a0a1f] dark:text-[#f0f0ff] focus:ring-2 focus:ring-[#5548e0] dark:focus:ring-[#6c63ff] outline-none">
                     <option value="vendor">Vendedor</option>
                     <option value="manager">Gerente</option>
                     <option value="admin">Administrador</option>
                   </select>
                 </div>
               </div>
-              <div className="pt-4 flex justify-end gap-3 border-t border-gray-100 dark:border-[#222]">
-                <button type="button" onClick={() => setShowModal(false)} className="px-5 py-2.5 rounded-xl font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#222]">
+              <div className="pt-4 flex justify-end gap-3 border-t border-[#e0e0f0] dark:border-[#2a2a3a]">
+                <button type="button" onClick={() => setShowModal(false)} className="px-5 py-2.5 rounded-xl font-medium text-gray-500 dark:text-gray-400 hover:bg-[#e0e0f0] dark:hover:bg-[#2a2a3a]">
                   Cancelar
                 </button>
-                <button type="submit" disabled={loading} className="px-5 py-2.5 rounded-xl font-medium text-white bg-blue-500 hover:bg-blue-600 shadow-md shadow-blue-500/20 disabled:opacity-50">
+                <button type="submit" disabled={loading} className="px-5 py-2.5 rounded-xl font-medium text-white bg-gradient-to-r from-[#5548e0] to-[#e84d8a] dark:from-[#6c63ff] dark:to-[#ff6b9d] shadow-md shadow-[#5548e0]/20 dark:shadow-[#6c63ff]/20 hover:scale-[1.02] active:scale-[0.98] transition-transform disabled:opacity-50">
                   {loading ? 'Guardando...' : 'Guardar Usuario'}
                 </button>
               </div>

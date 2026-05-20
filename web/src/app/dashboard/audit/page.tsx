@@ -61,8 +61,8 @@ export default function AuditPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white flex items-center gap-3">
-            <Terminal className="w-8 h-8 text-green-500" />
+          <h1 className="text-3xl font-bold tracking-tight text-[#0a0a1f] dark:text-[#f0f0ff] flex items-center gap-3">
+            <Terminal className="w-8 h-8 text-[#5548e0] dark:text-[#6c63ff]" />
             Auditoría del Sistema
           </h1>
           <p className="text-gray-500 dark:text-gray-400 mt-1">Telemetría y registro de operaciones en la base de datos.</p>
@@ -70,10 +70,10 @@ export default function AuditPage() {
         
         <button 
           onClick={() => loadAuditLogs()}
-          className="flex items-center gap-2 p-2.5 rounded-xl border border-gray-200 dark:border-[#333] bg-white dark:bg-[#111] text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#222] transition-colors"
+          className="flex items-center gap-2 px-5 py-2.5 border border-[#e0e0f0] dark:border-[#2a2a3a] bg-[#fafafe] dark:bg-[#1a1a26] text-gray-700 dark:text-gray-200 hover:bg-[#5548e0]/10 dark:hover:bg-[#6c63ff]/10 transition-colors rounded-xl font-medium shadow-sm hover:scale-[1.02] active:scale-[0.98]"
         >
-          <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin text-green-500' : ''}`} />
-          <span className="font-medium">Actualizar</span>
+          <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin text-[#5548e0] dark:text-[#6c63ff]' : 'text-gray-500 dark:text-gray-400'}`} />
+          <span className="font-semibold">Actualizar</span>
         </button>
       </div>
 
@@ -84,8 +84,8 @@ export default function AuditPage() {
         </div>
       )}
 
-      <div className="bg-white dark:bg-[#111] rounded-3xl border border-gray-100 dark:border-[#222] shadow-sm overflow-hidden flex flex-col h-[700px]">
-        <div className="p-4 border-b border-gray-100 dark:border-[#222] flex items-center justify-between bg-gray-50 dark:bg-[#0a0a0a]">
+      <div className="bg-[#fafafe] dark:bg-[#1a1a26] rounded-3xl border border-[#e0e0f0] dark:border-[#2a2a3a] shadow-sm overflow-hidden flex flex-col h-[700px]">
+        <div className="p-4 border-b border-[#e0e0f0] dark:border-[#2a2a3a] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-[#f5f5ff] dark:bg-[#12121a]">
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input 
@@ -93,57 +93,58 @@ export default function AuditPage() {
               placeholder="Buscar por acción, usuario o entidad..." 
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-[#111] border border-gray-200 dark:border-[#333] rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all dark:text-white text-sm"
+              className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-[#12121a] border border-[#e0e0f0] dark:border-[#2a2a3a] rounded-xl focus:ring-2 focus:ring-[#5548e0] dark:focus:ring-[#6c63ff] focus:border-transparent outline-none transition-all text-[#0a0a1f] dark:text-[#f0f0ff] text-sm"
             />
           </div>
-          <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 bg-white dark:bg-[#111] px-3 py-1.5 rounded-lg border border-gray-200 dark:border-[#333]">
-            <Activity className="w-4 h-4 text-green-500" />
-            <span>{filteredLogs.length} eventos registrados</span>
+          <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 bg-white dark:bg-[#12121a] px-4 py-2 rounded-xl border border-[#e0e0f0] dark:border-[#2a2a3a] self-start sm:self-auto shadow-sm">
+            <Activity className="w-4 h-4 text-[#5548e0] dark:text-[#6c63ff]" />
+            <span className="font-semibold">{filteredLogs.length} eventos registrados</span>
           </div>
         </div>
 
-        <div className="flex-1 overflow-auto bg-gray-900 text-gray-300 p-4 font-mono text-sm" ref={listRef}>
+        <div className="flex-1 overflow-auto bg-white dark:bg-[#12121a] p-4" ref={listRef}>
           {filteredLogs.length === 0 ? (
-            <div className="flex items-center justify-center h-full text-gray-500">
-              No hay eventos que coincidan con la búsqueda.
+            <div className="flex flex-col items-center justify-center h-full text-gray-400 dark:text-gray-500 gap-2">
+              <Activity className="w-10 h-10 stroke-[1.5]" />
+              <span>No hay eventos que coincidan con la búsqueda.</span>
             </div>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-4">
               {filteredLogs.map((log: any, idx: number) => (
-                <div key={idx} className="audit-row p-3 rounded-lg bg-[#111] border border-[#222] hover:bg-[#1a1a1a] transition-colors">
-                  <div className="flex items-center justify-between mb-2 border-b border-[#222] pb-2">
-                    <div className="flex items-center gap-3">
-                      <span className={`px-2 py-0.5 rounded text-xs font-bold ${
-                        log.action === 'CREATE' ? 'bg-green-500/20 text-green-400' :
-                        log.action === 'UPDATE' ? 'bg-blue-500/20 text-blue-400' :
-                        log.action === 'DELETE' ? 'bg-red-500/20 text-red-400' :
-                        'bg-gray-500/20 text-gray-400'
+                <div key={idx} className="audit-row p-4 rounded-2xl bg-[#fafafe] dark:bg-[#1a1a26] border border-[#e0e0f0] dark:border-[#2a2a3a] hover:border-[#5548e0]/40 dark:hover:border-[#6c63ff]/40 hover:shadow-md transition-all group">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3 border-b border-[#e0e0f0] dark:border-[#2a2a3a] pb-2 text-xs">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className={`px-3 py-1 rounded-full text-xs font-extrabold tracking-wide uppercase border ${
+                        log.action === 'CREATE' ? 'bg-[#00b894]/10 text-[#00b894] border-[#00b894]/20' :
+                        log.action === 'UPDATE' ? 'bg-[#5548e0]/10 text-[#5548e0] border-[#5548e0]/20 dark:bg-[#6c63ff]/10 dark:text-[#6c63ff] dark:border-[#6c63ff]/20' :
+                        log.action === 'DELETE' ? 'bg-[#e84d8a]/10 text-[#e84d8a] border-[#e84d8a]/20 dark:bg-[#ff6b9d]/10 dark:text-[#ff6b9d] dark:border-[#ff6b9d]/20' :
+                        'bg-gray-500/10 text-gray-500 border-gray-500/20'
                       }`}>
                         {log.action}
                       </span>
-                      <span className="text-gray-400">|</span>
-                      <span className="text-purple-400 font-bold">{log.entity_type}</span>
-                      <span className="text-gray-400">|</span>
-                      <span className="text-yellow-400">User: {log.username || 'Sistema'}</span>
+                      <span className="text-gray-300 dark:text-gray-700">|</span>
+                      <span className="text-[#5548e0] dark:text-[#6c63ff] font-bold tracking-wider">{log.entity_type}</span>
+                      <span className="text-gray-300 dark:text-gray-700">|</span>
+                      <span className="text-[#e84d8a] dark:text-[#ff6b9d] font-semibold">User: {log.username || 'Sistema'}</span>
                     </div>
-                    <span className="text-xs text-gray-500">
-                      {new Date(log.timestamp).toLocaleString()}
+                    <span className="text-gray-400 dark:text-gray-500 font-medium">
+                      {new Date(log.timestamp).toLocaleString('es-ES', { dateStyle: 'medium', timeStyle: 'medium' })}
                     </span>
                   </div>
                   
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-2">
                     {log.old_values && Object.keys(log.old_values).length > 0 && (
-                      <div className="bg-[#0a0a0a] p-2 rounded border border-[#222]">
-                        <span className="text-xs text-gray-500 mb-1 block uppercase tracking-wider">Estado Anterior:</span>
-                        <pre className="text-xs text-red-400 whitespace-pre-wrap break-words">
+                      <div className="bg-[#f5f5ff] dark:bg-[#0a0a0f] p-3 rounded-xl border border-[#e0e0f0] dark:border-[#2a2a3a]">
+                        <span className="text-xs font-semibold text-[#e84d8a] dark:text-[#ff6b9d] mb-1.5 block uppercase tracking-wider">Estado Anterior:</span>
+                        <pre className="text-xs font-mono text-[#0a0a1f] dark:text-[#f0f0ff]/80 whitespace-pre-wrap break-words max-h-48 overflow-y-auto bg-white/50 dark:bg-black/20 p-2 rounded-lg border border-[#e0e0f0]/60 dark:border-black/30">
                           {JSON.stringify(log.old_values, null, 2)}
                         </pre>
                       </div>
                     )}
                     {log.new_values && Object.keys(log.new_values).length > 0 && (
-                      <div className="bg-[#0a0a0a] p-2 rounded border border-[#222] lg:col-start-2">
-                        <span className="text-xs text-gray-500 mb-1 block uppercase tracking-wider">Nuevo Estado:</span>
-                        <pre className="text-xs text-green-400 whitespace-pre-wrap break-words">
+                      <div className="bg-[#f5f5ff] dark:bg-[#0a0a0f] p-3 rounded-xl border border-[#e0e0f0] dark:border-[#2a2a3a] lg:col-start-2">
+                        <span className="text-xs font-semibold text-[#00b894] mb-1.5 block uppercase tracking-wider">Nuevo Estado:</span>
+                        <pre className="text-xs font-mono text-[#0a0a1f] dark:text-[#f0f0ff]/80 whitespace-pre-wrap break-words max-h-48 overflow-y-auto bg-white/50 dark:bg-black/20 p-2 rounded-lg border border-[#e0e0f0]/60 dark:border-black/30">
                           {JSON.stringify(log.new_values, null, 2)}
                         </pre>
                       </div>
@@ -158,3 +159,4 @@ export default function AuditPage() {
     </div>
   );
 }
+
