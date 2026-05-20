@@ -9,6 +9,12 @@ function CustomerDetailScreen({route, navigation}) {
   const [customer, setCustomer] = useState(null);
   const [loading, setLoading] = useState(true);
   const {colors} = useTheme();
+  const {user} = useAuthStore();
+
+  // Estados de Edición
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [editForm, setEditForm] = useState({ name: '', email: '', phone: '', address: '' });
+  const [updating, setUpdating] = useState(false);
 
   useEffect(() => {
     loadCustomer();
@@ -19,6 +25,12 @@ function CustomerDetailScreen({route, navigation}) {
       const response = await customersAPI.getCustomer(id);
       if (response.data) {
         setCustomer(response.data);
+        setEditForm({
+          name: response.data.name || '',
+          email: response.data.email || '',
+          phone: response.data.phone || '',
+          address: response.data.address || '',
+        });
       } else {
         setCustomer(null);
       }
@@ -28,6 +40,45 @@ function CustomerDetailScreen({route, navigation}) {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleUpdateCustomer = async () => {
+    if (!editForm.name) {
+      Alert.alert('Error', 'El nombre es obligatorio.');
+      return;
+    }
+    setUpdating(true);
+    try {
+      await customersAPI.updateCustomer(id, editForm);
+      setEditModalVisible(false);
+      loadCustomer();
+    } catch (error) {
+      Alert.alert('Error', 'No se pudo actualizar el cliente.');
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const handleDeleteCustomer = () => {
+    Alert.alert(
+      'Confirmar Eliminación',
+      '¿Estás seguro de que deseas eliminar este cliente? Esta acción no se puede deshacer.',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        { 
+          text: 'Eliminar', 
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await customersAPI.deleteCustomer(id);
+              navigation.goBack();
+            } catch (error) {
+              Alert.alert('Error', 'No se pudo eliminar el cliente.');
+            }
+          }
+        }
+      ]
+    );
   };
 
   const dynamicStyles = createStyles(colors);
@@ -98,12 +149,54 @@ function CustomerDetailScreen({route, navigation}) {
         </View>
       </View>
 
-      <TouchableOpacity 
-        style={dynamicStyles.actionButton}
-        onPress={() => Alert.alert('Éxito', 'Llamada iniciada')}>
-        <MaterialIcons name="phone-in-talk" size={20} color="#ffffff" style={{marginRight: 8}} />
-        <Text style={dynamicStyles.actionButtonText}>LLAMAR CLIENTE</Text>
-      </TouchableOpacity>
+      {user?.role !== 'customer' && (
+        <View style={{ marginTop: 10, marginBottom: 20, marginHorizontal: 15, flexDirection: 'row', justifyContent: 'space-between' }}>
+          <TouchableOpacity 
+            style={[dynamicStyles.actionButton, { flex: 1, marginRight: 5, backgroundColor: colors.dataBlue, marginTop: 0, marginHorizontal: 0 }]}
+            onPress={() => setEditModalVisible(true)}>
+            <MaterialIcons name="edit" size={20} color="#ffffff" style={{marginRight: 8}} />
+            <Text style={dynamicStyles.actionButtonText}>EDITAR</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={[dynamicStyles.actionButton, { flex: 1, marginLeft: 5, backgroundColor: colors.error, marginTop: 0, marginHorizontal: 0 }]}
+            onPress={handleDeleteCustomer}>
+            <MaterialIcons name="delete" size={20} color="#ffffff" style={{marginRight: 8}} />
+            <Text style={dynamicStyles.actionButtonText}>ELIMINAR</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {/* Modal de Edición */}
+      <Modal visible={editModalVisible} animationType="slide" transparent={true} onRequestClose={() => setEditModalVisible(false)}>
+        <View style={dynamicStyles.modalOverlay}>
+          <View style={dynamicStyles.modalContent}>
+            <Text style={dynamicStyles.modalTitle}>EDITAR CLIENTE</Text>
+            <Text style={dynamicStyles.modalSub}>Actualiza los datos del cliente.</Text>
+
+            <Text style={dynamicStyles.modalLabel}>NOMBRE COMPLETO</Text>
+            <TextInput style={dynamicStyles.modalInput} value={editForm.name} onChangeText={(t) => setEditForm({...editForm, name: t})} />
+
+            <Text style={dynamicStyles.modalLabel}>EMAIL</Text>
+            <TextInput style={dynamicStyles.modalInput} value={editForm.email} onChangeText={(t) => setEditForm({...editForm, email: t})} keyboardType="email-address" />
+
+            <Text style={dynamicStyles.modalLabel}>TELÉFONO</Text>
+            <TextInput style={dynamicStyles.modalInput} value={editForm.phone} onChangeText={(t) => setEditForm({...editForm, phone: t})} keyboardType="phone-pad" />
+
+            <Text style={dynamicStyles.modalLabel}>DIRECCIÓN</Text>
+            <TextInput style={dynamicStyles.modalInput} value={editForm.address} onChangeText={(t) => setEditForm({...editForm, address: t})} />
+
+            <View style={dynamicStyles.modalButtons}>
+              <TouchableOpacity style={dynamicStyles.modalBtnCancel} onPress={() => setEditModalVisible(false)}>
+                <Text style={dynamicStyles.modalBtnCancelText}>CANCELAR</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={dynamicStyles.modalBtnConfirm} onPress={handleUpdateCustomer} disabled={updating}>
+                {updating ? <ActivityIndicator size="small" color="#ffffff" /> : <Text style={dynamicStyles.modalBtnConfirmText}>GUARDAR</Text>}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 }
