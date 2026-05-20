@@ -42,18 +42,18 @@ const themes = {
 
 /* ─── FAKE DATA ─── */
 const products = [
-  { id: 1, name: "AirMax Pro X", price: 129.99, cat: "Calzado", stars: 4.8, reviews: 2341, badge: "Nuevo", img: "👟" },
+  { id: 1, name: "AirMax Pro X", price: 129.99, cat: "Calzado", stars: 4.8, reviews: 2341, badge: "Nuevo", img: "" },
   { id: 2, name: "UltraFit Jacket", price: 89.99, cat: "Ropa", stars: 4.6, reviews: 1872, badge: "Oferta", img: "🧥" },
   { id: 3, name: "SmartWatch Elite", price: 249.99, cat: "Tech", stars: 4.9, reviews: 4021, badge: "Top", img: "⌚" },
-  { id: 4, name: "Pro Headphones Z7", price: 179.99, cat: "Tech", stars: 4.7, reviews: 3100, badge: null, img: "🎧" },
-  { id: 5, name: "SportBag Ultra", price: 59.99, cat: "Accesorios", stars: 4.5, reviews: 987, badge: "Oferta", img: "🎒" },
+  { id: 4, name: "Pro Headphones Z7", price: 179.99, cat: "Tech", stars: 4.7, reviews: 3100, badge: null, img: "" },
+  { id: 5, name: "SportBag Ultra", price: 59.99, cat: "Accesorios", stars: 4.5, reviews: 987, badge: "Oferta", img: "" },
   { id: 6, name: "Running Shorts", price: 34.99, cat: "Ropa", stars: 4.4, reviews: 754, badge: null, img: "🩳" },
 ];
 
 const stats = [
-  { label: "Productos", value: "12K+", icon: "📦" },
-  { label: "Clientes", value: "850K+", icon: "👥" },
-  { label: "Países", value: "45+", icon: "🌍" },
+  { label: "Productos", value: "12K+", icon: "" },
+  { label: "Clientes", value: "850K+", icon: "" },
+  { label: "Países", value: "45+", icon: "" },
   { label: "Satisfacción", value: "98%", icon: "⭐" },
 ];
 
@@ -180,7 +180,7 @@ function Navbar({ page, setPage, theme, setTheme, cart, user, setUser, t }) {
           width: 40, height: 40, borderRadius: 12,
           display: "flex", alignItems: "center", justifyContent: "center",
           cursor: "pointer", fontSize: 18,
-        }}>{theme === "dark" ? "☀️" : "🌙"}</button>
+        }}>{theme === "dark" ? "☀️" : ""}</button>
 
         {/* Cart */}
         <button onClick={() => setPage("shop")} style={{
@@ -189,7 +189,7 @@ function Navbar({ page, setPage, theme, setTheme, cart, user, setUser, t }) {
           display: "flex", alignItems: "center", justifyContent: "center",
           cursor: "pointer", fontSize: 18, position: "relative",
         }}>
-          🛒
+          
           {cart > 0 && (
             <span style={{
               position: "absolute", top: -6, right: -6,
@@ -238,10 +238,10 @@ function IndexPage({ setPage, t }) {
   }, []);
 
   const features = [
-    { icon: "🚀", title: "Envío Express", desc: "Entrega en 24h a todo el país con seguimiento en tiempo real." },
-    { icon: "🔒", title: "Pago Seguro", desc: "Encriptación SSL de grado bancario en todas tus transacciones." },
+    { icon: "", title: "Envío Express", desc: "Entrega en 24h a todo el país con seguimiento en tiempo real." },
+    { icon: "", title: "Pago Seguro", desc: "Encriptación SSL de grado bancario en todas tus transacciones." },
     { icon: "↩️", title: "Devoluciones", desc: "30 días para devolver sin preguntas. Sin letra pequeña." },
-    { icon: "🎁", title: "Recompensas", desc: "Gana puntos en cada compra y canjéalos por descuentos exclusivos." },
+    { icon: "", title: "Recompensas", desc: "Gana puntos en cada compra y canjéalos por descuentos exclusivos." },
   ];
 
   return (
@@ -275,7 +275,7 @@ function IndexPage({ setPage, t }) {
             borderRadius: 50, padding: "6px 16px", marginBottom: 28,
             fontSize: 13, fontWeight: 600, color: t.accent,
           }}>
-            ✨ La nueva era del ecommerce
+             La nueva era del ecommerce
           </div>
           <h1 className="hero-title" style={{ fontSize: "clamp(42px,6vw,76px)", lineHeight: 1.05, marginBottom: 24, overflow: "hidden" }}>
             {["Compra.", " Vive.", " Disfruta."].map((w, i) => (
@@ -313,14 +313,14 @@ function IndexPage({ setPage, t }) {
                 position: "absolute", top: "50%", left: "50%",
                 transform: "translate(-50%,-50%)",
               }}>
-                <div style={{ fontSize: 80, textAlign: "center", lineHeight: "200px" }}>🛍️</div>
+                <div style={{ fontSize: 80, textAlign: "center", lineHeight: "200px" }}>️</div>
               </div>
             </div>
             {/* floating products */}
             {[
-              { emoji: "👟", x: -60, y: 20, delay: "0s" },
+              { emoji: "", x: -60, y: 20, delay: "0s" },
               { emoji: "⌚", x: 80, y: -50, delay: "1s" },
-              { emoji: "🎧", x: 90, y: 100, delay: "2s" },
+              { emoji: "", x: 90, y: 100, delay: "2s" },
             ].map((item, i) => (
               <div key={i} style={{
                 position: "absolute", top: "50%", left: "50%",
@@ -472,7 +472,7 @@ function ShopPage({ t, cart, setCart }) {
                 background: t.accent3, color: "#fff",
                 borderRadius: 50, padding: "6px 14px", fontSize: 13,
                 fontWeight: 700, animation: "slideIn .3s ease",
-              }}>✓ Agregado</div>
+              }}> Agregado</div>
             )}
             <ProductCard p={p} t={t} onAdd={handleAdd} />
           </div>
@@ -489,7 +489,7 @@ function ShopPage({ t, cart, setCart }) {
           display: "flex", alignItems: "center", gap: 12, cursor: "pointer",
           zIndex: 999,
         }}>
-          🛒 {cart} artículo{cart > 1 ? "s" : ""} en tu carrito
+           {cart} artículo{cart > 1 ? "s" : ""} en tu carrito
           <span style={{ background: "rgba(255,255,255,.25)", borderRadius: 50, padding: "4px 14px", fontSize: 14 }}>
             ${(cart * 89.99).toFixed(2)}
           </span>
@@ -520,7 +520,7 @@ function LoginPage({ setPage, setUser, t }) {
     setLoading(true); setErr("");
     await new Promise((r) => setTimeout(r, 1200));
     setLoading(false);
-    setUser({ name: "Usuario", email });
+    setUser({ name: email.split('@')[0] || "Usuario", email });
     setPage("dashboard");
   };
 
@@ -536,7 +536,7 @@ function LoginPage({ setPage, setUser, t }) {
             width: 60, height: 60, borderRadius: 18, background: t.gradient,
             margin: "0 auto 16px", display: "flex", alignItems: "center",
             justifyContent: "center", fontSize: 28,
-          }}>🔑</div>
+          }}></div>
           <h1 style={{ fontSize: 30, fontWeight: 800, marginBottom: 8 }}>Bienvenido</h1>
           <p style={{ color: t.muted, fontSize: 15 }}>Inicia sesión en tu cuenta Confimax</p>
         </div>
@@ -643,7 +643,7 @@ function RegisterPage({ setPage, setUser, t }) {
       <div ref={ref} className="card" style={{ width: "100%", maxWidth: 480, padding: "48px 40px" }}>
         {step === 1 ? (
           <div style={{ textAlign: "center", animation: "slideIn .5s ease" }}>
-            <div style={{ fontSize: 72, marginBottom: 20 }}>🎉</div>
+            <div style={{ fontSize: 72, marginBottom: 20 }}></div>
             <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 12 }}>¡Cuenta creada!</h2>
             <p style={{ color: t.muted }}>Redirigiendo a tu dashboard...</p>
             <div style={{ marginTop: 24, width: 200, height: 4, background: t.border, borderRadius: 4, margin: "24px auto 0", overflow: "hidden" }}>
@@ -657,7 +657,7 @@ function RegisterPage({ setPage, setUser, t }) {
                 width: 60, height: 60, borderRadius: 18, background: t.gradient,
                 margin: "0 auto 16px", display: "flex", alignItems: "center",
                 justifyContent: "center", fontSize: 28,
-              }}>✨</div>
+              }}></div>
               <h1 style={{ fontSize: 30, fontWeight: 800, marginBottom: 8 }}>Crear Cuenta</h1>
               <p style={{ color: t.muted, fontSize: 15 }}>Únete a más de 850,000 compradores</p>
             </div>
@@ -676,7 +676,7 @@ function RegisterPage({ setPage, setUser, t }) {
                 border: `1px solid ${t.accent}33`, borderRadius: 12, padding: "12px 16px",
                 alignItems: "flex-start",
               }}>
-                <span>✅</span>
+                <span></span>
                 <p style={{ fontSize: 13, color: t.muted, lineHeight: 1.5 }}>
                   Al registrarte aceptas nuestros <span style={{ color: t.accent, fontWeight: 600 }}>Términos de servicio</span> y <span style={{ color: t.accent, fontWeight: 600 }}>Política de privacidad</span>.
                 </p>
@@ -725,7 +725,7 @@ function DashboardPage({ user, setPage, t }) {
 
   if (!user) return (
     <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 20 }}>
-      <div style={{ fontSize: 64 }}>🔒</div>
+      <div style={{ fontSize: 64 }}></div>
       <h2 style={{ fontFamily: "'Syne',sans-serif", fontSize: 28 }}>Acceso restringido</h2>
       <p style={{ color: t.muted }}>Debes iniciar sesión para ver el dashboard</p>
       <button className="btn-primary" onClick={() => setPage("login")}>Iniciar Sesión</button>
@@ -733,17 +733,17 @@ function DashboardPage({ user, setPage, t }) {
   );
 
   const dashStats = [
-    { label: "Pedidos totales", value: "24", change: "+3 este mes", icon: "📦", color: t.accent },
-    { label: "Gastado total", value: "$1,842", change: "+$249 este mes", icon: "💳", color: t.accent2 },
+    { label: "Pedidos totales", value: "24", change: "+3 este mes", icon: "", color: t.accent },
+    { label: "Gastado total", value: "$1,842", change: "+$249 este mes", icon: "", color: t.accent2 },
     { label: "Puntos Confimax", value: "4,280", change: "+180 nuevos", icon: "⭐", color: "#fbbf24" },
-    { label: "Lista de deseos", value: "12", change: "2 con oferta", icon: "❤️", color: t.accent3 },
+    { label: "Lista de deseos", value: "12", change: "2 con oferta", icon: "️", color: t.accent3 },
   ];
 
   const tabs = [
-    { id: "overview", label: "Resumen", icon: "📊" },
-    { id: "orders", label: "Mis Pedidos", icon: "📦" },
-    { id: "wishlist", label: "Favoritos", icon: "❤️" },
-    { id: "profile", label: "Perfil", icon: "👤" },
+    { id: "overview", label: "Resumen", icon: "" },
+    { id: "orders", label: "Mis Pedidos", icon: "" },
+    { id: "wishlist", label: "Favoritos", icon: "️" },
+    { id: "profile", label: "Perfil", icon: "" },
   ];
 
   const statusColor = { "Entregado": t.accent3, "En camino": t.accent, "Procesando": "#fbbf24" };
@@ -764,7 +764,7 @@ function DashboardPage({ user, setPage, t }) {
           }}>{user.name[0].toUpperCase()}</div>
           <div>
             <h1 style={{ fontSize: 28, fontWeight: 800, marginBottom: 4 }}>
-              Hola, {user.name} 👋
+              Hola, {user.name} 
             </h1>
             <p style={{ color: t.muted, fontSize: 15 }}>{user.email} · Miembro desde Mayo 2026</p>
           </div>
@@ -879,7 +879,7 @@ function DashboardPage({ user, setPage, t }) {
                   <div style={{
                     width: 52, height: 52, borderRadius: 14, background: t.accentSoft,
                     display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24,
-                  }}>📦</div>
+                  }}></div>
                   <div>
                     <div style={{ fontWeight: 700, marginBottom: 4 }}>{o.product}</div>
                     <div style={{ color: t.muted, fontSize: 13 }}>{o.id} · {o.date}</div>
@@ -909,7 +909,7 @@ function DashboardPage({ user, setPage, t }) {
                     background: t.accent2 + "22", border: "none",
                     width: 34, height: 34, borderRadius: 10,
                     cursor: "pointer", fontSize: 16,
-                  }}>❤️</button>
+                  }}>️</button>
                   <div style={{ fontSize: 56, textAlign: "center", background: t.accentSoft, borderRadius: 14, padding: "20px 0", marginBottom: 14 }}>{p.img}</div>
                   <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 8 }}>{p.name}</div>
                   <div style={{ color: t.accent, fontWeight: 800, fontSize: 20, fontFamily: "'Syne',sans-serif" }}>${p.price}</div>
@@ -946,7 +946,7 @@ function DashboardPage({ user, setPage, t }) {
                     <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: t.muted, marginBottom: 6, textTransform: "uppercase", letterSpacing: 1 }}>{f.label}</label>
                     <div className="input-field" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                       <span>{f.value}</span>
-                      <span style={{ color: t.accent, fontSize: 13, cursor: "pointer" }}>✏️</span>
+                      <span style={{ color: t.accent, fontSize: 13, cursor: "pointer" }}>️</span>
                     </div>
                   </div>
                 ))}

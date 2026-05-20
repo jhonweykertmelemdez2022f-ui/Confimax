@@ -50,8 +50,8 @@ export default function AuditPage() {
   }, [loading, auditLogs]);
 
   const filteredLogs = auditLogs.filter(log => 
-    (log.action && log.action.toLowerCase().includes(search.toLowerCase())) || 
-    (log.entity_type && log.entity_type.toLowerCase().includes(search.toLowerCase())) ||
+    (log.operation && log.operation.toLowerCase().includes(search.toLowerCase())) || 
+    (log.entity && log.entity.toLowerCase().includes(search.toLowerCase())) ||
     (log.username && log.username.toLowerCase().includes(search.toLowerCase()))
   );
 
@@ -115,15 +115,15 @@ export default function AuditPage() {
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3 border-b border-[#e0e0f0] dark:border-[#2a2a3a] pb-2 text-xs">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className={`px-3 py-1 rounded-full text-xs font-extrabold tracking-wide uppercase border ${
-                        log.action === 'CREATE' ? 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20' :
-                        log.action === 'UPDATE' ? 'bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-500/10 dark:text-purple-400 dark:border-purple-500/20' :
-                        log.action === 'DELETE' ? 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-500/10 dark:text-slate-400 dark:border-slate-500/20' :
+                        log.operation === 'CREATE' ? 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20' :
+                        log.operation === 'UPDATE' ? 'bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-500/10 dark:text-purple-400 dark:border-purple-500/20' :
+                        log.operation === 'DELETE' ? 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-500/10 dark:text-slate-400 dark:border-slate-500/20' :
                         'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-500/10 dark:text-slate-400 dark:border-slate-500/20'
                       }`}>
-                        {log.action}
+                        {log.operation}
                       </span>
                       <span className="text-gray-300 dark:text-gray-700">|</span>
-                      <span className="text-[#5548e0] dark:text-[#6c63ff] font-bold tracking-wider">{log.entity_type}</span>
+                      <span className="text-[#5548e0] dark:text-[#6c63ff] font-bold tracking-wider">{log.entity}</span>
                       <span className="text-gray-300 dark:text-gray-700">|</span>
                       <span className="text-purple-600 dark:text-purple-400 font-semibold">User: {log.username || 'Sistema'}</span>
                     </div>
@@ -133,19 +133,19 @@ export default function AuditPage() {
                   </div>
                   
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-2">
-                    {log.old_values && Object.keys(log.old_values).length > 0 && (
+                    {log.oldData && Object.keys(log.oldData).length > 0 && (
                       <div className="bg-[#f5f5ff] dark:bg-[#0a0a0f] p-3 rounded-xl border border-[#e0e0f0] dark:border-[#2a2a3a]">
                         <span className="text-xs font-semibold text-purple-600 dark:text-purple-400 mb-1.5 block uppercase tracking-wider">Estado Anterior:</span>
                         <pre className="text-xs font-mono text-[#0a0a1f] dark:text-[#f0f0ff]/80 whitespace-pre-wrap break-words max-h-48 overflow-y-auto bg-white/50 dark:bg-black/20 p-2 rounded-lg border border-[#e0e0f0]/60 dark:border-black/30">
-                          {JSON.stringify(log.old_values, null, 2)}
+                          {JSON.stringify(log.oldData, null, 2)}
                         </pre>
                       </div>
                     )}
-                    {log.new_values && Object.keys(log.new_values).length > 0 && (
+                    {log.newData && Object.keys(log.newData).length > 0 && (
                       <div className="bg-[#f5f5ff] dark:bg-[#0a0a0f] p-3 rounded-xl border border-[#e0e0f0] dark:border-[#2a2a3a] lg:col-start-2">
                         <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 mb-1.5 block uppercase tracking-wider">Nuevo Estado:</span>
                         <pre className="text-xs font-mono text-[#0a0a1f] dark:text-[#f0f0ff]/80 whitespace-pre-wrap break-words max-h-48 overflow-y-auto bg-white/50 dark:bg-black/20 p-2 rounded-lg border border-[#e0e0f0]/60 dark:border-black/30">
-                          {JSON.stringify(log.new_values, null, 2)}
+                          {JSON.stringify(log.newData, null, 2)}
                         </pre>
                       </div>
                     )}

@@ -76,7 +76,7 @@ function LoginScreen({ navigation }) {
     } catch (err) {
       setConnectionStatus('disconnected');
       setDetailedError(err.message || 'Error de Red (Timeout)');
-      console.error('🔴 Error de depuración de conexión móvil:', err);
+      console.error(' Error de depuración de conexión móvil:', err);
     }
   };
 
@@ -218,7 +218,7 @@ function LoginScreen({ navigation }) {
         )}
         {connectionStatus === 'disconnected' && (
           <View style={{ alignItems: 'center' }}>
-            <Text style={styles.bannerText}>🔴 SIN CONEXIÓN a Confimax (IP 192.168.101.4)</Text>
+            <Text style={styles.bannerText}> SIN CONEXIÓN a Confimax (IP 192.168.101.4)</Text>
             {detailedError ? <Text style={styles.bannerErrorSubtext}>{detailedError}</Text> : null}
             <Button title="Reintentar Conexión" color="#fff" onPress={checkConnection} />
           </View>

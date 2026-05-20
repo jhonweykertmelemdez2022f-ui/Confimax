@@ -59,7 +59,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       const userData: User = {
         id: rawUser.id,
-        name: rawUser.name || rawUser.username || "Usuario",
+        name: rawUser.name || rawUser.username || (rawUser.email ? rawUser.email.split('@')[0] : "Usuario"),
         email: rawUser.email,
         role: roleMapping[rawUser.role] || "cliente"
       };

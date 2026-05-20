@@ -40,9 +40,9 @@ export const useAuthStore = create((set, get) => ({
       await SyncService.syncAll();
       return true;
     } catch (error) {
-      console.error('🔴 Error de Login en móvil:', error);
+      console.error(' Error de Login en móvil:', error);
       if (error.response) {
-        console.error('🔴 Respuesta de error del Servidor:', error.response.status, error.response.data);
+        console.error(' Respuesta de error del Servidor:', error.response.status, error.response.data);
       }
       set({ error: error.response?.data?.message || 'Login failed', isLoading: false });
       return false;
@@ -56,9 +56,9 @@ export const useAuthStore = create((set, get) => ({
       set({ isLoading: false });
       return true;
     } catch (error) {
-      console.error('🔴 Error de Registro en móvil:', error);
+      console.error(' Error de Registro en móvil:', error);
       if (error.response) {
-        console.error('🔴 Respuesta de error del Servidor:', error.response.status, error.response.data);
+        console.error(' Respuesta de error del Servidor:', error.response.status, error.response.data);
       }
       set({ error: error.response?.data?.message || 'Registration failed', isLoading: false });
       return false;
