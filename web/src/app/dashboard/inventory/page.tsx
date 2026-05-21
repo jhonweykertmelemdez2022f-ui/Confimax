@@ -57,13 +57,20 @@ export default function InventoryPage() {
   const loadAllData = async () => {
     try {
       setLoading(true);
-      const [prodRes, catRes] = await Promise.all([
-        api.getProducts().catch(() => ({ data: [] })),
-        api.getCategories().catch(() => ({ data: [] })),
-      ]);
+      // Cargar productos primero, y luego intentar categorías
+      const prodRes = await api.getProducts().catch(() => ({ data: [] }));
+      let catData: any[] = [];
+      
+      try {
+        const catRes = await api.getCategories().catch(() => ({ data: [] }));
+        catData = Array.isArray((catRes as any).data || catRes) ? ((catRes as any).data || catRes) : [];
+      } catch (catErr) {
+        console.warn('No se pudieron cargar las categorías:', catErr);
+        // Si fallan las categorías, continuar sin ellas
+        catData = [];
+      }
       
       const prodData = Array.isArray((prodRes as any).data || prodRes) ? ((prodRes as any).data || prodRes) : [];
-      const catData = Array.isArray((catRes as any).data || catRes) ? ((catRes as any).data || catRes) : [];
       
       const mappedProducts = prodData.map((p: any) => ({
         id: p.id || p.product_id,

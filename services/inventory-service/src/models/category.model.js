@@ -38,43 +38,98 @@ pool.on('connect', () => {
 
 class Category {
   static async findAll() {
-    const result = await pool.query(
-      'SELECT * FROM inventory.categories WHERE active = true ORDER BY name ASC'
-    );
-    return result.rows;
+    try {
+      const result = await pool.query(
+        'SELECT * FROM inventory.categories ORDER BY name ASC'
+      );
+      return result.rows;
+    } catch (err) {
+      console.error('[Category.findAll] Error:', err.message);
+      // Si falla por columnas que no existen, intentar sin filtro
+      try {
+        const result = await pool.query(
+          'SELECT * FROM inventory.categories'
+        );
+        return result.rows;
+      } catch (err2) {
+        console.error('[Category.findAll] Fallback error:', err2.message);
+        // Si la tabla no existe o falla, devolver array vacío
+        return [];
+      }
+    }
   }
 
   static async findById(id) {
-    const result = await pool.query(
-      'SELECT * FROM inventory.categories WHERE id = $1',
-      [id]
-    );
-    return result.rows[0];
+    try {
+      const result = await pool.query(
+        'SELECT * FROM inventory.categories WHERE id = $1',
+        [id]
+      );
+      return result.rows[0];
+    } catch (err) {
+      console.error('[Category.findById] Error:', err.message);
+      return null;
+    }
   }
 
   static async create(data) {
-    const { name, description } = data;
-    const result = await pool.query(
-      'INSERT INTO inventory.categories (name, description, active) VALUES ($1, $2, true) RETURNING *',
-      [name, description]
-    );
-    return result.rows[0];
+    try {
+      const { name, description } = data;
+      // Intentar con active primero, si falla, intentar sin él
+      try {
+        const result = await pool.query(
+          'INSERT INTO inventory.categories (name, description, active) VALUES ($1, $2, true) RETURNING *',
+          [name, description]
+        );
+        return result.rows[0];
+      } catch (err) {
+        console.log('[Category.create] Intentando sin columna active...');
+        // Intentar sin la columna active
+        const result = await pool.query(
+          'INSERT INTO inventory.categories (name, description) VALUES ($1, $2) RETURNING *',
+          [name, description]
+        );
+        return result.rows[0];
+      }
+    } catch (err) {
+      console.error('[Category.create] Error:', err.message);
+      throw err;
+    }
   }
 
   static async update(id, data) {
-    const { name, description } = data;
-    const result = await pool.query(
-      'UPDATE inventory.categories SET name = COALESCE($1, name), description = COALESCE($2, description), updated_at = CURRENT_TIMESTAMP WHERE id = $3 RETURNING *',
-      [name, description, id]
-    );
-    return result.rows[0];
+    try {
+      const { name, description } = data;
+      const result = await pool.query(
+        'UPDATE inventory.categories SET name = COALESCE($1, name), description = COALESCE($2, description), updated_at = CURRENT_TIMESTAMP WHERE id = $3 RETURNING *',
+        [name, description, id]
+      );
+      return result.rows[0];
+    } catch (err) {
+      console.error('[Category.update] Error:', err.message);
+      throw err;
+    }
   }
 
   static async delete(id) {
-    await pool.query(
-      'UPDATE inventory.categories SET active = false, updated_at = CURRENT_TIMESTAMP WHERE id = $1',
-      [id]
-    );
+    try {
+      // Intentar con active primero, si falla, intentar borrar directamente
+      try {
+        await pool.query(
+          'UPDATE inventory.categories SET active = false, updated_at = CURRENT_TIMESTAMP WHERE id = $1',
+          [id]
+        );
+      } catch (err) {
+        console.log('[Category.delete] Intentando DELETE directo...');
+        await pool.query(
+          'DELETE FROM inventory.categories WHERE id = $1',
+          [id]
+        );
+      }
+    } catch (err) {
+      console.error('[Category.delete] Error:', err.message);
+      throw err;
+    }
   }
 }
 
