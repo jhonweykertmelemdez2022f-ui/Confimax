@@ -35,7 +35,7 @@ function FadeInUpCard({ children, delay = 0, duration = 400 }) {
       fadeAnim.setValue(0);
       translateYAnim.setValue(30);
     }
-  }, [isFocused]);
+  }, [isFocused, fadeAnim, translateYAnim, delay, duration]);
 
   return (
     <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: translateYAnim }] }}>
@@ -47,7 +47,7 @@ function FadeInUpCard({ children, delay = 0, duration = 400 }) {
 function StatCard({ icon: Icon, value, label, color1, color2, delay = 0 }) {
   const { colors, typography, spacing, borderRadius, isDark } = useTheme();
   
-  const styles = StyleSheet.create({
+  const localStyles = StyleSheet.create({
     statCard: {
       backgroundColor: colors.surface,
       borderRadius: borderRadius.lg,
@@ -69,10 +69,10 @@ function StatCard({ icon: Icon, value, label, color1, color2, delay = 0 }) {
   
   return (
     <FadeInUpCard delay={delay} duration={400}>
-      <View style={styles.statCard}>
+      <View style={localStyles.statCard}>
         <LinearGradient
           colors={[color1, color2]}
-          style={styles.iconContainer}
+          style={localStyles.iconContainer}
         >
           <Icon size={24} color="#ffffff" />
         </LinearGradient>
@@ -91,7 +91,7 @@ function Avatar({ name }) {
   const { colors, borderRadius } = useTheme();
   const initials = name ? name.charAt(0).toUpperCase() : 'U';
   
-  const styles = StyleSheet.create({
+  const localStyles = StyleSheet.create({
     avatar: {
       width: 56,
       height: 56,
@@ -109,9 +109,9 @@ function Avatar({ name }) {
   return (
     <LinearGradient
       colors={['#6366f1', '#8b5cf6']}
-      style={styles.avatar}
+      style={localStyles.avatar}
     >
-      <Text style={styles.avatarText}>{initials}</Text>
+      <Text style={localStyles.avatarText}>{initials}</Text>
     </LinearGradient>
   );
 }

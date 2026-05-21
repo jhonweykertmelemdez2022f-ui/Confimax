@@ -78,44 +78,50 @@ export default function SalesPage() {
   const totalPages = Math.ceil(sales.length / ITEMS_PER_PAGE);
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">Ventas Registradas</h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1">Historial completo de transacciones.</p>
-        </div>
-        
-        <div className="flex items-center gap-3">
-          <button 
-            onClick={() => loadSales()}
-            className="p-2.5 rounded-xl border border-gray-200 dark:border-[#333] bg-white dark:bg-[#111] text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#222] transition-colors"
-          >
-            <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin text-blue-500' : ''}`} />
-          </button>
-          
-          <button
-            onClick={() => alert("Registrar Venta estará disponible próximamente.")}
-            className="flex items-center gap-2 px-4 py-2.5 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-medium transition-all shadow-md shadow-blue-500/20"
-          >
-            <Plus className="w-5 h-5" />
-            <span>Nueva Venta</span>
-          </button>
-        </div>
-      </div>
-
+    <>
+      {/* Mensajes de Error y Éxito - Por encima del modal */}
       {errorMsg && (
-        <div className="p-4 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-2xl flex items-center gap-3 text-red-600 dark:text-red-400">
-          <AlertTriangle className="w-5 h-5" />
-          <span className="font-medium">{errorMsg}</span>
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[200] w-full max-w-xl px-4">
+          <div className="p-4 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-2xl flex items-center gap-3 text-red-600 dark:text-red-400 shadow-xl">
+            <AlertTriangle className="w-5 h-5 flex-shrink-0" />
+            <span className="font-medium">{errorMsg}</span>
+          </div>
         </div>
       )}
 
       {successMsg && (
-        <div className="p-4 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-500/20 rounded-2xl flex items-center gap-3 text-blue-600 dark:text-blue-400">
-          <CheckCircle className="w-5 h-5 text-blue-500" />
-          <span className="font-medium">{successMsg}</span>
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[200] w-full max-w-xl px-4">
+          <div className="p-4 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-500/20 rounded-2xl flex items-center gap-3 text-blue-600 dark:text-blue-400 shadow-xl">
+            <CheckCircle className="w-5 h-5 text-blue-500 flex-shrink-0" />
+            <span className="font-medium">{successMsg}</span>
+          </div>
         </div>
       )}
+
+      <div className="space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">Ventas Registradas</h1>
+            <p className="text-gray-500 dark:text-gray-400 mt-1">Historial completo de transacciones.</p>
+          </div>
+          
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={() => loadSales()}
+              className="p-2.5 rounded-xl border border-gray-200 dark:border-[#333] bg-white dark:bg-[#111] text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#222] transition-colors"
+            >
+              <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin text-blue-500' : ''}`} />
+            </button>
+            
+            <button
+              onClick={() => alert("Registrar Venta estará disponible próximamente.")}
+              className="flex items-center gap-2 px-4 py-2.5 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-medium transition-all shadow-md shadow-blue-500/20"
+            >
+              <Plus className="w-5 h-5" />
+              <span>Nueva Venta</span>
+            </button>
+          </div>
+        </div>
 
       <div className="bg-white dark:bg-[#111] rounded-3xl border border-gray-100 dark:border-[#222] shadow-sm overflow-hidden">
         <div className="p-4 border-b border-gray-100 dark:border-[#222] flex items-center">
@@ -189,6 +195,7 @@ export default function SalesPage() {
         totalPages={totalPages}
         onPageChange={setCurrentPage}
       />
-    </div>
+      </div>
+    </>
   );
 }

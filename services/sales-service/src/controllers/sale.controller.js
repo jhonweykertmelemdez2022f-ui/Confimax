@@ -1,8 +1,33 @@
 const SalesService = require('../services/sales.service');
+const axios = require('axios');
+
+const sendAudit = async (req, operation, entity, recordId, newData = null, oldData = null) => {
+  try {
+    const notificationsUrl = process.env.NOTIFICATIONS_SERVICE_URL || 'http://localhost:3005';
+    await axios.post(`${notificationsUrl}/api/audit`, {
+      entity,
+      operation,
+      recordId,
+      newData,
+      oldData,
+      userId: req.user?.id || req.user?.sub,
+      username: req.user?.username || req.user?.email,
+      ip: req.ip,
+      endpoint: req.originalUrl,
+      userAgent: req.headers['user-agent']
+    });
+  } catch (err) {
+    console.error('[SALES] Failed to send audit log:', err.message);
+  }
+};
 
 const saleController = {
   async createOrder(req, res, next) {
-    try { res.status(201).json(await SalesService.createOrder(req.body)); }
+    try { 
+      const order = await SalesService.createOrder(req.body);
+      await sendAudit(req, 'CREATE', 'Sale', order.id, order);
+      res.status(201).json(order); 
+    }
     catch (e) { next(e); }
   },
   async getOrder(req, res, next) {
@@ -14,8 +39,11 @@ const saleController = {
   },
   async updateOrderStatus(req, res, next) {
     try {
-      const order = await SalesService.updateOrderStatus(req.params.id, req.body.status);
+      const id = req.params.id;
+      const oldOrder = await SalesService.getOrder(id, false);
+      const order = await SalesService.updateOrderStatus(id, req.body.status);
       if (!order) return res.status(404).json({ message: 'Order not found' });
+      await sendAudit(req, 'UPDATE', 'Sale', order.id, order, oldOrder);
       res.json(order);
     } catch (e) { next(e); }
   },

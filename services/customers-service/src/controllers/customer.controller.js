@@ -1,4 +1,25 @@
 const CustomersService = require('../services/customers.service');
+const axios = require('axios');
+
+const sendAudit = async (req, operation, entity, recordId, newData = null, oldData = null) => {
+  try {
+    const notificationsUrl = process.env.NOTIFICATIONS_SERVICE_URL || 'http://localhost:3005';
+    await axios.post(`${notificationsUrl}/api/audit`, {
+      entity,
+      operation,
+      recordId,
+      newData,
+      oldData,
+      userId: req.user?.id || req.user?.sub,
+      username: req.user?.username || req.user?.email,
+      ip: req.ip,
+      endpoint: req.originalUrl,
+      userAgent: req.headers['user-agent']
+    });
+  } catch (err) {
+    console.error('[CUSTOMERS] Failed to send audit log:', err.message);
+  }
+};
 
 const customerController = {
   async getCustomer(req, res, next) {
@@ -27,10 +48,12 @@ const customerController = {
   },
 
   async createCustomer(req, res, next) {
-    try {
+    try { 
       const customer = await CustomersService.createCustomer(req.body);
-      res.status(201).json(customer);
-    } catch (error) {
+      await sendAudit(req, 'CREATE', 'Customer', customer.id, customer);
+      res.status(201).json(customer); 
+    }
+    catch (error) {
       next(error);
     }
   },
@@ -38,12 +61,14 @@ const customerController = {
   async updateCustomer(req, res, next) {
     try {
       const { id } = req.params;
+      const oldCustomer = await CustomersService.getCustomer(id, false);
       const customer = await CustomersService.updateCustomer(id, req.body);
       
       if (!customer) {
         return res.status(404).json({ message: 'Customer not found' });
       }
       
+      await sendAudit(req, 'UPDATE', 'Customer', customer.id, customer, oldCustomer);
       res.json(customer);
     } catch (error) {
       next(error);
@@ -51,11 +76,14 @@ const customerController = {
   },
 
   async deleteCustomer(req, res, next) {
-    try {
+    try { 
       const { id } = req.params;
-      await CustomersService.deleteCustomer(id);
-      res.status(204).send();
-    } catch (error) {
+      const oldCustomer = await CustomersService.getCustomer(id, false);
+      await CustomersService.deleteCustomer(id); 
+      if (oldCustomer) await sendAudit(req, 'DELETE', 'Customer', id, null, oldCustomer);
+      res.status(204).send(); 
+    }
+    catch (error) {
       next(error);
     }
   },

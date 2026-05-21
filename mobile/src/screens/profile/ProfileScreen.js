@@ -11,6 +11,7 @@ import {
   Modal,
   TextInput,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import { User, Edit, Settings, Bell, Users, Shield, LogOut, ChevronRight, X, Moon } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -47,7 +48,7 @@ function FadeInUpCard({ children, delay = 0, duration = 400 }) {
       fadeAnim.setValue(0);
       translateYAnim.setValue(25);
     }
-  }, [isFocused]);
+  }, [isFocused, fadeAnim, translateYAnim, delay, duration]);
 
   return (
     <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: translateYAnim }] }}>
@@ -60,7 +61,7 @@ function Avatar({ name }) {
   const { colors, borderRadius } = useTheme();
   const initials = name ? name.charAt(0).toUpperCase() : 'U';
   
-  const styles = StyleSheet.create({
+  const localStyles = StyleSheet.create({
     avatar: {
       width: 100,
       height: 100,
@@ -78,9 +79,9 @@ function Avatar({ name }) {
   return (
     <LinearGradient
       colors={['#6366f1', '#8b5cf6']}
-      style={styles.avatar}
+      style={localStyles.avatar}
     >
-      <Text style={styles.avatarText}>{initials}</Text>
+      <Text style={localStyles.avatarText}>{initials}</Text>
     </LinearGradient>
   );
 }
@@ -89,6 +90,7 @@ function ProfileScreen({navigation}) {
   const {user, logout, updateUser} = useAuthStore();
   const { colors, typography, spacing, borderRadius, isDark } = useTheme();
   const toggleTheme = useThemeStore((state) => state.toggleTheme);
+  const [loading, setLoading] = useState(false);
 
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [configModalVisible, setConfigModalVisible] = useState(false);
