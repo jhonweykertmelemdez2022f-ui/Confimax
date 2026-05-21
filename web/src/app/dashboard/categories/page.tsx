@@ -166,9 +166,9 @@ export default function CategoriesPage() {
                     <div>
                       <h3 className="text-xl font-bold text-gray-900 dark:text-white">{category.name}</h3>
                       <p className="text-xs text-gray-500 dark:text-gray-400 font-medium mt-0.5">
-                        {new Date(category.created_at).toLocaleDateString('es-ES', { 
+                        {category.created_at ? new Date(category.created_at).toLocaleDateString('es-ES', { 
                           day: 'numeric', month: 'short', year: 'numeric' 
-                        })}
+                        }) : 'Fecha no disponible'}
                       </p>
                     </div>
                   </div>
