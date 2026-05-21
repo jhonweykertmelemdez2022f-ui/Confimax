@@ -14,10 +14,17 @@ interface Product {
   name: string;
   price: number;
   stock: number;
-  category: string;
+  category_id: string;
+  category?: string;
   description: string;
   image?: string;
   expiration_date?: string;
+}
+
+interface Category {
+  id: string;
+  name: string;
+  description?: string;
 }
 
 const ITEMS_PER_PAGE = 9;
@@ -26,8 +33,10 @@ export default function InventoryPage() {
   const { user } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [filterCategory, setFilterCategory] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -35,33 +44,42 @@ export default function InventoryPage() {
   const [showModal, setShowModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [formData, setFormData] = useState({
-    name: "", sku: "", price: "", stock: "", category: "despensa", description: "", image: "", expiration_date: ""
+    name: "", sku: "", price: "", stock: "", category_id: "", description: "", image: "", expiration_date: ""
   });
 
   const tableRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    loadProducts();
+    loadAllData();
   }, [user]);
 
-  const loadProducts = async () => {
+  const loadAllData = async () => {
     try {
       setLoading(true);
-      const res = await api.getProducts() as any;
-      const data = Array.isArray(res.data || res) ? (res.data || res) : [];
-      const mappedData = data.map((p: any) => ({
+      const [prodRes, catRes] = await Promise.all([
+        api.getProducts().catch(() => ({ data: [] })),
+        api.getCategories().catch(() => ({ data: [] })),
+      ]);
+      
+      const prodData = Array.isArray(prodRes.data || prodRes) ? (prodRes.data || prodRes) : [];
+      const catData = Array.isArray(catRes.data || catRes) ? (catRes.data || catRes) : [];
+      
+      const mappedProducts = prodData.map((p: any) => ({
         id: p.id || p.product_id,
         sku: p.sku,
         name: p.name,
         price: parseFloat(p.price || 0),
         stock: parseInt(p.stock || p.stock_quantity || 0),
-        category: p.category || "despensa",
+        category_id: p.category_id,
+        category: catData.find((c: any) => c.id === p.category_id)?.name || p.category || "Desconocida",
         description: p.description || "",
         image: p.image_url || p.image,
         expiration_date: p.expiration_date
       }));
-      setAllProducts(mappedData);
-      setProducts(mappedData);
+      
+      setAllProducts(mappedProducts);
+      setProducts(mappedProducts);
+      setCategories(catData);
     } catch (err) {
       console.error(err);
       setErrorMsg("Error al cargar inventario");
@@ -83,13 +101,18 @@ export default function InventoryPage() {
     e.preventDefault();
     try {
       setLoading(true);
+      
       const payload = {
         name: formData.name,
         sku: formData.sku,
+        description: formData.description,
         price: parseFloat(formData.price),
-        stock: parseInt(formData.stock),
-        category: formData.category,
-        description: formData.description
+        cost: parseFloat(formData.price) * 0.7,
+        is_active: true,
+        stock_quantity: parseInt(formData.stock),
+        category_id: formData.category_id,
+        image_url: formData.image,
+        expiration_date: formData.expiration_date || null
       };
 
       if (editingProduct) {
@@ -102,8 +125,8 @@ export default function InventoryPage() {
       
       setShowModal(false);
       setEditingProduct(null);
-      setFormData({ name: "", sku: "", price: "", stock: "", category: "despensa", description: "", image: "", expiration_date: "" });
-      await loadProducts();
+      setFormData({ name: "", sku: "", price: "", stock: "", category_id: "", description: "", image: "", expiration_date: "" });
+      await loadAllData();
       
       setTimeout(() => setSuccessMsg(""), 3000);
     } catch (err: any) {
@@ -120,7 +143,7 @@ export default function InventoryPage() {
       setLoading(true);
       await api.deleteProduct(id);
       setSuccessMsg("Producto eliminado con éxito");
-      await loadProducts();
+      await loadAllData();
       setTimeout(() => setSuccessMsg(""), 3000);
     } catch (err: any) {
       setErrorMsg(err.message || "Error al eliminar");
@@ -131,13 +154,18 @@ export default function InventoryPage() {
   };
 
   useEffect(() => {
-    const filtered = allProducts.filter(p => 
-      p.name.toLowerCase().includes(search.toLowerCase()) || 
-      p.sku.toLowerCase().includes(search.toLowerCase())
-    );
+    const filtered = allProducts.filter(p => {
+      const matchesSearch = !search || 
+        p.name.toLowerCase().includes(search.toLowerCase()) || 
+        p.sku.toLowerCase().includes(search.toLowerCase());
+      
+      const matchesCategory = !filterCategory || p.category_id === filterCategory;
+      
+      return matchesSearch && matchesCategory;
+    });
     setProducts(filtered);
     setCurrentPage(1);
-  }, [search, allProducts]);
+  }, [search, filterCategory, allProducts]);
 
   const indexOfLastItem = currentPage * ITEMS_PER_PAGE;
   const indexOfFirstItem = indexOfLastItem - ITEMS_PER_PAGE;
@@ -174,7 +202,7 @@ export default function InventoryPage() {
           
           <div className="flex items-center gap-3">
             <button 
-              onClick={() => loadProducts()}
+              onClick={() => loadAllData()}
               className="p-2.5 rounded-xl border border-gray-200 dark:border-[#333] bg-white dark:bg-[#111] text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#222] transition-colors"
             >
               <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin text-blue-500' : ''}`} />
@@ -183,7 +211,7 @@ export default function InventoryPage() {
             <button
               onClick={() => {
                 setEditingProduct(null);
-                setFormData({ name: "", sku: "", price: "", stock: "", category: "despensa", description: "", image: "", expiration_date: "" });
+                setFormData({ name: "", sku: "", price: "", stock: "", category_id: categories[0]?.id || "", description: "", image: "", expiration_date: "" });
                 setShowModal(true);
               }}
               className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl font-medium transition-all shadow-md shadow-blue-500/20"
@@ -195,7 +223,7 @@ export default function InventoryPage() {
         </div>
 
       <div className="bg-white dark:bg-[#111] rounded-3xl border border-gray-100 dark:border-[#222] shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-gray-100 dark:border-[#222] flex items-center">
+        <div className="p-4 border-b border-gray-100 dark:border-[#222] flex flex-col sm:flex-row sm:items-center gap-3">
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input 
@@ -206,6 +234,19 @@ export default function InventoryPage() {
               className="w-full pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-[#0a0a0a] border border-gray-200 dark:border-[#333] rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all dark:text-white"
             />
           </div>
+          
+          <div className="w-full sm:w-48">
+            <select
+              value={filterCategory}
+              onChange={(e) => setFilterCategory(e.target.value)}
+              className="w-full px-4 py-2.5 bg-gray-50 dark:bg-[#0a0a0a] border border-gray-200 dark:border-[#333] rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all dark:text-white"
+            >
+              <option value="">Todas las categorías</option>
+              {categories.map((cat) => (
+                <option key={cat.id} value={cat.id}>{cat.name}</option>
+              ))}
+            </select>
+          </div>
         </div>
 
         <div className="overflow-x-auto" ref={tableRef}>
@@ -213,6 +254,7 @@ export default function InventoryPage() {
             <thead>
               <tr className="bg-gray-50 dark:bg-[#0a0a0a] border-b border-gray-100 dark:border-[#222]">
                 <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Producto</th>
+                <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Categoría</th>
                 <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">SKU</th>
                 <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Stock</th>
                 <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Precio</th>
@@ -222,7 +264,7 @@ export default function InventoryPage() {
             <tbody className="divide-y divide-gray-100 dark:divide-[#222]">
               {currentItems.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="p-8 text-center text-gray-500 dark:text-gray-400">
+                  <td colSpan={6} className="p-8 text-center text-gray-500 dark:text-gray-400">
                     No se encontraron productos.
                   </td>
                 </tr>
@@ -236,9 +278,13 @@ export default function InventoryPage() {
                         </div>
                         <div>
                           <p className="font-semibold text-gray-900 dark:text-white">{product.name}</p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">{product.category}</p>
                         </div>
                       </div>
+                    </td>
+                    <td className="p-4">
+                      <span className="px-2.5 py-1 rounded-md text-xs font-medium bg-purple-100 text-purple-700 dark:bg-purple-500/10 dark:text-purple-400">
+                        {product.category}
+                      </span>
                     </td>
                     <td className="p-4">
                       <span className="font-mono text-sm text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-[#222] px-2 py-1 rounded-md">
@@ -264,7 +310,7 @@ export default function InventoryPage() {
                             setEditingProduct(product);
                             setFormData({
                               name: product.name, sku: product.sku, price: String(product.price),
-                              stock: String(product.stock), category: product.category, description: product.description,
+                              stock: String(product.stock), category_id: product.category_id, description: product.description,
                               image: "", expiration_date: ""
                             });
                             setShowModal(true);
@@ -315,6 +361,20 @@ export default function InventoryPage() {
                 <div className="col-span-2 sm:col-span-1">
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">SKU</label>
                   <input required type="text" value={formData.sku} onChange={e => setFormData({...formData, sku: e.target.value})} className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-[#333] bg-gray-50 dark:bg-[#0a0a0a] dark:text-white focus:ring-2 focus:ring-purple-500 outline-none" />
+                </div>
+                <div className="col-span-2 sm:col-span-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Categoría</label>
+                  <select 
+                    required 
+                    value={formData.category_id}
+                    onChange={e => setFormData({...formData, category_id: e.target.value})}
+                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-[#333] bg-gray-50 dark:bg-[#0a0a0a] dark:text-white focus:ring-2 focus:ring-purple-500 outline-none"
+                  >
+                    <option value="">Selecciona una categoría</option>
+                    {categories.map((cat) => (
+                      <option key={cat.id} value={cat.id}>{cat.name}</option>
+                    ))}
+                  </select>
                 </div>
                 <div className="col-span-2 sm:col-span-1">
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Precio ($)</label>

@@ -15,12 +15,7 @@ const validateRequest = (req, res, next) => {
 
 router.get(
   '/',
-  categoryController.getCategories
-);
-
-router.get(
-  '/tree',
-  categoryController.getCategoryTree
+  categoryController.listCategories
 );
 
 router.get(
@@ -35,7 +30,7 @@ router.get(
 router.post(
   '/',
   authenticate,
-  authorize('admin', 'manager'),
+  authorize('admin'),
   [
     body('name').trim().notEmpty().withMessage('Name required'),
   ],
@@ -46,10 +41,20 @@ router.post(
 router.put(
   '/:id',
   authenticate,
-  authorize('admin', 'manager'),
+  authorize('admin'),
   [
     param('id').isUUID().withMessage('Valid UUID required'),
-    body('name').optional().trim().notEmpty().withMessage('Name required'),
+  ],
+  validateRequest,
+  categoryController.updateCategory
+);
+
+router.patch(
+  '/:id',
+  authenticate,
+  authorize('admin'),
+  [
+    param('id').isUUID().withMessage('Valid UUID required'),
   ],
   validateRequest,
   categoryController.updateCategory

@@ -35,7 +35,7 @@ const InventoryService = {
   async createProduct(productData) {
     const existingProduct = await Product.findBySku(productData.sku);
     if (existingProduct) {
-      throw new Error('SKU already exists');
+      throw new Error('SKU  Ya Existe');
     }
     const product = await Product.create(productData);
     await cacheService.delPattern('products:list:*');

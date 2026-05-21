@@ -22,8 +22,28 @@ const errorHandler = (err, req, res, next) => {
   }
 
   if (err.code === '23503') {
+    // Analizar el mensaje de error para identificar la relación
+    let detailMessage = 'Foreign key violation';
+    
+    if (err.detail) {
+      if (err.detail.includes('category_id')) {
+        detailMessage = 'La categoría especificada no existe';
+      } else if (err.detail.includes('product_id')) {
+        detailMessage = 'El producto especificado no existe';
+      } else if (err.detail.includes('customer_id')) {
+        detailMessage = 'El cliente especificado no existe';
+      } else if (err.detail.includes('user_id')) {
+        detailMessage = 'El usuario especificado no existe';
+      } else if (err.detail.includes('order_id')) {
+        detailMessage = 'El pedido especificado no existe';
+      } else if (err.detail.includes('still referenced')) {
+        detailMessage = 'No se puede eliminar porque tiene registros asociados';
+      }
+    }
+    
     return res.status(400).json({
-      message: 'Foreign key violation',
+      message: detailMessage,
+      detail: err.detail,
     });
   }
 
