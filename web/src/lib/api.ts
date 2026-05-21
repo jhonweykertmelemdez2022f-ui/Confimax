@@ -229,9 +229,10 @@ class ApiClient {
 
   // Sales Service
   async createSale(data: {
-    customerId?: string;
-    items: Array<{ productId: string; quantity: number; price: number }>;
-    paymentMethod: string;
+    customer_id?: string;
+    items: Array<{ product_id: string; sku: string; product_name: string; quantity: number; unit_price: number }>;
+    status?: string;
+    notes?: string;
   }) {
     return this.request('/sales', {
       method: 'POST',
@@ -239,7 +240,7 @@ class ApiClient {
     });
   }
 
-  async getSales(params?: { limit?: number; offset?: number }) {
+  async getSales(params?: { limit?: number; offset?: number; status?: string; customer_id?: string }) {
     const queryString = params ? `?${new URLSearchParams(params as any).toString()}` : '';
     return this.request(`/sales${queryString}`);
   }
@@ -248,15 +249,30 @@ class ApiClient {
     return this.request(`/sales/${id}`);
   }
 
-  async updateSale(id: string, data: any) {
-    return this.request(`/sales/${id}`, {
+  async updateSaleStatus(id: string, status: string) {
+    return this.request(`/sales/${id}/status`, {
       method: 'PATCH',
-      body: JSON.stringify(data),
+      body: JSON.stringify({ status }),
     });
   }
 
-  async deleteSale(id: string) {
-    return this.request(`/sales/${id}`, { method: 'DELETE' });
+  async getOrderItems(id: string) {
+    return this.request(`/sales/${id}/items`);
+  }
+
+  async getOrderPayments(id: string) {
+    return this.request(`/sales/${id}/payments`);
+  }
+
+  async createPayment(data: {
+    order_id: string;
+    payment_method: string;
+    amount: number;
+  }) {
+    return this.request('/sales/payments', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
   }
 
   // Customers Service
