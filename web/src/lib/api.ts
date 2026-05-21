@@ -166,10 +166,12 @@ class ApiClient {
     sku: string;
     description?: string;
     price: number;
-    stock: number;
-    category: string;
-    image?: string;
-    expiration_date?: string;
+    cost?: number;
+    is_active?: boolean;
+    stock_quantity: number;
+    category_id: string;
+    image_url?: string;
+    expiration_date?: string | null;
   }) {
     return this.request('/products', {
       method: 'POST',
@@ -178,11 +180,11 @@ class ApiClient {
         sku: data.sku,
         description: data.description,
         price: data.price,
-        cost: data.price * 0.7, // Costo estimado para el servicio
-        is_active: true,
-        stock_quantity: data.stock,
-        category_id: data.category === 'despensa' ? 'de0a6464-94e8-468b-90f7-5db18863fce9' : '3b9bbcbd-fb12-ae26-d332-b951dc649bd6', // Mapear a UUID de categoría por defecto
-        image_url: data.image,
+        cost: data.cost || data.price * 0.7,
+        is_active: data.is_active !== undefined ? data.is_active : true,
+        stock_quantity: data.stock_quantity,
+        category_id: data.category_id,
+        image_url: data.image_url,
         expiration_date: data.expiration_date || null
       }),
     });
