@@ -6,8 +6,9 @@ import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { 
   Package, DollarSign, Users, Activity, 
-  ShieldCheck, LayoutDashboard, LogOut, Menu, X
+  ShieldCheck, LayoutDashboard, LogOut, Menu, X, Moon, Sun
 } from "lucide-react";
+import { useTheme } from "@/context/ThemeContext";
 import { gsap } from "gsap";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -15,6 +16,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const router = useRouter();
   const pathname = usePathname();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -129,7 +131,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </nav>
         </div>
 
-        <div className="mt-auto p-4 border-t border-gray-100 dark:border-[#222]">
+        <div className="mt-auto p-4 border-t border-gray-100 dark:border-[#222] flex flex-col gap-2">
+          <button
+            onClick={(e) => toggleTheme({ x: e.clientX, y: e.clientY })}
+            className="w-full flex items-center justify-between px-4 py-3 rounded-xl font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#1a1a1a] transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              {theme === "dark" ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+              <span>{theme === "dark" ? "Modo Claro" : "Modo Oscuro"}</span>
+            </div>
+          </button>
+          
           <button
             onClick={logout}
             className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-red-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-500/10 transition-colors"
