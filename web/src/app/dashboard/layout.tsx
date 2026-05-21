@@ -27,11 +27,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }, [user, isLoading, router]);
 
   useEffect(() => {
-    // Animación de entrada de la sidebar
-    gsap.fromTo(".sidebar-link", 
-      { x: -20, opacity: 0 }, 
-      { x: 0, opacity: 1, stagger: 0.05, duration: 0.4, ease: "power2.out" }
-    );
+    // Animación de entrada de la sidebar (solo si los elementos existen)
+    const sidebarLinks = document.querySelectorAll('.sidebar-link');
+    if (sidebarLinks.length > 0) {
+      gsap.fromTo(".sidebar-link", 
+        { x: -20, opacity: 0 }, 
+        { x: 0, opacity: 1, stagger: 0.05, duration: 0.4, ease: "power2.out" }
+      );
+    }
   }, []);
 
   if (isLoading || !user) {

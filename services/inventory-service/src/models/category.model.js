@@ -39,7 +39,7 @@ pool.on('connect', () => {
 class Category {
   static async findAll() {
     const result = await pool.query(
-      'SELECT * FROM inventory.categories WHERE is_active = true ORDER BY name ASC'
+      'SELECT * FROM inventory.categories WHERE active = true ORDER BY name ASC'
     );
     return result.rows;
   }
@@ -55,7 +55,7 @@ class Category {
   static async create(data) {
     const { name, description } = data;
     const result = await pool.query(
-      'INSERT INTO inventory.categories (name, description, is_active) VALUES ($1, $2, true) RETURNING *',
+      'INSERT INTO inventory.categories (name, description, active) VALUES ($1, $2, true) RETURNING *',
       [name, description]
     );
     return result.rows[0];
@@ -72,7 +72,7 @@ class Category {
 
   static async delete(id) {
     await pool.query(
-      'UPDATE inventory.categories SET is_active = false, updated_at = CURRENT_TIMESTAMP WHERE id = $1',
+      'UPDATE inventory.categories SET active = false, updated_at = CURRENT_TIMESTAMP WHERE id = $1',
       [id]
     );
   }
