@@ -75,6 +75,17 @@ router.put(
   customerController.updateCustomer
 );
 
+router.patch(
+  '/:id',
+  authenticate,
+  authorize('admin', 'manager'),
+  [
+    param('id').isUUID().withMessage('Valid UUID required'),
+  ],
+  validateRequest,
+  customerController.updateCustomer
+);
+
 router.delete(
   '/:id',
   authenticate,

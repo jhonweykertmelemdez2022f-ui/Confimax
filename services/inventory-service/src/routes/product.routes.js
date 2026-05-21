@@ -81,6 +81,17 @@ router.put(
   productController.updateProduct
 );
 
+router.patch(
+  '/:id',
+  authenticate,
+  authorize('admin', 'manager'),
+  [
+    param('id').isUUID().withMessage('Valid UUID required'),
+  ],
+  validateRequest,
+  productController.updateProduct
+);
+
 router.delete(
   '/:id',
   authenticate,
