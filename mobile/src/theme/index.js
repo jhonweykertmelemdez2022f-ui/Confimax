@@ -1,63 +1,74 @@
 import { useThemeStore } from '../stores/themeStore';
 
 export const darkColors = {
-  surface: '#141313',
-  surfaceDim: '#0A0A0A',
-  surfaceBright: '#1d1d1d',
-  surfaceVariant: '#353434',
-  onSurface: '#e5e2e1',
-  primary: '#ffffff',
-  onPrimary: '#2f3131',
-  secondary: '#c6c6c6',
-  dataBlue: '#0066FF',
-  accentPink: '#CC0597',
-  borderMuted: '#262626',
-  white20: 'rgba(255, 255, 255, 0.2)',
-  white10: 'rgba(255, 255, 255, 0.1)',
+  surface: '#111827',
+  surfaceDim: '#0a0a0a',
+  surfaceBright: '#1f2937',
+  surfaceVariant: '#374151',
+  onSurface: '#e5e7eb',
+  primary: '#6366f1',
+  primaryDark: '#4f46e5',
+  onPrimary: '#ffffff',
+  secondary: '#8b5cf6',
+  accent: '#ec4899',
+  muted: '#9ca3af',
+  borderMuted: '#374151',
+  white20: 'rgba(255, 255, 255, 0.1)',
+  white10: 'rgba(255, 255, 255, 0.05)',
   black: '#000000',
-  error: '#ffb4ab',
+  error: '#ef4444',
 };
 
 export const lightColors = {
   surface: '#ffffff',
-  surfaceDim: '#f3f4f6',
+  surfaceDim: '#f9fafb',
   surfaceBright: '#ffffff',
-  surfaceVariant: '#e5e7eb',
+  surfaceVariant: '#f3f4f6',
   onSurface: '#1f2937',
-  primary: '#111827',
+  primary: '#6366f1',
+  primaryDark: '#4f46e5',
   onPrimary: '#ffffff',
-  secondary: '#4b5563',
-  dataBlue: '#0066FF',
-  accentPink: '#CC0597',
+  secondary: '#8b5cf6',
+  accent: '#ec4899',
+  muted: '#6b7280',
   borderMuted: '#e5e7eb',
-  white20: 'rgba(0, 0, 0, 0.08)',
-  white10: 'rgba(0, 0, 0, 0.04)',
+  white20: 'rgba(0, 0, 0, 0.04)',
+  white10: 'rgba(0, 0, 0, 0.02)',
   black: '#ffffff',
   error: '#dc2626',
 };
 
 export const typography = {
   headlineLg: {
-    fontSize: 32,
-    lineHeight: 38,
-    fontWeight: '800',
-    letterSpacing: -0.5,
+    fontSize: 28,
+    lineHeight: 34,
+    fontWeight: '700',
+    letterSpacing: -0.3,
+  },
+  headlineMd: {
+    fontSize: 22,
+    lineHeight: 28,
+    fontWeight: '600',
+    letterSpacing: -0.2,
   },
   bodyMd: {
     fontSize: 16,
     lineHeight: 24,
     fontWeight: '400',
   },
-  dataLabel: {
+  bodySm: {
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: '400',
+  },
+  label: {
     fontSize: 12,
-    lineHeight: 12,
-    letterSpacing: 1.2,
+    lineHeight: 16,
     fontWeight: '500',
-    textTransform: 'uppercase',
   },
   dataValue: {
-    fontSize: 14,
-    lineHeight: 16,
+    fontSize: 32,
+    lineHeight: 40,
     fontWeight: '700',
   },
 };
@@ -72,17 +83,25 @@ export const spacing = {
   page: 20,
 };
 
+export const borderRadius = {
+  sm: 8,
+  md: 16,
+  lg: 24,
+  full: 9999,
+};
+
 // Hook de tema dinámico y súper reactivo
 export const useTheme = () => {
   const isDark = useThemeStore((state) => state.isDark);
   const colors = isDark ? darkColors : lightColors;
-  return { colors, typography, spacing, isDark };
+  return { colors, typography, spacing, borderRadius, isDark };
 };
 
 export const theme = {
   colors: darkColors,
   typography,
   spacing,
+  borderRadius,
 };
 
 export default theme;

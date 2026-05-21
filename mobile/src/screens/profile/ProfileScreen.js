@@ -12,13 +12,13 @@ import {
   TextInput,
   Platform,
 } from 'react-native';
-import { MaterialIcons as Icon } from '@expo/vector-icons';
+import { User, Edit, Settings, Bell, Users, Shield, LogOut, ChevronRight, X, Moon } from 'lucide-react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useAuthStore } from '../../stores/authStore';
 import { useThemeStore } from '../../stores/themeStore';
 import { useTheme } from '../../theme';
 import { useIsFocused } from '@react-navigation/native';
 
-// Componente animado elástico nativo para efectos en cascada cinemática
 function FadeInUpCard({ children, delay = 0, duration = 400 }) {
   const isFocused = useIsFocused();
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -56,31 +56,54 @@ function FadeInUpCard({ children, delay = 0, duration = 400 }) {
   );
 }
 
+function Avatar({ name }) {
+  const { colors, borderRadius } = useTheme();
+  const initials = name ? name.charAt(0).toUpperCase() : 'U';
+  
+  const styles = StyleSheet.create({
+    avatar: {
+      width: 100,
+      height: 100,
+      justifyContent: 'center',
+      alignItems: 'center',
+      borderRadius: borderRadius.full,
+    },
+    avatarText: {
+      color: '#ffffff',
+      fontSize: 40,
+      fontWeight: '700',
+    },
+  });
+  
+  return (
+    <LinearGradient
+      colors={['#6366f1', '#8b5cf6']}
+      style={styles.avatar}
+    >
+      <Text style={styles.avatarText}>{initials}</Text>
+    </LinearGradient>
+  );
+}
+
 function ProfileScreen({navigation}) {
   const {user, logout, updateUser} = useAuthStore();
-  const {isDark, colors} = useTheme();
+  const { colors, typography, spacing, borderRadius, isDark } = useTheme();
   const toggleTheme = useThemeStore((state) => state.toggleTheme);
 
-  // Estados para Modales Interactivos
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [configModalVisible, setConfigModalVisible] = useState(false);
   const [pushModalVisible, setPushModalVisible] = useState(false);
 
-  // Campos de Edición de Perfil
   const [editUsername, setEditUsername] = useState(user?.name || user?.username || '');
   const [editEmail, setEditEmail] = useState(user?.email || '');
 
-
-  // Campos de Configuración de Cuenta
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
-  // Estados de Notificaciones Push
   const [notifySales, setNotifySales] = useState(true);
   const [notifyStock, setNotifyStock] = useState(true);
   const [notifyCustomers, setNotifyCustomers] = useState(false);
 
-  // Sincronizar datos al cargar
   useEffect(() => {
     if (user) {
       setEditUsername(user.username);
@@ -99,7 +122,6 @@ function ProfileScreen({navigation}) {
           style: 'destructive',
           onPress: async () => {
             await logout();
-            // Corregido: navegar de regreso al stack principal para evitar bloqueos
             navigation.getParent()?.reset({
               index: 0,
               routes: [{name: 'Login'}],
@@ -135,276 +157,428 @@ function ProfileScreen({navigation}) {
     setConfigModalVisible(false);
   };
 
-  const dynamicStyles = createStyles(colors);
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.surfaceDim,
+    },
+    header: {
+      padding: spacing.page,
+      paddingTop: 60,
+      alignItems: 'center',
+    },
+    username: {
+      ...typography.headlineLg,
+      color: colors.onSurface,
+      marginTop: spacing.lg,
+    },
+    email: {
+      ...typography.bodyMd,
+      color: colors.muted,
+      marginTop: spacing.xs,
+    },
+    menu: {
+      backgroundColor: colors.surface,
+      marginTop: spacing.lg,
+      marginHorizontal: spacing.page,
+      borderRadius: borderRadius.lg,
+      overflow: 'hidden',
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: isDark ? 0.2 : 0.05,
+      shadowRadius: 8,
+      elevation: 3,
+    },
+    menuItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      padding: spacing.lg,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.borderMuted,
+    },
+    menuLabel: {
+      flex: 1,
+      ...typography.bodyMd,
+      color: colors.onSurface,
+      marginLeft: spacing.md,
+    },
+    logoutButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: colors.surface,
+      margin: spacing.page,
+      padding: spacing.lg,
+      borderRadius: borderRadius.lg,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: isDark ? 0.2 : 0.05,
+      shadowRadius: 8,
+      elevation: 3,
+    },
+    logoutText: {
+      flex: 1,
+      ...typography.bodyMd,
+      color: '#ef4444',
+      marginLeft: spacing.md,
+      fontWeight: '600',
+    },
+    version: {
+      textAlign: 'center',
+      color: colors.muted,
+      fontSize: 12,
+      marginTop: spacing.lg,
+      marginBottom: spacing.xxl,
+    },
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: 'rgba(0, 0, 0, 0.6)',
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: spacing.page,
+    },
+    modalContent: {
+      width: '100%',
+      maxWidth: 400,
+      backgroundColor: colors.surface,
+      borderRadius: borderRadius.lg,
+      padding: spacing.lg,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 10 },
+      shadowOpacity: 0.3,
+      shadowRadius: 15,
+      elevation: 10,
+    },
+    modalHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: spacing.lg,
+    },
+    modalTitle: {
+      ...typography.headlineMd,
+      color: colors.onSurface,
+    },
+    modalInputLabel: {
+      ...typography.label,
+      color: colors.onSurface,
+      marginBottom: spacing.sm,
+      marginTop: spacing.md,
+    },
+    modalInput: {
+      height: 48,
+      backgroundColor: colors.surfaceVariant,
+      borderColor: colors.borderMuted,
+      borderWidth: 1,
+      borderRadius: borderRadius.md,
+      paddingHorizontal: spacing.md,
+      ...typography.bodyMd,
+      color: colors.onSurface,
+      marginBottom: spacing.sm,
+    },
+    modalButtons: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginTop: spacing.xl,
+      gap: spacing.sm,
+    },
+    modalButton: {
+      flex: 1,
+      height: 48,
+      borderRadius: borderRadius.md,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    cancelBtn: {
+      backgroundColor: colors.surfaceVariant,
+    },
+    saveBtn: {
+      backgroundColor: colors.primary,
+    },
+    modalButtonText: {
+      ...typography.label,
+      color: colors.onSurface,
+      fontWeight: '600',
+    },
+    saveBtnText: {
+      color: '#ffffff',
+    },
+    switchRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingVertical: spacing.md,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.borderMuted,
+    },
+    switchLabel: {
+      ...typography.bodyMd,
+      color: colors.onSurface,
+      fontWeight: '600',
+    },
+    switchDescription: {
+      ...typography.bodySm,
+      color: colors.muted,
+      marginTop: spacing.xs,
+      paddingRight: spacing.sm,
+    },
+  });
+
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
 
   return (
-    <ScrollView style={dynamicStyles.container}>
-      {/* Cabecera del Perfil */}
+    <ScrollView style={styles.container}>
       <FadeInUpCard delay={0} duration={350}>
-        <View style={dynamicStyles.header}>
-          <View style={dynamicStyles.avatar}>
-            <Icon name="person" size={60} color={colors.dataBlue} />
-          </View>
-          <Text style={dynamicStyles.username}>{user?.name || user?.username || 'Usuario'}</Text>
-          <Text style={dynamicStyles.email}>{user?.email || 'usuario@confimax.com'}</Text>
-
+        <View style={styles.header}>
+          <Avatar name={user?.name || user?.username} />
+          <Text style={styles.username}>{user?.name || user?.username || 'Usuario'}</Text>
+          <Text style={styles.email}>{user?.email || 'usuario@confimax.com'}</Text>
         </View>
       </FadeInUpCard>
 
-      <View style={dynamicStyles.menu}>
-        {/* Editar Perfil */}
+      <View style={styles.menu}>
         <FadeInUpCard delay={80} duration={350}>
-          <TouchableOpacity style={dynamicStyles.menuItem} onPress={() => setEditModalVisible(true)}>
-            <Icon name="edit" size={24} color={colors.dataBlue} />
-            <Text style={dynamicStyles.menuLabel}>Editar Perfil</Text>
-            <Icon name="chevron-right" size={24} color={colors.secondary} />
+          <TouchableOpacity style={styles.menuItem} onPress={() => setEditModalVisible(true)}>
+            <Edit size={24} color={colors.primary} />
+            <Text style={styles.menuLabel}>Editar Perfil</Text>
+            <ChevronRight size={24} color={colors.muted} />
           </TouchableOpacity>
         </FadeInUpCard>
 
-        {/* Interruptor Modo Oscuro */}
         <FadeInUpCard delay={160} duration={350}>
-          <View style={dynamicStyles.menuItem}>
-            <Icon name="dark-mode" size={24} color={colors.accentPink} />
-            <Text style={dynamicStyles.menuLabel}>Tema Oscuro / Neón</Text>
+          <View style={styles.menuItem}>
+            <Moon size={24} color={colors.secondary} />
+            <Text style={styles.menuLabel}>Modo Oscuro</Text>
             <Switch
               value={isDark}
               onValueChange={toggleTheme}
-              trackColor={{ false: '#767577', true: colors.dataBlue }}
-              thumbColor={isDark ? colors.accentPink : '#f4f3f4'}
+              trackColor={{ false: '#767577', true: colors.primary }}
+              thumbColor={isDark ? colors.secondary : '#f4f3f4'}
             />
           </View>
         </FadeInUpCard>
 
-        {/* Configuración de Cuenta */}
         <FadeInUpCard delay={240} duration={350}>
           <TouchableOpacity 
             style={[
-              dynamicStyles.menuItem, 
+              styles.menuItem, 
               user?.role === 'customer' && { borderBottomWidth: 0 }
             ]} 
             onPress={() => setConfigModalVisible(true)}
           >
-            <Icon name="settings" size={24} color={colors.secondary} />
-            <Text style={dynamicStyles.menuLabel}>Configuración de Cuenta</Text>
-            <Icon name="chevron-right" size={24} color={colors.secondary} />
+            <Settings size={24} color={colors.muted} />
+            <Text style={styles.menuLabel}>Configuración de Cuenta</Text>
+            <ChevronRight size={24} color={colors.muted} />
           </TouchableOpacity>
         </FadeInUpCard>
 
-        {/* Notificaciones Push */}
         {user?.role !== 'customer' && (
           <FadeInUpCard delay={320} duration={350}>
             <TouchableOpacity 
               style={[
-                dynamicStyles.menuItem, 
+                styles.menuItem, 
                 user?.role !== 'admin' && { borderBottomWidth: 0 }
               ]} 
               onPress={() => setPushModalVisible(true)}
             >
-              <Icon name="notifications" size={24} color={colors.secondary} />
-              <Text style={dynamicStyles.menuLabel}>Notificaciones Push</Text>
-              <Icon name="chevron-right" size={24} color={colors.secondary} />
+              <Bell size={24} color={colors.muted} />
+              <Text style={styles.menuLabel}>Notificaciones</Text>
+              <ChevronRight size={24} color={colors.muted} />
             </TouchableOpacity>
           </FadeInUpCard>
         )}
 
-        {/* Gestionar Usuarios (Solo Admin) */}
         {user?.role === 'admin' && (
           <FadeInUpCard delay={400} duration={350}>
             <TouchableOpacity 
-              style={dynamicStyles.menuItem} 
+              style={styles.menuItem} 
               onPress={() => navigation.navigate('Users')}
             >
-              <Icon name="people" size={24} color={colors.dataBlue} />
-              <Text style={dynamicStyles.menuLabel}>Gestionar Usuarios (CRUD)</Text>
-              <Icon name="chevron-right" size={24} color={colors.secondary} />
+              <Users size={24} color={colors.primary} />
+              <Text style={styles.menuLabel}>Gestionar Usuarios</Text>
+              <ChevronRight size={24} color={colors.muted} />
             </TouchableOpacity>
           </FadeInUpCard>
         )}
 
-        {/* Auditoría del Sistema (Solo Admin) */}
         {user?.role === 'admin' && (
           <FadeInUpCard delay={440} duration={350}>
             <TouchableOpacity 
-              style={[dynamicStyles.menuItem, { borderBottomWidth: 0 }]} 
+              style={[styles.menuItem, { borderBottomWidth: 0 }]} 
               onPress={() => navigation.navigate('AuditLogs')}
             >
-              <Icon name="security" size={24} color={colors.accentPink} />
-              <Text style={dynamicStyles.menuLabel}>Auditoría de Logs (MongoDB)</Text>
-              <Icon name="chevron-right" size={24} color={colors.secondary} />
+              <Shield size={24} color={colors.secondary} />
+              <Text style={styles.menuLabel}>Auditoría de Logs</Text>
+              <ChevronRight size={24} color={colors.muted} />
             </TouchableOpacity>
           </FadeInUpCard>
         )}
       </View>
 
-      {/* Botón Cerrar Sesión */}
       <FadeInUpCard delay={400} duration={350}>
-        <TouchableOpacity style={dynamicStyles.logoutButton} onPress={handleLogout}>
-          <Icon name="logout" size={24} color="#FF3B30" />
-          <Text style={dynamicStyles.logoutText}>Cerrar Sesión</Text>
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+          <LogOut size={24} color="#ef4444" />
+          <Text style={styles.logoutText}>Cerrar Sesión</Text>
         </TouchableOpacity>
       </FadeInUpCard>
 
-      <Text style={dynamicStyles.version}>Versión 1.1.0 // Confimax</Text>
+      <Text style={styles.version}>Versión 1.1.0 • Confimax</Text>
 
-      {/* ========================================== */}
-      {/* MODAL: EDITAR PERFIL                       */}
-      {/* ========================================== */}
       <Modal
         animationType="slide"
         transparent={true}
         visible={editModalVisible}
         onRequestClose={() => setEditModalVisible(false)}
       >
-        <View style={dynamicStyles.modalOverlay}>
-          <View style={dynamicStyles.modalContent}>
-            <View style={dynamicStyles.modalHeader}>
-              <Text style={dynamicStyles.modalTitle}>Editar Perfil</Text>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Editar Perfil</Text>
               <TouchableOpacity onPress={() => setEditModalVisible(false)}>
-                <Icon name="close" size={24} color={colors.primary} />
+                <X size={24} color={colors.muted} />
               </TouchableOpacity>
             </View>
 
-            <Text style={dynamicStyles.modalInputLabel}>Nombre de Usuario</Text>
+            <Text style={styles.modalInputLabel}>Nombre de Usuario</Text>
             <TextInput
-              style={dynamicStyles.modalInput}
+              style={styles.modalInput}
               value={editUsername}
               onChangeText={setEditUsername}
               placeholder="Nombre de Usuario"
-              placeholderTextColor={colors.secondary}
+              placeholderTextColor={colors.muted}
             />
 
-            <Text style={dynamicStyles.modalInputLabel}>Correo Electrónico</Text>
+            <Text style={styles.modalInputLabel}>Correo Electrónico</Text>
             <TextInput
-              style={dynamicStyles.modalInput}
+              style={styles.modalInput}
               value={editEmail}
               onChangeText={setEditEmail}
               placeholder="correo@ejemplo.com"
-              placeholderTextColor={colors.secondary}
+              placeholderTextColor={colors.muted}
               keyboardType="email-address"
               autoCapitalize="none"
             />
 
-            <View style={dynamicStyles.modalButtons}>
-              <TouchableOpacity style={[dynamicStyles.modalButton, dynamicStyles.cancelBtn]} onPress={() => setEditModalVisible(false)}>
-                <Text style={dynamicStyles.modalButtonText}>Cancelar</Text>
+            <View style={styles.modalButtons}>
+              <TouchableOpacity style={[styles.modalButton, styles.cancelBtn]} onPress={() => setEditModalVisible(false)}>
+                <Text style={styles.modalButtonText}>Cancelar</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={[dynamicStyles.modalButton, dynamicStyles.saveBtn]} onPress={handleSaveProfile}>
-                <Text style={[dynamicStyles.modalButtonText, { color: '#fff' }]}>Guardar</Text>
+              <TouchableOpacity style={[styles.modalButton, styles.saveBtn]} onPress={handleSaveProfile}>
+                <Text style={[styles.modalButtonText, styles.saveBtnText]}>Guardar</Text>
               </TouchableOpacity>
             </View>
           </View>
         </View>
       </Modal>
 
-      {/* ========================================== */}
-      {/* MODAL: CONFIGURACIÓN DE CUENTA            */}
-      {/* ========================================== */}
       <Modal
         animationType="slide"
         transparent={true}
         visible={configModalVisible}
         onRequestClose={() => setConfigModalVisible(false)}
       >
-        <View style={dynamicStyles.modalOverlay}>
-          <View style={dynamicStyles.modalContent}>
-            <View style={dynamicStyles.modalHeader}>
-              <Text style={dynamicStyles.modalTitle}>Ajustes de Cuenta</Text>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Ajustes de Cuenta</Text>
               <TouchableOpacity onPress={() => setConfigModalVisible(false)}>
-                <Icon name="close" size={24} color={colors.primary} />
+                <X size={24} color={colors.muted} />
               </TouchableOpacity>
             </View>
 
-            <Text style={dynamicStyles.modalInputLabel}>Nueva Contraseña</Text>
+            <Text style={styles.modalInputLabel}>Nueva Contraseña</Text>
             <TextInput
-              style={dynamicStyles.modalInput}
+              style={styles.modalInput}
               value={newPassword}
               onChangeText={setNewPassword}
               placeholder="Mínimo 6 caracteres"
-              placeholderTextColor={colors.secondary}
+              placeholderTextColor={colors.muted}
               secureTextEntry
             />
 
-            <Text style={dynamicStyles.modalInputLabel}>Confirmar Contraseña</Text>
+            <Text style={styles.modalInputLabel}>Confirmar Contraseña</Text>
             <TextInput
-              style={dynamicStyles.modalInput}
+              style={styles.modalInput}
               value={confirmPassword}
               onChangeText={setConfirmPassword}
               placeholder="Repite la contraseña"
-              placeholderTextColor={colors.secondary}
+              placeholderTextColor={colors.muted}
               secureTextEntry
             />
 
-            <View style={dynamicStyles.modalButtons}>
-              <TouchableOpacity style={[dynamicStyles.modalButton, dynamicStyles.cancelBtn]} onPress={() => setConfigModalVisible(false)}>
-                <Text style={dynamicStyles.modalButtonText}>Cancelar</Text>
+            <View style={styles.modalButtons}>
+              <TouchableOpacity style={[styles.modalButton, styles.cancelBtn]} onPress={() => setConfigModalVisible(false)}>
+                <Text style={styles.modalButtonText}>Cancelar</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={[dynamicStyles.modalButton, dynamicStyles.saveBtn]} onPress={handleSaveConfig}>
-                <Text style={[dynamicStyles.modalButtonText, { color: '#fff' }]}>Actualizar</Text>
+              <TouchableOpacity style={[styles.modalButton, styles.saveBtn]} onPress={handleSaveConfig}>
+                <Text style={[styles.modalButtonText, styles.saveBtnText]}>Actualizar</Text>
               </TouchableOpacity>
             </View>
           </View>
         </View>
       </Modal>
 
-      {/* ========================================== */}
-      {/* MODAL: NOTIFICACIONES PUSH                 */}
-      {/* ========================================== */}
       <Modal
         animationType="slide"
         transparent={true}
         visible={pushModalVisible}
         onRequestClose={() => setPushModalVisible(false)}
       >
-        <View style={dynamicStyles.modalOverlay}>
-          <View style={dynamicStyles.modalContent}>
-            <View style={dynamicStyles.modalHeader}>
-              <Text style={dynamicStyles.modalTitle}>Notificaciones Push</Text>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Notificaciones</Text>
               <TouchableOpacity onPress={() => setPushModalVisible(false)}>
-                <Icon name="close" size={24} color={colors.primary} />
+                <X size={24} color={colors.muted} />
               </TouchableOpacity>
             </View>
 
-            <View style={dynamicStyles.switchRow}>
+            <View style={styles.switchRow}>
               <View style={{ flex: 1 }}>
-                <Text style={dynamicStyles.switchLabel}>Alertas de Ventas</Text>
-                <Text style={dynamicStyles.switchDescription}>Notificar cada comprobante de venta emitido hoy.</Text>
+                <Text style={styles.switchLabel}>Alertas de Ventas</Text>
+                <Text style={styles.switchDescription}>Notificar cada comprobante de venta emitido hoy.</Text>
               </View>
               <Switch
                 value={notifySales}
                 onValueChange={setNotifySales}
-                trackColor={{ false: '#767577', true: colors.dataBlue }}
-                thumbColor={notifySales ? colors.dataBlue : '#f4f3f4'}
+                trackColor={{ false: '#767577', true: colors.primary }}
+                thumbColor={notifySales ? colors.primary : '#f4f3f4'}
               />
             </View>
 
-            <View style={dynamicStyles.switchRow}>
+            <View style={styles.switchRow}>
               <View style={{ flex: 1 }}>
-                <Text style={dynamicStyles.switchLabel}>Aviso de Stock Crítico</Text>
-                <Text style={dynamicStyles.switchDescription}>Notificar si algún producto cae por debajo de su stock de seguridad.</Text>
+                <Text style={styles.switchLabel}>Aviso de Stock Crítico</Text>
+                <Text style={styles.switchDescription}>Notificar si algún producto cae por debajo de su stock de seguridad.</Text>
               </View>
               <Switch
                 value={notifyStock}
                 onValueChange={setNotifyStock}
-                trackColor={{ false: '#767577', true: colors.dataBlue }}
-                thumbColor={notifyStock ? colors.dataBlue : '#f4f3f4'}
+                trackColor={{ false: '#767577', true: colors.primary }}
+                thumbColor={notifyStock ? colors.primary : '#f4f3f4'}
               />
             </View>
 
-            <View style={dynamicStyles.switchRow}>
+            <View style={styles.switchRow}>
               <View style={{ flex: 1 }}>
-                <Text style={dynamicStyles.switchLabel}>Nuevos Clientes</Text>
-                <Text style={dynamicStyles.switchDescription}>Notificar al registrar un cliente en la zona de Mongo.</Text>
+                <Text style={styles.switchLabel}>Nuevos Clientes</Text>
+                <Text style={styles.switchDescription}>Notificar al registrar un cliente.</Text>
               </View>
               <Switch
                 value={notifyCustomers}
                 onValueChange={setNotifyCustomers}
-                trackColor={{ false: '#767577', true: colors.dataBlue }}
-                thumbColor={notifyCustomers ? colors.dataBlue : '#f4f3f4'}
+                trackColor={{ false: '#767577', true: colors.primary }}
+                thumbColor={notifyCustomers ? colors.primary : '#f4f3f4'}
               />
             </View>
 
-            <TouchableOpacity style={[dynamicStyles.modalButton, dynamicStyles.saveBtn, { width: '100%', marginTop: 25 }]} onPress={() => setPushModalVisible(false)}>
-              <Text style={[dynamicStyles.modalButtonText, { color: '#fff', textAlign: 'center' }]}>Guardar Ajustes</Text>
+            <TouchableOpacity style={[styles.modalButton, styles.saveBtn, { width: '100%', marginTop: spacing.xl }]} onPress={() => setPushModalVisible(false)}>
+              <Text style={[styles.modalButtonText, styles.saveBtnText]}>Guardar Ajustes</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -412,186 +586,5 @@ function ProfileScreen({navigation}) {
     </ScrollView>
   );
 }
-
-const createStyles = (colors) => StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.surfaceDim,
-  },
-  header: {
-    backgroundColor: colors.surfaceDim,
-    padding: 30,
-    alignItems: 'center',
-    paddingTop: 50,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.borderMuted,
-  },
-  avatar: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: colors.surface,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 15,
-    borderWidth: 2,
-    borderColor: colors.dataBlue,
-  },
-  username: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: colors.primary,
-    letterSpacing: 0.5,
-  },
-  email: {
-    fontSize: 14,
-    color: colors.secondary,
-    marginTop: 5,
-  },
-  menu: {
-    backgroundColor: colors.surface,
-    marginTop: 20,
-    marginHorizontal: 15,
-    borderRadius: 12,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: colors.borderMuted,
-  },
-  menuItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 18,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.borderMuted,
-  },
-  menuLabel: {
-    flex: 1,
-    fontSize: 16,
-    color: colors.primary,
-    marginLeft: 15,
-  },
-  logoutButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.surface,
-    margin: 15,
-    padding: 18,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: colors.borderMuted,
-  },
-  logoutText: {
-    flex: 1,
-    fontSize: 16,
-    color: '#FF3B30',
-    marginLeft: 15,
-    fontWeight: 'bold',
-  },
-  version: {
-    textAlign: 'center',
-    color: colors.secondary,
-    fontSize: 12,
-    marginTop: 20,
-    marginBottom: 30,
-  },
-  // Estilos de los Modales
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.65)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  modalContent: {
-    width: '100%',
-    maxWidth: 400,
-    backgroundColor: colors.surface,
-    borderRadius: 16,
-    padding: 24,
-    borderWidth: 1,
-    borderColor: colors.borderMuted,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.3,
-    shadowRadius: 15,
-    elevation: 10,
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: colors.primary,
-    letterSpacing: 0.5,
-  },
-  modalInputLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.primary,
-    marginBottom: 8,
-    marginTop: 12,
-  },
-  modalInput: {
-    height: 48,
-    backgroundColor: colors.surfaceDim,
-    borderColor: colors.borderMuted,
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 15,
-    fontSize: 16,
-    color: colors.primary,
-    marginBottom: 10,
-  },
-  modalButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 25,
-  },
-  modalButton: {
-    flex: 1,
-    height: 48,
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginHorizontal: 5,
-  },
-  cancelBtn: {
-    backgroundColor: colors.surfaceDim,
-    borderWidth: 1,
-    borderColor: colors.borderMuted,
-  },
-  saveBtn: {
-    backgroundColor: colors.dataBlue,
-  },
-  modalButtonText: {
-    fontSize: 15,
-    fontWeight: 'bold',
-    color: colors.primary,
-  },
-  // Switches de Notificación
-  switchRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.borderMuted,
-  },
-  switchLabel: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: colors.primary,
-  },
-  switchDescription: {
-    fontSize: 12,
-    color: colors.secondary,
-    marginTop: 3,
-    paddingRight: 10,
-  },
-});
 
 export default ProfileScreen;
