@@ -86,12 +86,18 @@ const Customer = {
     const values = [];
     let paramCount = 1;
 
-    for (const [key, value] of Object.entries(customerData)) {
-      if (value !== undefined && key !== 'id') {
+    const allowedFields = ['name', 'email', 'phone', 'tax_id', 'notes'];
+
+    for (const key of allowedFields) {
+      if (customerData[key] !== undefined) {
         fields.push(`${key} = $${paramCount}`);
-        values.push(value);
+        values.push(customerData[key]);
         paramCount++;
       }
+    }
+
+    if (!fields.length) {
+      return await this.findById(id);
     }
 
     values.push(id);
