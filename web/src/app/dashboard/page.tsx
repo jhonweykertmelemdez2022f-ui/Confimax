@@ -168,7 +168,9 @@ export default function DashboardOverviewPage() {
             <h2 className="text-xl font-bold text-gray-900 dark:text-white">Actividad Reciente</h2>
           </div>
           <div className="flex flex-col items-center justify-center py-12 text-center">
-            <img src="/confimax-fondo-animado.png" className="w-32 h-32 object-cover opacity-50 grayscale mb-4" alt="No data" />
+            <div className="w-32 h-32 bg-gray-100 dark:bg-[#222] rounded-full flex items-center justify-center opacity-50 mb-4">
+              <Activity className="w-12 h-12 text-gray-400 dark:text-gray-500" />
+            </div>
             <p className="text-gray-500 dark:text-gray-400">Las gráficas y actividad en tiempo real estarán disponibles pronto.</p>
           </div>
         </div>

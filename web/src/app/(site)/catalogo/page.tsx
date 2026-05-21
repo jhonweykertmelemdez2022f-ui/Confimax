@@ -65,7 +65,7 @@ export default function CatalogoPage() {
           name: p.name || p.title || "Producto",
           price: parseFloat(p.price || p.unit_price || 0),
           originalPrice: p.original_price ? parseFloat(p.original_price) : undefined,
-          image: p.image || p.image_url || "/confimax-fondo-animado.png",
+          image: p.image || p.image_url || "",
           category: (p.category || "despensa").toLowerCase(),
           stock: parseInt(p.stock || p.stock_quantity || 0),
           rating: p.rating || 5.0,

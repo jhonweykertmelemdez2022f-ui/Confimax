@@ -39,13 +39,19 @@ export default function ProductCard({ product, viewMode }: ProductCardProps) {
       <article className="bg-white dark:bg-surface border border-slate-900 dark:border-white overflow-hidden hover:border-data-blue hover:-translate-y-1 hover:shadow-lg transition-all duration-300 group">
         <div className="flex flex-col sm:flex-row">
           {/* Image */}
-          <div className="relative sm:w-56 h-48 sm:h-auto flex-shrink-0">
-            <img
-              src={product.image}
-              alt={product.name}
-              className="w-full h-full object-cover transition-transform duration-400 group-hover:scale-105 grayscale group-hover:grayscale-0"
-              loading="lazy"
-            />
+          <div className="relative sm:w-56 h-48 sm:h-auto flex-shrink-0 bg-gray-100 dark:bg-[#222]">
+            {product.image ? (
+              <img
+                src={product.image}
+                alt={product.name}
+                className="w-full h-full object-cover transition-transform duration-400 group-hover:scale-105 grayscale group-hover:grayscale-0"
+                loading="lazy"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center">
+                <Package className="w-12 h-12 text-gray-400 dark:text-gray-500" />
+              </div>
+            )}
             {product.badge && (
               <span className="absolute top-3 left-3 px-3 py-1 text-xs font-data-label text-data-label uppercase text-white dark:text-background bg-accent-pink">
                 {product.badge}
@@ -129,13 +135,19 @@ export default function ProductCard({ product, viewMode }: ProductCardProps) {
   return (
     <article className="bg-white dark:bg-surface border border-slate-900 dark:border-white overflow-hidden hover:border-data-blue hover:-translate-y-1 hover:shadow-lg transition-all duration-300 group">
       {/* Image */}
-      <div className="relative h-48 overflow-hidden">
-        <img
-          src={product.image}
-          alt={product.name}
-          className="w-full h-full object-cover transition-transform duration-400 group-hover:scale-105 grayscale group-hover:grayscale-0"
-          loading="lazy"
-        />
+      <div className="relative h-48 overflow-hidden bg-gray-100 dark:bg-[#222]">
+        {product.image ? (
+          <img
+            src={product.image}
+            alt={product.name}
+            className="w-full h-full object-cover transition-transform duration-400 group-hover:scale-105 grayscale group-hover:grayscale-0"
+            loading="lazy"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <Package className="w-12 h-12 text-gray-400 dark:text-gray-500" />
+          </div>
+        )}
         {product.badge && (
           <span className="absolute top-3 left-3 px-3 py-1 text-xs font-data-label text-data-label uppercase text-white dark:text-background bg-accent-pink">
             {product.badge}
