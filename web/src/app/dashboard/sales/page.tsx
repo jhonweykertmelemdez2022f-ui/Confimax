@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
 import { Plus, Search, RefreshCw, AlertTriangle, CheckCircle, DollarSign, Calendar } from "lucide-react";
+import Pagination from "@/components/Pagination";
 import { gsap } from "gsap";
 
 interface Sale {
@@ -14,13 +15,17 @@ interface Sale {
   created_at: string;
 }
 
+const ITEMS_PER_PAGE = 9;
+
 export default function SalesPage() {
   const { user } = useAuth();
   const [sales, setSales] = useState<Sale[]>([]);
+  const [allSales, setAllSales] = useState<Sale[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
 
   const tableRef = useRef<HTMLDivElement>(null);
 
@@ -33,13 +38,15 @@ export default function SalesPage() {
       setLoading(true);
       const res = await api.getSales() as any;
       const data = Array.isArray(res.data || res) ? (res.data || res) : [];
-      setSales(data.map((s: any) => ({
+      const mappedData = data.map((s: any) => ({
         id: s.id || String(s.sale_id),
         customerId: s.customerId || s.customer_id,
         total: parseFloat(s.total || s.total_amount || 0),
         paymentMethod: s.paymentMethod || s.payment_method || "Efectivo",
         created_at: s.created_at || new Date().toISOString()
-      })));
+      }));
+      setAllSales(mappedData);
+      setSales(mappedData);
     } catch (err) {
       console.error(err);
       setErrorMsg("Error al cargar ventas");
@@ -57,9 +64,18 @@ export default function SalesPage() {
     }
   }, [loading, sales]);
 
-  const filteredSales = sales.filter(s => 
-    s.id.toLowerCase().includes(search.toLowerCase())
-  );
+  useEffect(() => {
+    const filtered = allSales.filter(s => 
+      s.id.toLowerCase().includes(search.toLowerCase())
+    );
+    setSales(filtered);
+    setCurrentPage(1);
+  }, [search, allSales]);
+
+  const indexOfLastItem = currentPage * ITEMS_PER_PAGE;
+  const indexOfFirstItem = indexOfLastItem - ITEMS_PER_PAGE;
+  const currentItems = sales.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(sales.length / ITEMS_PER_PAGE);
 
   return (
     <div className="space-y-6">
@@ -126,14 +142,14 @@ export default function SalesPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-[#222]">
-              {filteredSales.length === 0 ? (
+              {currentItems.length === 0 ? (
                 <tr>
                   <td colSpan={4} className="p-8 text-center text-gray-500 dark:text-gray-400">
                     No se encontraron ventas.
                   </td>
                 </tr>
               ) : (
-                filteredSales.map((sale) => (
+                currentItems.map((sale) => (
                   <tr key={sale.id} className="sale-row hover:bg-gray-50 dark:hover:bg-[#1a1a1a] transition-colors group">
                     <td className="p-4">
                       <div className="flex items-center gap-3">
@@ -167,6 +183,12 @@ export default function SalesPage() {
           </table>
         </div>
       </div>
+
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+      />
     </div>
   );
 }

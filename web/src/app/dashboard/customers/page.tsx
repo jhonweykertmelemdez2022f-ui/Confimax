@@ -5,6 +5,7 @@ import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
 import { Plus, Search, RefreshCw, AlertTriangle, CheckCircle, Users, Mail, Phone, MapPin } from "lucide-react";
 import { SquarePenIcon, DeleteIcon } from "@/components/AnimatedIcons";
+import Pagination from "@/components/Pagination";
 import { gsap } from "gsap";
 
 interface Customer {
@@ -16,13 +17,17 @@ interface Customer {
   rif?: string;
 }
 
+const ITEMS_PER_PAGE = 9;
+
 export default function CustomersPage() {
   const { user } = useAuth();
   const [customers, setCustomers] = useState<Customer[]>([]);
+  const [allCustomers, setAllCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
 
   const [showModal, setShowModal] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
@@ -41,14 +46,16 @@ export default function CustomersPage() {
       setLoading(true);
       const res = await api.getCustomers() as any;
       const data = Array.isArray(res.data || res) ? (res.data || res) : [];
-      setCustomers(data.map((c: any) => ({
+      const mappedData = data.map((c: any) => ({
         id: c.id,
         name: c.name,
         email: c.email || "",
         phone: c.phone || "",
         address: c.address || "",
         rif: c.rif || ""
-      })));
+      }));
+      setAllCustomers(mappedData);
+      setCustomers(mappedData);
     } catch (err) {
       console.error(err);
       setErrorMsg("Error al cargar clientes");
@@ -108,10 +115,19 @@ export default function CustomersPage() {
     }
   };
 
-  const filteredCustomers = customers.filter(c => 
-    c.name.toLowerCase().includes(search.toLowerCase()) || 
-    (c.email && c.email.toLowerCase().includes(search.toLowerCase()))
-  );
+  useEffect(() => {
+    const filtered = allCustomers.filter(c => 
+      c.name.toLowerCase().includes(search.toLowerCase()) || 
+      (c.email && c.email.toLowerCase().includes(search.toLowerCase()))
+    );
+    setCustomers(filtered);
+    setCurrentPage(1);
+  }, [search, allCustomers]);
+
+  const indexOfLastItem = currentPage * ITEMS_PER_PAGE;
+  const indexOfFirstItem = indexOfLastItem - ITEMS_PER_PAGE;
+  const currentItems = customers.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(customers.length / ITEMS_PER_PAGE);
 
   return (
     <div className="space-y-6">
@@ -169,13 +185,13 @@ export default function CustomersPage() {
       </div>
 
       <div ref={listRef} className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-        {filteredCustomers.length === 0 && !loading ? (
+        {currentItems.length === 0 && !loading ? (
           <div className="col-span-full py-12 text-center text-gray-500 dark:text-gray-400 bg-white dark:bg-[#111] rounded-3xl border border-gray-100 dark:border-[#222] border-dashed">
             <Users className="w-12 h-12 mx-auto mb-3 text-gray-300 dark:text-gray-600" />
             No se encontraron clientes.
           </div>
         ) : (
-          filteredCustomers.map((customer) => (
+          currentItems.map((customer) => (
             <div key={customer.id} className="customer-card bg-white dark:bg-[#111] rounded-3xl border border-gray-100 dark:border-[#222] p-6 shadow-sm hover:shadow-xl transition-all duration-300 group relative overflow-hidden">
               <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-purple-600 to-blue-500 rounded-full blur-2xl opacity-10 dark:opacity-20 -mr-6 -mt-6 pointer-events-none"></div>
               
@@ -229,6 +245,12 @@ export default function CustomersPage() {
           ))
         )}
       </div>
+
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+      />
 
       {showModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">

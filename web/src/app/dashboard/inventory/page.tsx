@@ -5,6 +5,7 @@ import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
 import { Plus, Search, RefreshCw, AlertTriangle, CheckCircle, Package } from "lucide-react";
 import { SquarePenIcon, DeleteIcon } from "@/components/AnimatedIcons";
+import Pagination from "@/components/Pagination";
 import { gsap } from "gsap";
 
 interface Product {
@@ -19,13 +20,17 @@ interface Product {
   expiration_date?: string;
 }
 
+const ITEMS_PER_PAGE = 9;
+
 export default function InventoryPage() {
   const { user } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
   
   const [showModal, setShowModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -44,7 +49,7 @@ export default function InventoryPage() {
       setLoading(true);
       const res = await api.getProducts() as any;
       const data = Array.isArray(res.data || res) ? (res.data || res) : [];
-      setProducts(data.map((p: any) => ({
+      const mappedData = data.map((p: any) => ({
         id: p.id || p.product_id,
         sku: p.sku,
         name: p.name,
@@ -54,7 +59,9 @@ export default function InventoryPage() {
         description: p.description || "",
         image: p.image_url || p.image,
         expiration_date: p.expiration_date
-      })));
+      }));
+      setAllProducts(mappedData);
+      setProducts(mappedData);
     } catch (err) {
       console.error(err);
       setErrorMsg("Error al cargar inventario");
@@ -123,10 +130,19 @@ export default function InventoryPage() {
     }
   };
 
-  const filteredProducts = products.filter(p => 
-    p.name.toLowerCase().includes(search.toLowerCase()) || 
-    p.sku.toLowerCase().includes(search.toLowerCase())
-  );
+  useEffect(() => {
+    const filtered = allProducts.filter(p => 
+      p.name.toLowerCase().includes(search.toLowerCase()) || 
+      p.sku.toLowerCase().includes(search.toLowerCase())
+    );
+    setProducts(filtered);
+    setCurrentPage(1);
+  }, [search, allProducts]);
+
+  const indexOfLastItem = currentPage * ITEMS_PER_PAGE;
+  const indexOfFirstItem = indexOfLastItem - ITEMS_PER_PAGE;
+  const currentItems = products.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(products.length / ITEMS_PER_PAGE);
 
   return (
     <div className="space-y-6">
@@ -198,14 +214,14 @@ export default function InventoryPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-[#222]">
-              {filteredProducts.length === 0 ? (
+              {currentItems.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="p-8 text-center text-gray-500 dark:text-gray-400">
                     No se encontraron productos.
                   </td>
                 </tr>
               ) : (
-                filteredProducts.map((product) => (
+                currentItems.map((product) => (
                   <tr key={product.id} className="product-row hover:bg-gray-50 dark:hover:bg-[#1a1a1a] transition-colors group">
                     <td className="p-4">
                       <div className="flex items-center gap-3">
@@ -266,6 +282,12 @@ export default function InventoryPage() {
           </table>
         </div>
       </div>
+
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+      />
 
       {showModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
