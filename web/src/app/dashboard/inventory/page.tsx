@@ -61,8 +61,8 @@ export default function InventoryPage() {
         api.getCategories().catch(() => ({ data: [] })),
       ]);
       
-      const prodData = Array.isArray(prodRes.data || prodRes) ? (prodRes.data || prodRes) : [];
-      const catData = Array.isArray(catRes.data || catRes) ? (catRes.data || catRes) : [];
+      const prodData = Array.isArray((prodRes as any).data || prodRes) ? ((prodRes as any).data || prodRes) : [];
+      const catData = Array.isArray((catRes as any).data || catRes) ? ((catRes as any).data || catRes) : [];
       
       const mappedProducts = prodData.map((p: any) => ({
         id: p.id || p.product_id,
