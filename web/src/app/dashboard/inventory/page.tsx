@@ -3,7 +3,8 @@
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
-import { Plus, Search, RefreshCw, AlertTriangle, CheckCircle, Package } from "lucide-react";
+import { Plus, Search, RefreshCw, AlertTriangle, CheckCircle, Package, Tag } from "lucide-react";
+import Link from "next/link";
 import { SquarePenIcon, DeleteIcon } from "@/components/AnimatedIcons";
 import Pagination from "@/components/Pagination";
 import { gsap } from "gsap";
@@ -207,6 +208,14 @@ export default function InventoryPage() {
             >
               <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin text-blue-500' : ''}`} />
             </button>
+            
+            <Link
+              href="/dashboard/categories"
+              className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-[#111] border border-gray-200 dark:border-[#333] text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#222] rounded-xl font-medium transition-all"
+            >
+              <Tag className="w-5 h-5" />
+              <span>Gestionar Categorías</span>
+            </Link>
             
             <button
               onClick={() => {

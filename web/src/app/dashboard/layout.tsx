@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { 
   Package, DollarSign, Users, Activity, 
-  ShieldCheck, LayoutDashboard, LogOut, Menu, X, Moon, Sun
+  ShieldCheck, LayoutDashboard, LogOut, Menu, X, Moon, Sun, Tag
 } from "lucide-react";
 import { useTheme } from "@/context/ThemeContext";
 import { gsap } from "gsap";
@@ -44,6 +44,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const links = [
     { name: "Resumen", href: "/dashboard", icon: LayoutDashboard },
+    { name: "Categorías", href: "/dashboard/categories", icon: Tag },
     { name: "Inventario", href: "/dashboard/inventory", icon: Package },
     { name: "Ventas", href: "/dashboard/sales", icon: DollarSign },
     { name: "Clientes", href: "/dashboard/customers", icon: Users },
