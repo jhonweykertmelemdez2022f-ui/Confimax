@@ -384,6 +384,14 @@ class ApiClient {
   async healthCheck() {
     return this.request('/health');
   }
+
+  // Fabiana Chatbot Service
+  async chatWithFabiana(messages: Array<{ role: 'user' | 'assistant'; content: string }>) {
+    return this.request('/fabiana/chat', {
+      method: 'POST',
+      body: JSON.stringify({ messages }),
+    });
+  }
 }
 
 // Exportar instancia singleton

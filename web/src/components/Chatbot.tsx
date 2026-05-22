@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { MessageCircle, Send, X, Loader2, Bot, User, Minimize2, Maximize2 } from "lucide-react";
+import { api } from "@/lib/api";
 
 interface Message {
   id: string;
@@ -49,24 +50,11 @@ export default function Chatbot() {
     setIsLoading(true);
 
     try {
-      const response = await fetch("/api/fabiana/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          messages: messages.map((m) => ({
-            role: m.role,
-            content: m.content,
-          })),
-        }),
-      });
+      const data = await api.chatWithFabiana(messages.map((m) => ({
+        role: m.role,
+        content: m.content,
+      })));
 
-      if (!response.ok) {
-        throw new Error("Error en la respuesta del servidor");
-      }
-
-      const data = await response.json();
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
