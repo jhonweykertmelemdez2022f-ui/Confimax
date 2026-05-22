@@ -58,7 +58,7 @@ export default function Chatbot() {
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: data.message || "Lo siento, no pude procesar tu solicitud.",
+        content: (data as { message?: string }).message || "Lo siento, no pude procesar tu solicitud.",
         timestamp: new Date(),
       };
 
