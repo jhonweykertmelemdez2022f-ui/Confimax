@@ -107,10 +107,10 @@ export default function SalesPage() {
       const productsData = Array.isArray((productsRes as any).data || productsRes) ? ((productsRes as any).data || productsRes) : [];
       const customersData = Array.isArray((customersRes as any).data || customersRes) ? ((customersRes as any).data || customersRes) : [];
       
-      setAllSales(salesData);
-      setSales(salesData);
-      setProducts(productsData);
-      setCustomers(customersData);
+      setAllSales(salesData as Sale[]);
+      setSales(salesData as Sale[]);
+      setProducts(productsData as Product[]);
+      setCustomers(customersData as Customer[]);
     } catch (err) {
       console.error(err);
       setErrorMsg("Error al cargar datos");
@@ -236,7 +236,7 @@ export default function SalesPage() {
 
   const openDetails = async (sale: Sale) => {
     try {
-      const fullSale = await api.getSale(sale.id);
+      const fullSale = await api.getSale(sale.id) as Sale;
       setSelectedSale(fullSale);
       setIsDetailsModalOpen(true);
     } catch (err) {

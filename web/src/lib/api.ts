@@ -227,16 +227,43 @@ class ApiClient {
     return this.request(`/products/search?q=${encodeURIComponent(query)}`);
   }
 
-  // Sales Service
+  // Sales Service - Overload para compatibilidad con CartContext
+  async createSale(data: any): Promise<any>;
+  
   async createSale(data: {
     customer_id?: string;
     items: Array<{ product_id: string; sku: string; product_name: string; quantity: number; unit_price: number }>;
     status?: string;
     notes?: string;
+  } | {
+    customerId?: string;
+    items: Array<{ productId: string; quantity: number; price: number }>;
+    paymentMethod: string;
   }) {
+    // Convertir formato del CartContext al formato del backend
+    let payload = data;
+    
+    if ('customerId' in data) {
+      // Formato CartContext -> convertir a formato backend
+      const items = data.items.map((item: any) => ({
+        product_id: item.productId,
+        sku: item.productId.substring(0, 8).toUpperCase(),
+        product_name: 'Producto',
+        quantity: item.quantity,
+        unit_price: item.price
+      }));
+      
+      payload = {
+        customer_id: data.customerId,
+        items,
+        status: 'pending',
+        notes: ''
+      };
+    }
+    
     return this.request('/sales', {
       method: 'POST',
-      body: JSON.stringify(data),
+      body: JSON.stringify(payload),
     });
   }
 
