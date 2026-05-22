@@ -121,8 +121,8 @@ export default function Chatbot() {
             <Maximize2 className="w-6 h-6" />
           </button>
         ) : (
-          <>
-            <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-4 flex items-center justify-between">
+          <div className="flex flex-col h-full">
+            <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-4 flex items-center justify-between flex-shrink-0">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
                   <Bot className="w-5 h-5" />
@@ -148,7 +148,7 @@ export default function Chatbot() {
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 h-[420px] bg-gray-50 dark:bg-[#0a0a0a]">
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 dark:bg-[#0a0a0a]">
               {messages.map((message) => (
                 <div
                   key={message.id}
@@ -209,7 +209,7 @@ export default function Chatbot() {
             </div>
 
             {messages.length === 1 && (
-              <div className="px-4 pb-2 bg-gray-50 dark:bg-[#0a0a0a]">
+              <div className="px-4 pb-2 bg-gray-50 dark:bg-[#0a0a0a] flex-shrink-0">
                 <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">Preguntas frecuentes:</p>
                 <div className="flex flex-wrap gap-2">
                   {quickQuestions.map((q, i) => (
@@ -229,7 +229,7 @@ export default function Chatbot() {
 
             <form
               onSubmit={handleSubmit}
-              className="p-4 border-t border-gray-100 dark:border-[#222] bg-white dark:bg-[#111]"
+              className="p-4 border-t border-gray-100 dark:border-[#222] bg-white dark:bg-[#111] flex-shrink-0"
             >
               <div className="flex gap-2">
                 <input
@@ -253,7 +253,7 @@ export default function Chatbot() {
                 </button>
               </div>
             </form>
-          </>
+          </div>
         )}
       </div>
     </div>
