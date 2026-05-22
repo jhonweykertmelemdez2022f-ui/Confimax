@@ -24,6 +24,10 @@ interface ApiResponse<T> {
   message?: string;
 }
 
+interface FabianaChatResponse {
+  message: string;
+}
+
 class ApiClient {
   private baseUrl: string;
   private token: string | null = null;
@@ -97,7 +101,7 @@ class ApiClient {
         }
       }
 
-      return data;
+      return data as T;
     } catch (error) {
       console.error(`API Error [${endpoint}]:`, error);
       throw error;
@@ -387,7 +391,7 @@ class ApiClient {
 
   // Fabiana Chatbot Service
   async chatWithFabiana(messages: Array<{ role: 'user' | 'assistant'; content: string }>) {
-    return this.request('/fabiana/chat', {
+    return this.request<FabianaChatResponse>('/fabiana/chat', {
       method: 'POST',
       body: JSON.stringify({ messages }),
     });
