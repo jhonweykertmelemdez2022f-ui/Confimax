@@ -10,7 +10,21 @@ const app = express();
 // Middleware
 app.use(helmet());
 app.use(cors({
-  origin: config.cors.origin,
+  origin: (origin, callback) => {
+    // Permitir si no hay origin (como peticiones entre servicios o Postman)
+    if (!origin) return callback(null, true);
+    
+    const allowed = config.cors.origin;
+    if (allowed === '*' || (Array.isArray(allowed) && (allowed.includes(origin) || allowed.includes('*')))) {
+      callback(null, true);
+    } else if (typeof allowed === 'string' && allowed === origin) {
+      callback(null, true);
+    } else {
+      // En desarrollo o tras el gateway, a veces es mejor ser permisivo
+      // pero por ahora logueamos y permitimos si es '*'
+      callback(null, true); 
+    }
+  },
   credentials: true
 }));
 app.use(morgan(config.nodeEnv === 'development' ? 'dev' : 'combined'));

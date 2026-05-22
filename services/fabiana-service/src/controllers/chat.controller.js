@@ -59,9 +59,15 @@ const chatController = {
       }
     } catch (error) {
       console.error('[AI Chat Error]:', error.message);
-      res.status(500).json({
-        error: 'Error processing your request',
-        details: config.nodeEnv === 'development' ? error.message : undefined
+      
+      // Manejar errores específicos de la API de Groq si están disponibles
+      const status = error.status || 500;
+      const message = error.message || 'Error processing your request';
+      
+      res.status(status).json({
+        error: 'Error en el servicio de IA',
+        message: message,
+        details: config.nodeEnv === 'development' ? error.stack : undefined
       });
     }
   }

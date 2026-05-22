@@ -72,9 +72,27 @@ const SERVICES = {
 // MIDDLEWARES GLOBALES
 // ============================================================
 app.use(helmet());
+
+// Configuración flexible de CORS
+const allowedOrigins = process.env.CORS_ORIGIN 
+  ? process.env.CORS_ORIGIN.split(',') 
+  : ['http://localhost:3000', 'https://confimax.vercel.app', 'http://localhost:5173'];
+
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || '*',
+  origin: (origin, callback) => {
+    // Permitir peticiones sin origen (como herramientas de servidor o apps móviles)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) !== -1 || allowedOrigins.includes('*')) {
+      callback(null, true);
+    } else {
+      console.warn(`[GATEWAY] Blocked by CORS: ${origin}`);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 app.use(express.json());
 app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
@@ -120,17 +138,22 @@ const createServiceProxy = (name, config) => {
         });
       }
     },
-    onProxyReq: (proxyReq, req, res) => {
-      console.log(`[GATEWAY] ${req.method} ${req.path} -> ${name}`);
+    onProxyRes: (proxyRes, req, res) => {
+      // Eliminar encabezados CORS del backend para evitar conflictos con los del Gateway
+      delete proxyRes.headers['access-control-allow-origin'];
+      delete proxyRes.headers['access-control-allow-credentials'];
+      delete proxyRes.headers['access-control-allow-methods'];
+      delete proxyRes.headers['access-control-allow-headers'];
       
+      console.log(`[GATEWAY] ${req.method} ${req.path} -> ${name} (${proxyRes.statusCode})`);
+    },
+    onProxyReq: (proxyReq, req, res) => {
       // RESTREAM BODY BUG FIX: Si el body ya fue analizado por express.json(), 
       // volver a serializar el payload en el stream original antes de enviarlo
       if (req.body && Object.keys(req.body).length > 0) {
         const bodyData = JSON.stringify(req.body);
-        // Ajustar content-length para reflejar el nuevo tamaño
         proxyReq.setHeader('Content-Type', 'application/json');
         proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
-        // Escribir el body en el stream de destino
         proxyReq.write(bodyData);
       }
     },
