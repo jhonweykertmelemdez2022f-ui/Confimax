@@ -148,6 +148,8 @@ const createServiceProxy = (name, config) => {
       console.log(`[GATEWAY] ${req.method} ${req.path} -> ${name} (${proxyRes.statusCode})`);
     },
     onProxyReq: (proxyReq, req, res) => {
+      console.log(`[GATEWAY] Proxy request [${name}]: ${req.method} ${req.path}`);
+      
       // RESTREAM BODY BUG FIX: Si el body ya fue analizado por express.json(), 
       // volver a serializar el payload en el stream original antes de enviarlo
       if (req.body && Object.keys(req.body).length > 0) {
