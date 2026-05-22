@@ -50,8 +50,7 @@ export default function Chatbot() {
     setIsLoading(true);
 
     try {
-      const messagesToSend = messages.filter(m => m.id !== "welcome");
-      const data = await api.chatWithFabiana([...messagesToSend, {
+      const data = await api.chatWithFabiana([{
         role: userMessage.role,
         content: userMessage.content
       }]);
