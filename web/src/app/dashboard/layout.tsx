@@ -8,6 +8,7 @@ import {
   Package, DollarSign, Users, Activity, 
   ShieldCheck, LayoutDashboard, LogOut, Menu, X, Moon, Sun, Tag
 } from "lucide-react";
+import Chatbot from "@/components/Chatbot";
 import { useTheme } from "@/context/ThemeContext";
 import { gsap } from "gsap";
 
@@ -162,6 +163,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {children}
         </div>
       </main>
+
+      {/* Chatbot */}
+      <Chatbot />
 
     </div>
   );

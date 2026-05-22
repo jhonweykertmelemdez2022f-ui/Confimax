@@ -56,6 +56,11 @@ const SERVICES = {
     pathRewrite: { '^/api/notifications': '' },
     changeOrigin: true,
   },
+  ai: {
+    target: process.env.AI_SERVICE_URL || 'http://ai-service:3006',
+    pathRewrite: { '^/api/ai': '' },
+    changeOrigin: true,
+  },
   backend: {
     target: process.env.BACKEND_SERVICE_URL || 'http://backend:3006',
     pathRewrite: { '^/api/backend': '/api' },
@@ -184,6 +189,9 @@ if (MONOLITH_MODE) {
     pathRewrite: { '^/api/notifications': '/notifications' },
     changeOrigin: true,
   }));
+
+  // AI Service (chatbot)
+  app.use('/api/ai', createServiceProxy('ai', SERVICES.ai));
 
   // Backend unificado (protegido por JWT)
   app.use('/api/backend', authenticateGateway, createServiceProxy('backend', SERVICES.backend));
