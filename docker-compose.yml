@@ -43,7 +43,7 @@ services:
       - SALES_SERVICE_URL=http://sales-service:3003
       - CUSTOMERS_SERVICE_URL=http://customers-service:3004
       - NOTIFICATIONS_SERVICE_URL=http://notifications-service:3005
-      - AI_SERVICE_URL=http://ai-service:3006
+      - FABIANA_SERVICE_URL=http://fabiana-service:3006
       - BACKEND_SERVICE_URL=http://backend:3007
     depends_on:
       - auth-service
@@ -232,20 +232,20 @@ services:
           memory: 128M
 
   # ==========================================================================
-  # AI SERVICE - Chatbot con Groq
+  # FABIANA SERVICE - Chatbot con Groq
   # ==========================================================================
-  ai-service:
+  fabiana-service:
     build:
-      context: ./services/ai-service
+      context: ./services/fabiana-service
       dockerfile: Dockerfile
-    image: confimax/ai-service:latest
-    container_name: confimax-ai-service
+    image: confimax/fabiana-service:latest
+    container_name: confimax-fabiana-service
     environment:
       - NODE_ENV=${NODE_ENV:-development}
       - PORT=3006
       - GROQ_API_KEY=${GROQ_API_KEY}
       - GROQ_MODEL=${GROQ_MODEL:-llama3-8b-8192}
-      - SYSTEM_PROMPT=${SYSTEM_PROMPT:-Eres Confimax AI, un asistente virtual experto en gestión de inventarios y ventas para la plataforma Confimax.}
+      - SYSTEM_PROMPT=${SYSTEM_PROMPT:-Eres Fabiana, el asistente virtual de Confimax. Eres experta en gestión de inventarios y ventas para la plataforma Confimax.}
       - CORS_ORIGIN=${CORS_ORIGIN:-http://localhost:3000}
     networks:
       - confimax-network

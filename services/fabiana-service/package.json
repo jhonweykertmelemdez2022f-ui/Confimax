@@ -1,7 +1,7 @@
 {
-  "name": "ai-service",
+  "name": "fabiana-service",
   "version": "1.0.0",
-  "description": "Confimax AI Service - Chatbot with Groq integration",
+  "description": "Confimax Fabiana Service - Chatbot with Groq integration",
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",

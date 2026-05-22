@@ -17,7 +17,7 @@ export default function Chatbot() {
     {
       id: "welcome",
       role: "assistant",
-      content: "¡Hola! Soy Confimax AI, tu asistente virtual. ¿En qué puedo ayudarte hoy?",
+      content: "¡Hola! Soy Fabiana, tu asistente virtual de Confimax. ¿En qué puedo ayudarte hoy?",
       timestamp: new Date(),
     },
   ]);
@@ -49,7 +49,7 @@ export default function Chatbot() {
     setIsLoading(true);
 
     try {
-      const response = await fetch("/api/ai/chat", {
+      const response = await fetch("/api/fabiana/chat", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -128,8 +128,8 @@ export default function Chatbot() {
                   <Bot className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-semibold">Confimax AI</h3>
-                  <p className="text-xs opacity-80">Asistente virtual</p>
+                  <h3 className="font-semibold">Fabiana</h3>
+                  <p className="text-xs opacity-80">Asistente virtual de Confimax</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">

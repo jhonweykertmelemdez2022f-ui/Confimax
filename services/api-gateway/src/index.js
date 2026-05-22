@@ -56,13 +56,13 @@ const SERVICES = {
     pathRewrite: { '^/api/notifications': '' },
     changeOrigin: true,
   },
-  ai: {
-    target: process.env.AI_SERVICE_URL || 'http://ai-service:3006',
-    pathRewrite: { '^/api/ai': '' },
+  fabiana: {
+    target: process.env.FABIANA_SERVICE_URL || 'http://fabiana-service:3006',
+    pathRewrite: { '^/api/fabiana': '' },
     changeOrigin: true,
   },
   backend: {
-    target: process.env.BACKEND_SERVICE_URL || 'http://backend:3006',
+    target: process.env.BACKEND_SERVICE_URL || 'http://backend:3007',
     pathRewrite: { '^/api/backend': '/api' },
     changeOrigin: true,
   },
@@ -190,8 +190,8 @@ if (MONOLITH_MODE) {
     changeOrigin: true,
   }));
 
-  // AI Service (chatbot)
-  app.use('/api/ai', createServiceProxy('ai', SERVICES.ai));
+  // Fabiana Service (chatbot)
+  app.use('/api/fabiana', createServiceProxy('fabiana', SERVICES.fabiana));
 
   // Backend unificado (protegido por JWT)
   app.use('/api/backend', authenticateGateway, createServiceProxy('backend', SERVICES.backend));
