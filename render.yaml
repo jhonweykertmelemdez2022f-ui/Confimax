@@ -252,9 +252,3 @@ services:
         value: production
       - key: PORT
         value: 10000
-      - key: GROQ_API_KEY
-        fromGroup: confimax-cloud-credentials
-      - key: GROQ_MODEL
-        fromGroup: confimax-cloud-credentials
-      - key: SYSTEM_PROMPT
-        fromGroup: confimax-cloud-credentials
