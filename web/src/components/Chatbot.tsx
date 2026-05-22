@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { MessageCircle, Send, X, Loader2, Bot, User, Minimize2, Maximize2 } from "lucide-react";
 import { api } from "@/lib/api";
+import { useAuth } from "@/context/AuthContext";
 
 interface Message {
   id: string;
@@ -12,6 +13,7 @@ interface Message {
 }
 
 export default function Chatbot() {
+  const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
@@ -53,7 +55,7 @@ export default function Chatbot() {
       const data = await api.chatWithFabiana([{
         role: userMessage.role,
         content: userMessage.content
-      }]);
+      }], user?.role);
 
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),

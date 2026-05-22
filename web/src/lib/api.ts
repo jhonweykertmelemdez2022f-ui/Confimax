@@ -390,10 +390,10 @@ class ApiClient {
   }
 
   // Fabiana Chatbot Service
-  async chatWithFabiana(messages: Array<{ role: 'user' | 'assistant'; content: string }>) {
+  async chatWithFabiana(messages: Array<{ role: 'user' | 'assistant'; content: string }>, role?: string) {
     return this.request<FabianaChatResponse>('/fabiana/chat', {
       method: 'POST',
-      body: JSON.stringify({ messages }),
+      body: JSON.stringify({ messages, role: role || 'cliente' }),
     });
   }
 }

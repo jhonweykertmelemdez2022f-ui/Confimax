@@ -4,8 +4,23 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 const config = require('./config');
 const chatRoutes = require('./routes/chat.routes');
+const dbService = require('./services/database.service');
 
 const app = express();
+
+// Inicializar conexión a la base de datos
+const initDb = async () => {
+  try {
+    const pool = dbService.initPool();
+    await pool.query('SELECT 1');
+    console.log('[FABIANA] PostgreSQL conectado');
+  } catch (err) {
+    console.error('[FABIANA] PostgreSQL error:', err.message);
+    console.warn('[FABIANA] El servicio continuará sin conexión a la base de datos, pero el contexto no estará disponible');
+  }
+};
+
+initDb();
 
 // Middleware
 app.use(helmet());

@@ -14,6 +14,18 @@ module.exports = {
     apiKey: process.env.GROQ_API_KEY,
     model: process.env.GROQ_MODEL || 'llama-3.1-8b-instant'
   },
+  db: {
+    url: process.env.SUPABASE_DATABASE_URL || process.env.DATABASE_URL || null,
+    host: process.env.SUPABASE_HOST || process.env.POSTGRES_HOST || 'localhost',
+    port: process.env.SUPABASE_PORT || process.env.POSTGRES_PORT || 5432,
+    user: process.env.SUPABASE_USER || process.env.POSTGRES_USER || 'confimax',
+    password: process.env.SUPABASE_PASSWORD || process.env.POSTGRES_PASSWORD || 'confimax_pass',
+    database: process.env.SUPABASE_DB || process.env.POSTGRES_DB || 'confimax',
+    ssl: process.env.SUPABASE_SSL === 'true' || process.env.POSTGRES_SSL === 'true' ||
+      (process.env.SUPABASE_HOST || process.env.POSTGRES_HOST || '').includes('supabase.co')
+      ? { rejectUnauthorized: false }
+      : false,
+  },
   systemPrompt: process.env.SYSTEM_PROMPT || 'Eres Fabiana, el asistente virtual de Confimax. Eres experta en gestión de inventarios y ventas para la plataforma Confimax. Tu objetivo es ayudar a los usuarios a resolver dudas sobre el sistema, explicar funcionalidades y brindar recomendaciones útiles. Responde de manera clara, concisa y amigable. Si la pregunta es sobre datos específicos (ej: ¿cuántos productos hay?), sugiere revisar la sección correspondiente del dashboard.',
   cors: {
     origin: process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : '*'

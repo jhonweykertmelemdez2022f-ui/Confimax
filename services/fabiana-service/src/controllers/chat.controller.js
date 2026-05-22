@@ -1,9 +1,53 @@
 const Groq = require('groq-sdk');
 const config = require('../config');
+const dbService = require('../services/database.service');
 
 const groq = new Groq({
   apiKey: config.groq.apiKey
 });
+
+const formatDataForContext = (data, role) => {
+  let context = '';
+  
+  if (data.products && data.products.length > 0) {
+    context += '\n\n--- PRODUCTOS ---\n';
+    data.products.forEach(p => {
+      context += `- ${p.name} (${p.sku}) - Precio: $${p.price} - Stock: ${p.stock_quantity}\n`;
+    });
+  }
+  
+  if (data.customers && data.customers.length > 0) {
+    context += '\n\n--- CLIENTES ---\n';
+    data.customers.forEach(c => {
+      context += `- ${c.name} (${c.email})\n`;
+    });
+  }
+  
+  if (data.sales && data.sales.length > 0) {
+    context += '\n\n--- VENTAS RECIENTES ---\n';
+    data.sales.forEach(s => {
+      const date = new Date(s.created_at).toLocaleDateString('es-ES');
+      context += `- Venta #${s.id} - Cliente: ${s.customer_name || 'N/A'} - Total: $${s.total} - Fecha: ${date}\n`;
+    });
+  }
+  
+  if (data.users && data.users.length > 0) {
+    context += '\n\n--- USUARIOS ---\n';
+    data.users.forEach(u => {
+      context += `- ${u.username} (${u.email}) - Rol: ${u.role}\n`;
+    });
+  }
+  
+  if (data.audits && data.audits.length > 0) {
+    context += '\n\n--- AUDITORÍAS RECIENTES ---\n';
+    data.audits.forEach(a => {
+      const date = new Date(a.created_at).toLocaleDateString('es-ES');
+      context += `- ${a.operation} en ${a.entity} por ${a.user || 'N/A'} - Fecha: ${date}\n`;
+    });
+  }
+  
+  return context;
+};
 
 const chatController = {
   async chat(req, res, next) {
@@ -11,7 +55,8 @@ const chatController = {
       console.log('[Fabiana] Recibida solicitud:', {
         body: req.body,
         hasMessages: !!req.body.messages,
-        messagesLength: req.body.messages?.length
+        messagesLength: req.body.messages?.length,
+        role: req.body.role
       });
       
       // Validar que la API Key esté configurada
@@ -22,15 +67,30 @@ const chatController = {
         });
       }
 
-      const { messages, stream = false } = req.body;
+      const { messages, stream = false, role = 'cliente' } = req.body;
 
       if (!messages || !Array.isArray(messages) || messages.length === 0) {
         return res.status(400).json({ error: 'Messages are required' });
       }
 
-      // Añadir el system prompt al inicio del historial
+      // Obtener datos contextuales según el rol
+      let contextData = {};
+      try {
+        contextData = await dbService.getDataByRole(role);
+        console.log('[Fabiana] Datos contextuales obtenidos para rol:', role);
+      } catch (dbError) {
+        console.error('[Fabiana] Error al obtener datos contextuales:', dbError);
+      }
+
+      // Formatear el contexto para incluirlo en el system prompt
+      const contextText = formatDataForContext(contextData, role);
+      
+      // Añadir el system prompt con contexto
       const fullMessages = [
-        { role: 'system', content: config.systemPrompt },
+        { 
+          role: 'system', 
+          content: `${config.systemPrompt}\n\nInformación contextual actual (según tu rol de ${role}):${contextText || '\n(No hay datos disponibles en este momento)'}`
+        },
         ...messages
       ];
       
