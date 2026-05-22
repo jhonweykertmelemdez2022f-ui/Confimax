@@ -46,7 +46,8 @@ class ApiClient {
 
   private async request<T>(
     endpoint: string,
-    options: RequestInit = {}
+    options: RequestInit = {},
+    skipAuth: boolean = false
   ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
     
@@ -65,8 +66,8 @@ class ApiClient {
       }
     }
 
-    // Agregar token si existe
-    if (this.token) {
+    // Agregar token si existe y no es una solicitud de Fabiana
+    if (this.token && !skipAuth) {
       headers.set('Authorization', `Bearer ${this.token}`);
     }
 
@@ -394,7 +395,7 @@ class ApiClient {
     return this.request<FabianaChatResponse>('/fabiana/chat', {
       method: 'POST',
       body: JSON.stringify({ messages, role: role || 'cliente' }),
-    });
+    }, true);
   }
 }
 
