@@ -8,6 +8,12 @@ const groq = new Groq({
 const chatController = {
   async chat(req, res, next) {
     try {
+      console.log('[Fabiana] Recibida solicitud:', {
+        body: req.body,
+        hasMessages: !!req.body.messages,
+        messagesLength: req.body.messages?.length
+      });
+      
       // Validar que la API Key esté configurada
       if (!config.groq.apiKey) {
         return res.status(500).json({ 
@@ -27,6 +33,11 @@ const chatController = {
         { role: 'system', content: config.systemPrompt },
         ...messages
       ];
+      
+      console.log('[Fabiana] Enviando a Groq:', {
+        messagesCount: fullMessages.length,
+        model: config.groq.model
+      });
 
       const completion = await groq.chat.completions.create({
         messages: fullMessages,
@@ -54,10 +65,12 @@ const chatController = {
       } else {
         // No streaming
         const message = completion.choices[0]?.message?.content || '';
+        console.log('[Fabiana] Respuesta de Groq recibida');
         res.json({ message });
       }
     } catch (error) {
       console.error('[AI Chat Error]:', error.message);
+      console.error('[AI Chat Error Stack]:', error.stack);
       
       // Manejar errores específicos de la API de Groq si están disponibles
       const status = error.status || 500;
