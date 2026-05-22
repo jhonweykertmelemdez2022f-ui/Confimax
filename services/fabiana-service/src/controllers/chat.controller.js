@@ -9,6 +9,14 @@ const groq = new Groq({
 const chatController = {
   async chat(req, res, next) {
     try {
+      // Validar que la API Key esté configurada
+      if (!config.groq.apiKey) {
+        return res.status(500).json({ 
+          error: 'GROQ_API_KEY no está configurada en el servidor',
+          details: 'Por favor, configura la variable de entorno GROQ_API_KEY en el servicio Fabiana'
+        });
+      }
+
       const { messages, stream = false } = req.body;
 
       if (!messages || !Array.isArray(messages) || messages.length === 0) {
