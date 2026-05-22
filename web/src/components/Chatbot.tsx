@@ -51,10 +51,10 @@ export default function Chatbot() {
 
     try {
       const messagesToSend = messages.filter(m => m.id !== "welcome");
-      const data = await api.chatWithFabiana(messagesToSend.map((m) => ({
-        role: m.role,
-        content: m.content,
-      })));
+      const data = await api.chatWithFabiana([...messagesToSend, {
+        role: userMessage.role,
+        content: userMessage.content
+      }]);
 
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
