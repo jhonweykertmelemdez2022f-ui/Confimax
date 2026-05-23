@@ -61,6 +61,11 @@ const SERVICES = {
     pathRewrite: { '^/api/fabiana': '' },
     changeOrigin: true,
   },
+  webhook: {
+    target: process.env.WEBHOOK_SERVICE_URL || 'http://webhook-service:3007',
+    pathRewrite: { '^/api/webhooks': '' },
+    changeOrigin: true,
+  },
   backend: {
     target: process.env.BACKEND_SERVICE_URL || 'http://backend:3007',
     pathRewrite: { '^/api/backend': '/api' },
@@ -105,8 +110,9 @@ const limiter = rateLimit({
   legacyHeaders: false,
   message: { error: 'Too many requests, please try again later.' },
   skip: (req) => {
-    // Saltar rate limiting para Fabiana
-    return req.path.startsWith('/api/fabiana') || req.originalUrl.startsWith('/api/fabiana');
+    // Saltar rate limiting para Fabiana y Webhooks
+    return req.path.startsWith('/api/fabiana') || req.originalUrl.startsWith('/api/fabiana') ||
+           req.path.startsWith('/api/webhooks') || req.originalUrl.startsWith('/api/webhooks');
   }
 });
 app.use(limiter);
@@ -221,6 +227,9 @@ if (MONOLITH_MODE) {
 
   // Fabiana Service (chatbot)
   app.use('/api/fabiana', createServiceProxy('fabiana', SERVICES.fabiana));
+
+  // Webhook Service (publico)
+  app.use('/api/webhooks', createServiceProxy('webhook', SERVICES.webhook));
 
   // Backend unificado (protegido por JWT)
   app.use('/api/backend', authenticateGateway, createServiceProxy('backend', SERVICES.backend));

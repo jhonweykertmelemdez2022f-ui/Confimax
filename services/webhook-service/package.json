@@ -1,0 +1,18 @@
+{
+  "name": "webhook-service",
+  "version": "1.0.0",
+  "description": "Confimax Webhook Service",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node src/index.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "helmet": "^7.0.0"
+  },
+  "keywords": ["webhook", "confimax"],
+  "author": "",
+  "license": "ISC"
+}

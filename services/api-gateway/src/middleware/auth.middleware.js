@@ -17,6 +17,7 @@ const PUBLIC_PATHS = [
   /^\/api\/auth\/refresh/,
   /^\/api\/auth\/health/,
   /^\/api\/fabiana/,
+  /^\/api\/webhooks/,
   /^\/health/,
 ];
 
