@@ -122,6 +122,20 @@ export default function SalesPage() {
     loadAllData();
   }, [user]);
 
+  const normalizeStatus = (status: string) => {
+    const statusMap: Record<string, string> = {
+      'pending': 'pendiente',
+      'delivered': 'entregado',
+      'cancelled': 'cancelado',
+      'canceled': 'cancelado',
+      'confirmed': 'entregado',
+      'processing': 'pendiente',
+      'shipped': 'entregado',
+      'refunded': 'cancelado'
+    };
+    return statusMap[status] || status;
+  };
+
   const loadAllData = async () => {
     try {
       setLoading(true);
@@ -141,9 +155,14 @@ export default function SalesPage() {
         sku: p.sku,
         price: parseFloat(String(p.price || 0))
       }));
+
+      const mappedSales = salesData.map((sale: any) => ({
+        ...sale,
+        status: normalizeStatus(sale.status)
+      }));
       
-      setAllSales(salesData as Sale[]);
-      setSales(salesData as Sale[]);
+      setAllSales(mappedSales as Sale[]);
+      setSales(mappedSales as Sale[]);
       setProducts(mappedProducts);
       setCustomers(customersData as Customer[]);
     } catch (err) {
@@ -249,7 +268,7 @@ export default function SalesPage() {
       const saleData = {
         customer_id: selectedCustomer || undefined,
         items: newSaleItems,
-        status: 'pending',
+        status: 'pendiente',
         notes: saleNotes
       };
 
@@ -357,10 +376,10 @@ export default function SalesPage() {
   const openDetails = async (sale: Sale) => {
     try {
       const fullSale = await api.getSale(sale.id) as Sale;
-      setSelectedSale(fullSale);
+      setSelectedSale({ ...fullSale, status: normalizeStatus(fullSale.status) });
       setIsDetailsModalOpen(true);
     } catch (err) {
-      setSelectedSale(sale);
+      setSelectedSale({ ...sale, status: normalizeStatus(sale.status) });
       setIsDetailsModalOpen(true);
     }
   };
