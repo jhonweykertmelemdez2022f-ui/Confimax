@@ -166,12 +166,13 @@ const Order = {
       }
 
       // 5. Update order status
+      const completedAt = newStatus === 'entregado' ? new Date() : null;
       const { rows: updatedRows } = await client.query(
         `UPDATE sales.orders 
          SET status = $1, updated_at = NOW(), 
-             completed_at = CASE WHEN $1 = 'entregado' THEN NOW() ELSE completed_at END
-         WHERE id = $2 RETURNING *`,
-        [newStatus, id]
+             completed_at = COALESCE($2, completed_at)
+         WHERE id = $3 RETURNING *`,
+        [newStatus, completedAt, id]
       );
 
       await client.query('COMMIT');
