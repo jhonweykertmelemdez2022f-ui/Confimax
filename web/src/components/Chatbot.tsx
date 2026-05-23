@@ -2,6 +2,8 @@
 
 import { useState, useRef, useEffect } from "react";
 import { MessageCircle, Send, X, Loader2, Bot, User, Minimize2, Maximize2 } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 
@@ -158,15 +160,42 @@ export default function Chatbot() {
                         : "bg-white dark:bg-[#111] border border-gray-100 dark:border-[#222] rounded-tl-md"
                     }`}
                   >
-                    <p
+                    <div
                       className={`text-sm ${
                         message.role === "user"
                           ? "text-white"
                           : "text-gray-900 dark:text-white"
                       }`}
                     >
-                      {message.content}
-                    </p>
+                      {message.role === "assistant" ? (
+                        <ReactMarkdown
+                          remarkPlugins={[remarkGfm]}
+                          components={{
+                            table: ({ ...props }) => (
+                              <div className="overflow-x-auto my-2">
+                                <table className="w-full border-collapse text-xs" {...props} />
+                              </div>
+                            ),
+                            thead: ({ ...props }) => (
+                              <thead className="bg-gray-100 dark:bg-gray-800" {...props} />
+                            ),
+                            th: ({ ...props }) => (
+                              <th className="px-2 py-1 text-left border border-gray-300 dark:border-gray-600 font-medium" {...props} />
+                            ),
+                            td: ({ ...props }) => (
+                              <td className="px-2 py-1 border border-gray-300 dark:border-gray-600" {...props} />
+                            ),
+                            tr: ({ ...props }) => (
+                              <tr className="even:bg-gray-50 dark:even:bg-gray-900" {...props} />
+                            ),
+                          }}
+                        >
+                          {message.content}
+                        </ReactMarkdown>
+                      ) : (
+                        message.content
+                      )}
+                    </div>
                     <p
                       className={`text-xs mt-1 opacity-70 ${
                         message.role === "user" ? "text-white/80" : "text-gray-500 dark:text-gray-400"

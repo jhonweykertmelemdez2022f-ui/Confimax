@@ -10,31 +10,39 @@ const formatDataForContext = (data, role) => {
   let context = '';
   
   if (data.products && data.products.length > 0) {
-    context += '\n\n--- PRODUCTOS ---\n';
+    context += '\n\n=== PRODUCTOS DISPONIBLES ===\n';
+    context += '| Producto | SKU | Precio | Stock |\n';
+    context += '|----------|-----|--------|-------|\n';
     data.products.forEach(p => {
-      context += `- ${p.name} (${p.sku}) - Precio: $${p.price} - Stock: ${p.stock_quantity}\n`;
+      context += `| ${p.name} | ${p.sku} | $${p.price} | ${p.stock_quantity} |\n`;
     });
   }
   
   if (data.customers && data.customers.length > 0) {
-    context += '\n\n--- CLIENTES ---\n';
+    context += '\n\n=== CLIENTES ===\n';
+    context += '| Nombre | Email | Teléfono |\n';
+    context += '|--------|-------|----------|\n';
     data.customers.forEach(c => {
-      context += `- ${c.name} (${c.email})\n`;
+      context += `| ${c.name} | ${c.email || '-'} | ${c.phone || '-'} |\n`;
     });
   }
   
   if (data.sales && data.sales.length > 0) {
-    context += '\n\n--- VENTAS RECIENTES ---\n';
+    context += '\n\n=== VENTAS RECIENTES ===\n';
+    context += '| Venta # | Cliente | Total | Fecha |\n';
+    context += '|---------|---------|-------|-------|\n';
     data.sales.forEach(s => {
       const date = new Date(s.created_at).toLocaleDateString('es-ES');
-      context += `- Venta #${s.id} - Cliente: ${s.customer_name || 'N/A'} - Total: $${s.total} - Fecha: ${date}\n`;
+      context += `| ${s.id} | ${s.customer_name || 'N/A'} | $${s.total} | ${date} |\n`;
     });
   }
   
   if (data.users && data.users.length > 0) {
-    context += '\n\n--- USUARIOS ---\n';
+    context += '\n\n=== USUARIOS ===\n';
+    context += '| Usuario | Email | Rol |\n';
+    context += '|---------|-------|-----|\n';
     data.users.forEach(u => {
-      context += `- ${u.username} (${u.email}) - Rol: ${u.role}\n`;
+      context += `| ${u.username} | ${u.email} | ${u.role} |\n`;
     });
   }
   
