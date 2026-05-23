@@ -55,6 +55,12 @@ interface Customer {
 }
 
 const ITEMS_PER_PAGE = 9;
+
+const formatPrice = (price: any) => {
+  const num = parseFloat(String(price || 0));
+  return isNaN(num) ? '0.00' : num.toFixed(2);
+};
+
 const STATUS_OPTIONS = [
   { value: 'pending', label: 'Pendiente', color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-500/20 dark:text-yellow-300' },
   { value: 'confirmed', label: 'Confirmado', color: 'bg-blue-100 text-blue-800 dark:bg-blue-500/20 dark:text-blue-300' },
@@ -107,9 +113,16 @@ export default function SalesPage() {
       const productsData = Array.isArray((productsRes as any).data || productsRes) ? ((productsRes as any).data || productsRes) : [];
       const customersData = Array.isArray((customersRes as any).data || customersRes) ? ((customersRes as any).data || customersRes) : [];
       
+      const mappedProducts = productsData.map((p: any) => ({
+        id: p.id,
+        name: p.name,
+        sku: p.sku,
+        price: parseFloat(String(p.price || 0))
+      }));
+      
       setAllSales(salesData as Sale[]);
       setSales(salesData as Sale[]);
-      setProducts(productsData as Product[]);
+      setProducts(mappedProducts);
       setCustomers(customersData as Customer[]);
     } catch (err) {
       console.error(err);
@@ -153,10 +166,16 @@ export default function SalesPage() {
 
   const addItemToSale = (product: Product) => {
     const existingItem = newSaleItems.find(item => item.product_id === product.id);
+    const unitPrice = parseFloat(String(product.price || 0));
+    
     if (existingItem) {
       setNewSaleItems(newSaleItems.map(item => 
         item.product_id === product.id 
-          ? { ...item, quantity: item.quantity + 1 }
+          ? { 
+              ...item, 
+              quantity: item.quantity + 1,
+              total: (item.quantity + 1) * unitPrice
+            }
           : item
       ));
     } else {
@@ -167,8 +186,8 @@ export default function SalesPage() {
           sku: product.sku,
           product_name: product.name,
           quantity: 1,
-          unit_price: product.price,
-          total: product.price
+          unit_price: unitPrice,
+          total: unitPrice
         }
       ]);
     }
@@ -180,13 +199,19 @@ export default function SalesPage() {
 
   const updateItemQuantity = (index: number, quantity: number) => {
     const updated = [...newSaleItems];
-    updated[index].quantity = Math.max(1, quantity);
-    updated[index].total = updated[index].quantity * updated[index].unit_price;
+    const qty = Math.max(1, quantity);
+    const unitPrice = parseFloat(String(updated[index].unit_price || 0));
+    updated[index].quantity = qty;
+    updated[index].total = qty * unitPrice;
     setNewSaleItems(updated);
   };
 
   const calculateSaleTotal = () => {
-    return newSaleItems.reduce((sum, item) => sum + (item.total || 0), 0);
+    const total = newSaleItems.reduce((sum, item) => {
+      const itemTotal = parseFloat(String(item.total || item.quantity * item.unit_price || 0));
+      return sum + (isNaN(itemTotal) ? 0 : itemTotal);
+    }, 0);
+    return total;
   };
 
   const handleCreateSale = async () => {
@@ -412,7 +437,7 @@ export default function SalesPage() {
                           </div>
                         </td>
                         <td className="p-4 font-bold text-gray-900 dark:text-white text-lg">
-                          ${parseFloat(sale.total.toString()).toFixed(2)}
+                          ${formatPrice(sale.total)}
                         </td>
                         <td className="p-4">
                           <div className="flex items-center gap-2">
@@ -474,7 +499,7 @@ export default function SalesPage() {
                           <p className="text-xs text-gray-500 dark:text-gray-400">SKU: {product.sku}</p>
                         </div>
                         <div className="text-right">
-                          <p className="font-bold text-blue-600 dark:text-blue-400">${parseFloat(product.price.toString()).toFixed(2)}</p>
+                          <p className="font-bold text-blue-600 dark:text-blue-400">${formatPrice(product.price)}</p>
                         </div>
                       </button>
                     ))}
@@ -512,7 +537,7 @@ export default function SalesPage() {
                         <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-[#0a0a0a] rounded-xl">
                           <div className="flex-1">
                             <p className="font-medium text-gray-900 dark:text-white text-sm">{item.product_name}</p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">${parseFloat(item.unit_price.toString()).toFixed(2)} c/u</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">${formatPrice(item.unit_price)} c/u</p>
                           </div>
                           <div className="flex items-center gap-2">
                             <input
@@ -550,7 +575,7 @@ export default function SalesPage() {
                   <div className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl text-white">
                     <div>
                       <p className="text-sm opacity-80">Total de la Venta</p>
-                      <p className="text-2xl font-bold">${calculateSaleTotal().toFixed(2)}</p>
+                      <p className="text-2xl font-bold">${formatPrice(calculateSaleTotal())}</p>
                     </div>
                     <DollarSign className="w-10 h-10 opacity-50" />
                   </div>
@@ -610,7 +635,7 @@ export default function SalesPage() {
                 </div>
                 <div className="p-4 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl text-white">
                   <p className="text-sm opacity-80">Total</p>
-                  <p className="text-3xl font-bold">${parseFloat(selectedSale.total.toString()).toFixed(2)}</p>
+                  <p className="text-3xl font-bold">${formatPrice(selectedSale.total)}</p>
                 </div>
               </div>
 
@@ -620,21 +645,21 @@ export default function SalesPage() {
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-500 dark:text-gray-400">Subtotal</span>
-                    <span className="text-gray-900 dark:text-white">${parseFloat(selectedSale.subtotal.toString()).toFixed(2)}</span>
+                    <span className="text-gray-900 dark:text-white">${formatPrice(selectedSale.subtotal)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-500 dark:text-gray-400">Impuestos</span>
-                    <span className="text-gray-900 dark:text-white">${parseFloat(selectedSale.tax.toString()).toFixed(2)}</span>
+                    <span className="text-gray-900 dark:text-white">${formatPrice(selectedSale.tax)}</span>
                   </div>
                   {selectedSale.discount > 0 && (
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-500 dark:text-gray-400">Descuento</span>
-                      <span className="text-red-500">-${parseFloat(selectedSale.discount.toString()).toFixed(2)}</span>
+                      <span className="text-red-500">-${formatPrice(selectedSale.discount)}</span>
                     </div>
                   )}
                   <div className="flex justify-between text-sm font-semibold pt-2 border-t border-gray-200 dark:border-[#222]">
                     <span className="text-gray-900 dark:text-white">Total</span>
-                    <span className="text-gray-900 dark:text-white">${parseFloat(selectedSale.total.toString()).toFixed(2)}</span>
+                    <span className="text-gray-900 dark:text-white">${formatPrice(selectedSale.total)}</span>
                   </div>
                 </div>
               </div>
@@ -651,10 +676,10 @@ export default function SalesPage() {
                       </div>
                       <div className="text-right">
                         <p className="text-sm text-gray-600 dark:text-gray-300">
-                          {item.quantity} x ${parseFloat(item.unit_price.toString()).toFixed(2)}
+                          {item.quantity} x ${formatPrice(item.unit_price)}
                         </p>
                         <p className="font-semibold text-gray-900 dark:text-white">
-                          ${parseFloat((item.total || item.quantity * item.unit_price).toString()).toFixed(2)}
+                          ${formatPrice(item.total || item.quantity * item.unit_price)}
                         </p>
                       </div>
                     </div>

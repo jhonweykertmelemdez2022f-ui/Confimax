@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
-import { Plus, Search, RefreshCw, AlertTriangle, CheckCircle, Package, Tag } from "lucide-react";
+import { Plus, Search, RefreshCw, AlertTriangle, CheckCircle, Package, Tag, Download } from "lucide-react";
 import Link from "next/link";
 import { SquarePenIcon, DeleteIcon } from "@/components/AnimatedIcons";
 import Pagination from "@/components/Pagination";
@@ -214,6 +214,20 @@ export default function InventoryPage() {
               className="p-2.5 rounded-xl border border-gray-200 dark:border-[#333] bg-white dark:bg-[#111] text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#222] transition-colors"
             >
               <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin text-blue-500' : ''}`} />
+            </button>
+            
+            <button 
+              onClick={() => {
+                try {
+                  api.downloadProductsPDF();
+                } catch (error) {
+                  console.error("Error al descargar PDF:", error);
+                }
+              }}
+              className="p-2.5 rounded-xl border border-gray-200 dark:border-[#333] bg-white dark:bg-[#111] text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#222] transition-colors"
+              title="Descargar lista de productos en PDF"
+            >
+              <Download className="w-5 h-5" />
             </button>
             
             <Link
