@@ -15,6 +15,7 @@ export default function CustomersPage() {
   const { user } = useAuth();
   const { 
     customers, 
+    setCustomers,
     allCustomers, 
     loading, 
     errorMsg, 
