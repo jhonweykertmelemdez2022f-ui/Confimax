@@ -99,7 +99,14 @@ class ApiClient {
           this.clearToken();
           this.onTokenExpired();
         }
-        throw new Error(data.error || data.message || `Error en la petición: ${response.status}`);
+        
+        let errorMsg = data.error || data.message || `Error en la petición: ${response.status}`;
+        
+        if (data.errors && Array.isArray(data.errors) && data.errors.length > 0) {
+          errorMsg = data.errors.map((e: any) => e.msg).join(', ');
+        }
+        
+        throw new Error(errorMsg);
       }
 
       // Guardar token si viene en la respuesta
