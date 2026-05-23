@@ -50,11 +50,15 @@ const Product = {
     const product = result.rows[0];
     product.price = product.unit_price;
     product.cost = product.cost_price;
-    const imagesResult = await pool.query(
-      'SELECT * FROM inventory.product_images WHERE product_id = $1 ORDER BY display_order, created_at',
-      [id]
-    );
-    product.images = imagesResult.rows;
+    try {
+      const imagesResult = await pool.query(
+        'SELECT * FROM inventory.product_images WHERE product_id = $1 ORDER BY display_order, created_at',
+        [id]
+      );
+      product.images = imagesResult.rows;
+    } catch (err) {
+      product.images = [];
+    }
     return product;
   },
 
@@ -149,11 +153,15 @@ const Product = {
       );
       const product = result.rows[0];
       
-      for (let i = 0; i < imageUrls.length; i++) {
-        await client.query(
-          'INSERT INTO inventory.product_images (product_id, image_url, is_primary, display_order) VALUES ($1, $2, $3, $4)',
-          [product.id, imageUrls[i], i === 0, i]
-        );
+      try {
+        for (let i = 0; i < imageUrls.length; i++) {
+          await client.query(
+            'INSERT INTO inventory.product_images (product_id, image_url, is_primary, display_order) VALUES ($1, $2, $3, $4)',
+            [product.id, imageUrls[i], i === 0, i]
+          );
+        }
+      } catch (err) {
+        // Ignore if product_images doesn't exist
       }
 
       await client.query('COMMIT');
@@ -180,19 +188,23 @@ const Product = {
       let primaryImageUrl = null;
       if (productData.images && Array.isArray(productData.images) && productData.images.length > 0) {
         primaryImageUrl = productData.images[0];
-        // Delete existing images to replace them
-        await client.query('DELETE FROM inventory.product_images WHERE product_id = $1', [id]);
-        
-        // Insert new images
-        for (let i = 0; i < productData.images.length; i++) {
-          const img = productData.images[i];
-          const url = typeof img === 'string' ? img : (img.url || img.image_url);
-          if (url) {
-            await client.query(
-              'INSERT INTO inventory.product_images (product_id, image_url, is_primary, display_order) VALUES ($1, $2, $3, $4)',
-              [id, url, i === 0, i]
-            );
+        // Try to delete existing images if table exists
+        try {
+          await client.query('DELETE FROM inventory.product_images WHERE product_id = $1', [id]);
+          
+          // Try to insert new images
+          for (let i = 0; i < productData.images.length; i++) {
+            const img = productData.images[i];
+            const url = typeof img === 'string' ? img : (img.url || img.image_url);
+            if (url) {
+              await client.query(
+                'INSERT INTO inventory.product_images (product_id, image_url, is_primary, display_order) VALUES ($1, $2, $3, $4)',
+                [id, url, i === 0, i]
+              );
+            }
           }
+        } catch (err) {
+          // Ignore if product_images doesn't exist
         }
       }
 
@@ -290,29 +302,38 @@ const Product = {
     const result = await pool.query(query, values);
     const products = result.rows;
     
-    // Get images for all products
+    // Get images for all products if table exists
     if (products.length > 0) {
-      const productIds = products.map(p => p.id);
-      const imagesResult = await pool.query(
-        'SELECT * FROM inventory.product_images WHERE product_id = ANY($1) ORDER BY product_id, display_order, created_at',
-        [productIds]
-      );
-      
-      // Group images by product_id
-      const imagesByProduct = {};
-      imagesResult.rows.forEach(img => {
-        if (!imagesByProduct[img.product_id]) {
-          imagesByProduct[img.product_id] = [];
-        }
-        imagesByProduct[img.product_id].push(img);
-      });
-      
-      // Add images and compatibility fields to each product
-      products.forEach(product => {
-        product.images = imagesByProduct[product.id] || [];
-        product.price = product.unit_price;
-        product.cost = product.cost_price;
-      });
+      try {
+        const productIds = products.map(p => p.id);
+        const imagesResult = await pool.query(
+          'SELECT * FROM inventory.product_images WHERE product_id = ANY($1) ORDER BY product_id, display_order, created_at',
+          [productIds]
+        );
+        
+        // Group images by product_id
+        const imagesByProduct = {};
+        imagesResult.rows.forEach(img => {
+          if (!imagesByProduct[img.product_id]) {
+            imagesByProduct[img.product_id] = [];
+          }
+          imagesByProduct[img.product_id].push(img);
+        });
+        
+        // Add images and compatibility fields to each product
+        products.forEach(product => {
+          product.images = imagesByProduct[product.id] || [];
+          product.price = product.unit_price;
+          product.cost = product.cost_price;
+        });
+      } catch (err) {
+        // If product_images table doesn't exist, set images as empty array for all products
+        products.forEach(product => {
+          product.images = [];
+          product.price = product.unit_price;
+          product.cost = product.cost_price;
+        });
+      }
     }
     
     return products;

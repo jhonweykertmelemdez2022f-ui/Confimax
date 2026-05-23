@@ -127,6 +127,9 @@ export default function InventoryPage() {
     if (product.image_url && !existingImages.includes(product.image_url)) {
       existingImages.unshift(product.image_url);
     }
+    if (existingImages.length === 0 && product.image_url) {
+      existingImages.push(product.image_url);
+    }
     setEditingProduct(product);
     setFormData({
       name: product.name, 
@@ -180,13 +183,13 @@ export default function InventoryPage() {
     return 'text-[#00FF66]';
   };
 
-  const getPrimaryImage = (product: Product) => {
+  const getPrimaryImage = (product: Product & { image_url?: string }) => {
     if (product.images && product.images.length > 0) {
       const primary = product.images.find(img => img.is_primary);
       if (primary) return primary.image_url;
       return product.images[0].image_url;
     }
-    return null;
+    return product.image_url || null;
   };
 
   return (
