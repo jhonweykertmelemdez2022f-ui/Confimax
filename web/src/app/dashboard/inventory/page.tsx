@@ -13,7 +13,8 @@ interface Product {
   name: string;
   sku: string;
   price: number;
-  stock: number;
+  stock?: number;
+  stock_quantity?: number;
   category_id: string;
   category_name?: string;
   description?: string;
@@ -41,7 +42,7 @@ export default function InventoryPage() {
   const [showModal, setShowModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any>(null);
   const [formData, setFormData] = useState({
-    name: "", sku: "", price: "", stock: "", category_id: "", description: "", image_url: "", expiration_date: "", images: [] as string[]
+    name: "", sku: "", price: "", stock: "", category_id: "", description: "", expiration_date: "", images: [] as string[]
   });
 
   const tableRef = useRef<HTMLDivElement>(null);
@@ -134,7 +135,6 @@ export default function InventoryPage() {
       stock: String(product.stock_quantity || product.stock), 
       category_id: product.category_id, 
       description: product.description || "",
-      image_url: "",
       expiration_date: product.expiration_date || "",
       images: existingImages
     });
@@ -145,24 +145,16 @@ export default function InventoryPage() {
     setEditingProduct(null);
     setFormData({ 
       name: "", sku: "", price: "", stock: "", 
-      category_id: categories[0]?.id || "", description: "", image_url: "", expiration_date: "", images: [] 
+      category_id: categories[0]?.id || "", description: "", expiration_date: "", images: [] 
     });
     setShowModal(true);
   };
 
   const resetForm = () => {
-    setFormData({ name: "", sku: "", price: "", stock: "", category_id: "", description: "", image_url: "", expiration_date: "", images: [] });
+    setFormData({ name: "", sku: "", price: "", stock: "", category_id: "", description: "", expiration_date: "", images: [] });
   };
 
-  const addImage = () => {
-    if (formData.image_url && formData.image_url.trim()) {
-      setFormData(prev => ({
-        ...prev,
-        images: [...prev.images, prev.image_url],
-        image_url: ""
-      }));
-    }
-  };
+
 
   const removeImage = (index: number) => {
     setFormData(prev => ({
@@ -181,9 +173,10 @@ export default function InventoryPage() {
     return isNaN(num) ? '0.00' : num.toFixed(2);
   };
 
-  const getStockColor = (stock: number) => {
-    if (stock <= 5) return 'text-error';
-    if (stock <= 20) return 'text-yellow-500';
+  const getStockColor = (stock?: number) => {
+    const s = stock || 0;
+    if (s <= 5) return 'text-error';
+    if (s <= 20) return 'text-yellow-500';
     return 'text-[#00FF66]';
   };
 
@@ -289,7 +282,7 @@ export default function InventoryPage() {
               ) : (
                 currentItems.map((product: Product) => {
                   const category = categories.find(c => c.id === product.category_id);
-                  const stock = product.stock || product.stock_quantity;
+                  const stock = Number(product.stock || product.stock_quantity || 0);
                   const primaryImage = getPrimaryImage(product);
                   return (
                     <tr key={product.id} className="product-row hover:bg-slate-50 dark:hover:bg-surface-dim transition-colors group">
