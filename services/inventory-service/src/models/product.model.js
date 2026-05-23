@@ -37,6 +37,22 @@ pool.on('connect', () => {
   }
 });
 
+// Helper to check if product_images table exists
+let productImagesTableExists = null;
+const checkProductImagesTable = async (client = null) => {
+  if (productImagesTableExists !== null) return productImagesTableExists;
+  try {
+    const queryClient = client || pool;
+    await queryClient.query('SELECT 1 FROM inventory.product_images LIMIT 1');
+    productImagesTableExists = true;
+    console.log('[PRODUCT MODEL] product_images table exists');
+  } catch (err) {
+    productImagesTableExists = false;
+    console.log('[PRODUCT MODEL] product_images table does NOT exist');
+  }
+  return productImagesTableExists;
+};
+
 const Product = {
   async findById(id) {
     const result = await pool.query(
@@ -50,13 +66,19 @@ const Product = {
     const product = result.rows[0];
     product.price = product.unit_price;
     product.cost = product.cost_price;
-    try {
-      const imagesResult = await pool.query(
-        'SELECT * FROM inventory.product_images WHERE product_id = $1 ORDER BY display_order, created_at',
-        [id]
-      );
-      product.images = imagesResult.rows;
-    } catch (err) {
+    
+    const tableExists = await checkProductImagesTable();
+    if (tableExists) {
+      try {
+        const imagesResult = await pool.query(
+          'SELECT * FROM inventory.product_images WHERE product_id = $1 ORDER BY display_order, created_at',
+          [id]
+        );
+        product.images = imagesResult.rows;
+      } catch (err) {
+        product.images = [];
+      }
+    } else {
       product.images = [];
     }
     return product;
@@ -153,15 +175,14 @@ const Product = {
       );
       const product = result.rows[0];
       
-      try {
+      const tableExists = await checkProductImagesTable(client);
+      if (tableExists) {
         for (let i = 0; i < imageUrls.length; i++) {
           await client.query(
             'INSERT INTO inventory.product_images (product_id, image_url, is_primary, display_order) VALUES ($1, $2, $3, $4)',
             [product.id, imageUrls[i], i === 0, i]
           );
         }
-      } catch (err) {
-        // Ignore if product_images doesn't exist
       }
 
       await client.query('COMMIT');
@@ -186,10 +207,11 @@ const Product = {
 
       // Collect all image URLs if provided
       let primaryImageUrl = null;
+      const tableExists = await checkProductImagesTable(client);
       if (productData.images && Array.isArray(productData.images) && productData.images.length > 0) {
         primaryImageUrl = productData.images[0];
         // Try to delete existing images if table exists
-        try {
+        if (tableExists) {
           await client.query('DELETE FROM inventory.product_images WHERE product_id = $1', [id]);
           
           // Try to insert new images
@@ -203,8 +225,6 @@ const Product = {
               );
             }
           }
-        } catch (err) {
-          // Ignore if product_images doesn't exist
         }
       }
 
