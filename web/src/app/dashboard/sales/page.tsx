@@ -102,7 +102,9 @@ export default function SalesPage() {
     name: "",
     email: "",
     phone: "",
-    address: ""
+    address: "",
+    person_type: "V" as 'V' | 'E' | 'J' | 'G',
+    tax_id_number: ""
   });
 
   const tableRef = useRef<HTMLDivElement>(null);
@@ -292,7 +294,35 @@ export default function SalesPage() {
         return;
       }
 
-      const newCustomer = await api.createCustomer(newCustomerForm) as any;
+      // Validar longitud del tax_id (8-9 caracteres)
+      if (newCustomerForm.tax_id_number && (newCustomerForm.tax_id_number.length < 8 || newCustomerForm.tax_id_number.length > 9)) {
+        setErrorMsg("El número de cédula/RIF debe tener entre 8 y 9 caracteres");
+        return;
+      }
+
+      // Construir el tax_id completo: V-12345678-9
+      let tax_id = undefined;
+      if (newCustomerForm.person_type && newCustomerForm.tax_id_number) {
+        const digitoVerificador = newCustomerForm.tax_id_number.length === 9 
+          ? newCustomerForm.tax_id_number.slice(-1) 
+          : '0';
+        const numeroSinDigito = newCustomerForm.tax_id_number.length === 9 
+          ? newCustomerForm.tax_id_number.slice(0, -1) 
+          : newCustomerForm.tax_id_number;
+        
+        tax_id = `${newCustomerForm.person_type}-${numeroSinDigito}-${digitoVerificador}`;
+      }
+
+      const payload = {
+        name: newCustomerForm.name,
+        email: newCustomerForm.email,
+        phone: newCustomerForm.phone,
+        address: newCustomerForm.address,
+        tax_id: tax_id,
+        rif: tax_id
+      };
+
+      const newCustomer = await api.createCustomer(payload) as any;
       const customerData = newCustomer.data || newCustomer;
       
       // Agregar el nuevo cliente a la lista
@@ -304,7 +334,10 @@ export default function SalesPage() {
       
       setSuccessMsg("Cliente creado exitosamente");
       setIsCreateCustomerModalOpen(false);
-      setNewCustomerForm({ name: "", email: "", phone: "", address: "" });
+      setNewCustomerForm({ 
+        name: "", email: "", phone: "", address: "", 
+        person_type: "V", tax_id_number: "" 
+      });
       
       setTimeout(() => setSuccessMsg(""), 3000);
     } catch (err: any) {
@@ -905,6 +938,44 @@ export default function SalesPage() {
                   className="w-full px-4 py-2.5 bg-gray-50 dark:bg-[#0a0a0a] border border-gray-200 dark:border-[#333] rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none dark:text-white"
                   placeholder="+58 412-123-4567"
                 />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tipo de Persona</label>
+                  <select
+                    value={newCustomerForm.person_type}
+                    onChange={(e) => setNewCustomerForm({ ...newCustomerForm, person_type: e.target.value as 'V' | 'E' | 'J' | 'G' })}
+                    className="w-full px-4 py-2.5 bg-gray-50 dark:bg-[#0a0a0a] border border-gray-200 dark:border-[#333] rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none dark:text-white"
+                  >
+                    <option value="V">V - Venezolano</option>
+                    <option value="E">E - Extranjero</option>
+                    <option value="J">J - Jurídico</option>
+                    <option value="G">G - Gobierno</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Cédula / RIF <span className="text-xs text-gray-500">(8-9 caracteres)</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={newCustomerForm.tax_id_number}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, '').slice(0, 9);
+                      setNewCustomerForm({ ...newCustomerForm, tax_id_number: value });
+                    }}
+                    maxLength={9}
+                    className="w-full px-4 py-2.5 bg-gray-50 dark:bg-[#0a0a0a] border border-gray-200 dark:border-[#333] rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none dark:text-white"
+                    placeholder="12345678 o 123456789"
+                  />
+                  {newCustomerForm.tax_id_number && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      {newCustomerForm.person_type}-{newCustomerForm.tax_id_number.slice(0, 8)}-{newCustomerForm.tax_id_number.length === 9 ? newCustomerForm.tax_id_number.slice(-1) : '0'}
+                    </p>
+                  )}
+                </div>
               </div>
 
               <div>

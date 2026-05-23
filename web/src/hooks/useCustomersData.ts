@@ -20,7 +20,9 @@ export function useCustomersData() {
         email: c.email || "",
         phone: c.phone || "",
         address: c.address || "",
-        rif: c.rif || ""
+        rif: c.rif || "",
+        tax_id: c.tax_id || c.rif || "",
+        person_type: c.person_type || (c.tax_id ? c.tax_id.charAt(0) : undefined)
       }));
       setAllCustomers(mappedData);
       setCustomers(mappedData);
