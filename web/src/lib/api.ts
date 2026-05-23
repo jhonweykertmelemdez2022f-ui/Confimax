@@ -397,6 +397,25 @@ class ApiClient {
       body: JSON.stringify({ messages, role: role || 'cliente' }),
     }, true);
   }
+
+  async downloadProductsPDF() {
+    const url = `${this.baseUrl}/fabiana/products/pdf`;
+    const response = await fetch(url);
+    
+    if (!response.ok) {
+      throw new Error('Error al descargar el PDF');
+    }
+    
+    const blob = await response.blob();
+    const downloadUrl = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = downloadUrl;
+    a.download = 'productos-confimax.pdf';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(downloadUrl);
+  }
 }
 
 // Exportar instancia singleton

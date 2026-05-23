@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { MessageCircle, Send, X, Loader2, Bot, User, Minimize2, Maximize2 } from "lucide-react";
+import { MessageCircle, Send, X, Loader2, Bot, User, Minimize2, Maximize2, Download } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { api } from "@/lib/api";
@@ -125,6 +125,19 @@ export default function Chatbot() {
                 </div>
               </div>
               <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    try {
+                      api.downloadProductsPDF();
+                    } catch (error) {
+                      console.error("Error al descargar PDF:", error);
+                    }
+                  }}
+                  className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                  title="Descargar lista de productos en PDF"
+                >
+                  <Download className="w-4 h-4" />
+                </button>
                 <button
                   onClick={() => setIsMinimized(true)}
                   className="p-2 hover:bg-white/20 rounded-lg transition-colors"
