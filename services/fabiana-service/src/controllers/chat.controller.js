@@ -38,14 +38,6 @@ const formatDataForContext = (data, role) => {
     });
   }
   
-  if (data.audits && data.audits.length > 0) {
-    context += '\n\n--- AUDITORÍAS RECIENTES ---\n';
-    data.audits.forEach(a => {
-      const date = new Date(a.created_at).toLocaleDateString('es-ES');
-      context += `- ${a.operation} en ${a.entity} por ${a.user || 'N/A'} - Fecha: ${date}\n`;
-    });
-  }
-  
   return context;
 };
 
