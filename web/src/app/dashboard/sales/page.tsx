@@ -6,7 +6,7 @@ import { api } from "@/lib/api";
 import { 
   Plus, Search, RefreshCw, AlertTriangle, CheckCircle, 
   DollarSign, Calendar, Eye, MoreHorizontal, X, Save,
-  ShoppingCart, User, Box, Trash2
+  ShoppingCart, User, Box, Trash2, UserPlus, ChevronDown
 } from "lucide-react";
 import Pagination from "@/components/Pagination";
 import { gsap } from "gsap";
@@ -87,14 +87,38 @@ export default function SalesPage() {
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [isCreateCustomerModalOpen, setIsCreateCustomerModalOpen] = useState(false);
   const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
+  const [showCustomerDropdown, setShowCustomerDropdown] = useState(false);
+  const [customerSearch, setCustomerSearch] = useState("");
   
   // New sale form
   const [newSaleItems, setNewSaleItems] = useState<SaleItem[]>([]);
   const [selectedCustomer, setSelectedCustomer] = useState<string>("");
   const [saleNotes, setSaleNotes] = useState("");
+  
+  // New customer form
+  const [newCustomerForm, setNewCustomerForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    address: ""
+  });
 
   const tableRef = useRef<HTMLDivElement>(null);
+  const customerDropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // Cerrar dropdown al hacer clic fuera
+    const handleClickOutside = (event: MouseEvent) => {
+      if (customerDropdownRef.current && !customerDropdownRef.current.contains(event.target as Node)) {
+        setShowCustomerDropdown(false);
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   useEffect(() => {
     loadAllData();
@@ -257,6 +281,47 @@ export default function SalesPage() {
     setNewSaleItems([]);
     setSelectedCustomer("");
     setSaleNotes("");
+    setCustomerSearch("");
+    setShowCustomerDropdown(false);
+  };
+
+  const handleCreateCustomer = async () => {
+    try {
+      if (!newCustomerForm.name || !newCustomerForm.email) {
+        setErrorMsg("Nombre y email son obligatorios");
+        return;
+      }
+
+      const newCustomer = await api.createCustomer(newCustomerForm) as any;
+      const customerData = newCustomer.data || newCustomer;
+      
+      // Agregar el nuevo cliente a la lista
+      setCustomers([...customers, customerData]);
+      
+      // Seleccionar el nuevo cliente automáticamente
+      setSelectedCustomer(customerData.id);
+      setCustomerSearch(`${customerData.name} - ${customerData.email}`);
+      
+      setSuccessMsg("Cliente creado exitosamente");
+      setIsCreateCustomerModalOpen(false);
+      setNewCustomerForm({ name: "", email: "", phone: "", address: "" });
+      
+      setTimeout(() => setSuccessMsg(""), 3000);
+    } catch (err: any) {
+      setErrorMsg(err.message || "Error al crear el cliente");
+      setTimeout(() => setErrorMsg(""), 4000);
+    }
+  };
+
+  const filteredCustomers = customers.filter(c => 
+    c.name.toLowerCase().includes(customerSearch.toLowerCase()) ||
+    c.email.toLowerCase().includes(customerSearch.toLowerCase())
+  );
+
+  const handleCustomerSelect = (customer: Customer) => {
+    setSelectedCustomer(customer.id);
+    setCustomerSearch(`${customer.name} - ${customer.email}`);
+    setShowCustomerDropdown(false);
   };
 
   const openDetails = async (sale: Sale) => {
@@ -510,19 +575,100 @@ export default function SalesPage() {
                 <div>
                   <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Productos en la Venta</h3>
                   
-                  {/* Selector de cliente */}
-                  <div className="mb-4">
-                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1 block">Cliente (Opcional)</label>
-                    <select
-                      value={selectedCustomer}
-                      onChange={(e) => setSelectedCustomer(e.target.value)}
-                      className="w-full px-4 py-2.5 bg-gray-50 dark:bg-[#0a0a0a] border border-gray-200 dark:border-[#333] rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all dark:text-white"
-                    >
-                      <option value="">Sin cliente</option>
-                      {customers.map(customer => (
-                        <option key={customer.id} value={customer.id}>{customer.name} - {customer.email}</option>
-                      ))}
-                    </select>
+                  {/* Buscador de cliente */}
+                  <div className="mb-4" ref={customerDropdownRef}>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="text-xs font-medium text-gray-500 uppercase tracking-wider">Cliente (Opcional)</label>
+                      <button
+                        onClick={() => setIsCreateCustomerModalOpen(true)}
+                        className="text-xs flex items-center gap-1 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
+                      >
+                        <UserPlus className="w-3 h-3" />
+                        Nuevo cliente
+                      </button>
+                    </div>
+                    <div className="relative">
+                      <div className="flex items-center gap-2 w-full px-4 py-2.5 bg-gray-50 dark:bg-[#0a0a0a] border border-gray-200 dark:border-[#333] rounded-xl focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent">
+                        <Search className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                        <input
+                          type="text"
+                          placeholder="Buscar cliente por nombre o email..."
+                          value={customerSearch}
+                          onChange={(e) => {
+                            setCustomerSearch(e.target.value);
+                            setShowCustomerDropdown(true);
+                            if (!e.target.value) {
+                              setSelectedCustomer("");
+                            }
+                          }}
+                          onFocus={() => setShowCustomerDropdown(true)}
+                          className="w-full bg-transparent outline-none dark:text-white"
+                        />
+                        {customerSearch && (
+                          <button
+                            onClick={() => {
+                              setCustomerSearch("");
+                              setSelectedCustomer("");
+                              setShowCustomerDropdown(false);
+                            }}
+                            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        )}
+                        <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${showCustomerDropdown ? 'rotate-180' : ''}`} />
+                      </div>
+                      
+                      {/* Dropdown de clientes */}
+                      {showCustomerDropdown && (
+                        <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#111] border border-gray-200 dark:border-[#333] rounded-xl shadow-xl z-50 max-h-64 overflow-y-auto">
+                          <button
+                            onClick={() => {
+                              setSelectedCustomer("");
+                              setCustomerSearch("");
+                              setShowCustomerDropdown(false);
+                            }}
+                            className={`w-full p-3 text-left hover:bg-gray-50 dark:hover:bg-[#222] transition-colors flex items-center gap-3 ${!selectedCustomer ? 'bg-blue-50 dark:bg-blue-500/10' : ''}`}
+                          >
+                            <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-[#222] flex items-center justify-center">
+                              <User className="w-4 h-4 text-gray-500" />
+                            </div>
+                            <div>
+                              <p className="font-medium text-gray-900 dark:text-white">Sin cliente</p>
+                              <p className="text-xs text-gray-500">Venta sin cliente registrado</p>
+                            </div>
+                            {!selectedCustomer && (
+                              <CheckCircle className="w-4 h-4 text-blue-600 dark:text-blue-400 ml-auto" />
+                            )}
+                          </button>
+                          
+                          {filteredCustomers.length === 0 && customerSearch ? (
+                            <div className="p-4 text-center text-gray-500 dark:text-gray-400">
+                              No se encontraron clientes
+                            </div>
+                          ) : (
+                            filteredCustomers.map((customer) => (
+                              <button
+                                key={customer.id}
+                                onClick={() => handleCustomerSelect(customer)}
+                                className={`w-full p-3 text-left hover:bg-gray-50 dark:hover:bg-[#222] transition-colors flex items-center gap-3 ${selectedCustomer === customer.id ? 'bg-blue-50 dark:bg-blue-500/10' : ''}`}
+                              >
+                                <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-[#222] flex items-center justify-center">
+                                  <User className="w-4 h-4 text-gray-500" />
+                                </div>
+                                <div>
+                                  <p className="font-medium text-gray-900 dark:text-white">{customer.name}</p>
+                                  <p className="text-xs text-gray-500">{customer.email}</p>
+                                </div>
+                                {selectedCustomer === customer.id && (
+                                  <CheckCircle className="w-4 h-4 text-blue-600 dark:text-blue-400 ml-auto" />
+                                )}
+                              </button>
+                            ))
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   {/* Lista de items */}
@@ -704,6 +850,90 @@ export default function SalesPage() {
                 Cerrar
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Crear Cliente */}
+      {isCreateCustomerModalOpen && (
+        <div className="fixed inset-0 z-[101] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-white dark:bg-[#111] rounded-3xl shadow-2xl w-full max-w-md p-6 mx-4">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">Crear Nuevo Cliente</h2>
+                <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">Agrega un cliente rápido para la venta</p>
+              </div>
+              <button
+                onClick={() => setIsCreateCustomerModalOpen(false)}
+                className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-[#222] text-gray-500 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={(e) => { e.preventDefault(); handleCreateCustomer(); }} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nombre *</label>
+                <input
+                  required
+                  type="text"
+                  value={newCustomerForm.name}
+                  onChange={(e) => setNewCustomerForm({ ...newCustomerForm, name: e.target.value })}
+                  className="w-full px-4 py-2.5 bg-gray-50 dark:bg-[#0a0a0a] border border-gray-200 dark:border-[#333] rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none dark:text-white"
+                  placeholder="Nombre completo del cliente"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email *</label>
+                <input
+                  required
+                  type="email"
+                  value={newCustomerForm.email}
+                  onChange={(e) => setNewCustomerForm({ ...newCustomerForm, email: e.target.value })}
+                  className="w-full px-4 py-2.5 bg-gray-50 dark:bg-[#0a0a0a] border border-gray-200 dark:border-[#333] rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none dark:text-white"
+                  placeholder="cliente@ejemplo.com"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Teléfono</label>
+                <input
+                  type="text"
+                  value={newCustomerForm.phone}
+                  onChange={(e) => setNewCustomerForm({ ...newCustomerForm, phone: e.target.value })}
+                  className="w-full px-4 py-2.5 bg-gray-50 dark:bg-[#0a0a0a] border border-gray-200 dark:border-[#333] rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none dark:text-white"
+                  placeholder="+58 412-123-4567"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Dirección</label>
+                <textarea
+                  rows={2}
+                  value={newCustomerForm.address}
+                  onChange={(e) => setNewCustomerForm({ ...newCustomerForm, address: e.target.value })}
+                  className="w-full px-4 py-2.5 bg-gray-50 dark:bg-[#0a0a0a] border border-gray-200 dark:border-[#333] rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none dark:text-white resize-none"
+                  placeholder="Dirección del cliente"
+                />
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4 border-t border-gray-100 dark:border-[#222]">
+                <button
+                  type="button"
+                  onClick={() => setIsCreateCustomerModalOpen(false)}
+                  className="px-4 py-2.5 border border-gray-200 dark:border-[#333] rounded-xl text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#222] transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl font-medium transition-all"
+                >
+                  Crear Cliente
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
