@@ -29,15 +29,38 @@ pool.on('error', (err) => {
   console.error('Unexpected error on idle client', err);
 });
 
-const VALID_STATUSES = ['pendiente', 'entregado', 'cancelado'];
-const VALID_TRANSITIONS = {
+const VALID_STATUSES_SPANISH = ['pendiente', 'entregado', 'cancelado'];
+const VALID_STATUSES_ENGLISH = ['pending', 'delivered', 'cancelled'];
+const VALID_TRANSITIONS_SPANISH = {
   'pendiente': ['entregado', 'cancelado'],
   'entregado': [],
   'cancelado': []
 };
+const VALID_TRANSITIONS_ENGLISH = {
+  'pending': ['delivered', 'cancelled'],
+  'delivered': [],
+  'cancelled': []
+};
 
-const normalizeStatus = (status) => {
-  const statusMap = {
+const spanishToEnglish = (status) => {
+  const map = {
+    'pendiente': 'pending',
+    'entregado': 'delivered',
+    'cancelado': 'cancelled',
+    'pending': 'pending',
+    'delivered': 'delivered',
+    'cancelled': 'cancelled',
+    'canceled': 'cancelled',
+    'confirmed': 'delivered',
+    'processing': 'pending',
+    'shipped': 'delivered',
+    'refunded': 'cancelled'
+  };
+  return map[status] || 'pending';
+};
+
+const englishToSpanish = (status) => {
+  const map = {
     'pending': 'pendiente',
     'delivered': 'entregado',
     'cancelled': 'cancelado',
@@ -47,7 +70,7 @@ const normalizeStatus = (status) => {
     'shipped': 'entregado',
     'refunded': 'cancelado'
   };
-  return statusMap[status] || status;
+  return map[status] || status;
 };
 
 const Order = {
@@ -62,7 +85,7 @@ const Order = {
     );
     const order = result.rows[0];
     if (order) {
-      order.status = normalizeStatus(order.status);
+      order.status = englishToSpanish(order.status);
       order.items = await this.getOrderItems(id);
       order.payments = await this.getOrderPayments(id);
     }
@@ -75,7 +98,7 @@ const Order = {
       await client.query('BEGIN');
 
       const { customer_id, user_id, items, notes, shipping_address_id, billing_address_id } = orderData;
-      const status = normalizeStatus(orderData.status) || 'pendiente';
+      const status = spanishToEnglish(orderData.status) || 'pending';
 
       let subtotal = 0;
       for (const item of items) {
@@ -118,7 +141,8 @@ const Order = {
     try {
       await client.query('BEGIN');
 
-      const newStatus = normalizeStatus(status);
+      const newStatusSpanish = englishToSpanish(status);
+      const newStatusEnglish = spanishToEnglish(status);
       
       // 1. Get current order
       const { rows: currentRows } = await client.query(
@@ -129,13 +153,14 @@ const Order = {
         throw new Error('Orden no encontrada');
       }
       const currentOrder = currentRows[0];
-      const currentStatus = normalizeStatus(currentOrder.status);
+      const currentStatusSpanish = englishToSpanish(currentOrder.status);
+      const currentStatusEnglish = spanishToEnglish(currentOrder.status);
 
       // 2. Validate status and transition
-      if (!VALID_STATUSES.includes(newStatus)) {
+      if (!VALID_STATUSES_SPANISH.includes(newStatusSpanish)) {
         throw new Error('Estado inválido');
       }
-      if (!VALID_TRANSITIONS[currentStatus].includes(newStatus)) {
+      if (!VALID_TRANSITIONS_SPANISH[currentStatusSpanish].includes(newStatusSpanish)) {
         throw new Error('Esta orden ya fue finalizada y no puede modificarse.');
       }
 
@@ -149,7 +174,7 @@ const Order = {
       );
 
       // 4. Handle side effects
-      if (currentStatus === 'pendiente' && newStatus === 'entregado') {
+      if (currentStatusSpanish === 'pendiente' && newStatusSpanish === 'entregado') {
         // Check stock
         for (const item of itemsRows) {
           if (item.quantity > item.stock_quantity) {
@@ -165,14 +190,14 @@ const Order = {
         }
       }
 
-      // 5. Update order status
-      const completedAt = newStatus === 'entregado' ? new Date() : null;
+      // 5. Update order status (use English for DB!)
+      const completedAt = newStatusSpanish === 'entregado' ? new Date() : null;
       const { rows: updatedRows } = await client.query(
         `UPDATE sales.orders 
          SET status = $1, updated_at = NOW(), 
              completed_at = COALESCE($2, completed_at)
          WHERE id = $3 RETURNING *`,
-        [newStatus, completedAt, id]
+        [newStatusEnglish, completedAt, id]
       );
 
       await client.query('COMMIT');
@@ -211,7 +236,7 @@ const Order = {
 
     if (filters.status) {
       query += ` AND o.status = $${paramCount}`;
-      values.push(filters.status);
+      values.push(spanishToEnglish(filters.status));
       paramCount++;
     }
 
@@ -231,7 +256,7 @@ const Order = {
     values.push(limit, offset);
 
     const result = await pool.query(query, values);
-    return result.rows.map(row => ({ ...row, status: normalizeStatus(row.status) }));
+    return result.rows.map(row => ({ ...row, status: englishToSpanish(row.status) }));
   },
 
   async getOrderItems(orderId) {
