@@ -76,7 +76,7 @@ router.patch(
   authorize('admin', 'manager'),
   [
     param('id').isUUID().withMessage('Valid UUID required'),
-    body('status').isIn(['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded']).withMessage('Invalid status'),
+    body('status').isIn(['pendiente', 'entregado', 'cancelado', 'pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded']).withMessage('Invalid status'),
   ],
   validateRequest,
   saleController.updateOrderStatus
