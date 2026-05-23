@@ -29,6 +29,27 @@ pool.on('error', (err) => {
   console.error('Unexpected error on idle client', err);
 });
 
+const VALID_STATUSES = ['pendiente', 'entregado', 'cancelado'];
+const VALID_TRANSITIONS = {
+  'pendiente': ['entregado', 'cancelado'],
+  'entregado': [],
+  'cancelado': []
+};
+
+const normalizeStatus = (status) => {
+  const statusMap = {
+    'pending': 'pendiente',
+    'delivered': 'entregado',
+    'cancelled': 'cancelado',
+    'canceled': 'cancelado',
+    'confirmed': 'entregado',
+    'processing': 'pendiente',
+    'shipped': 'entregado',
+    'refunded': 'cancelado'
+  };
+  return statusMap[status] || status;
+};
+
 const Order = {
   async findById(id) {
     const result = await pool.query(
@@ -41,6 +62,7 @@ const Order = {
     );
     const order = result.rows[0];
     if (order) {
+      order.status = normalizeStatus(order.status);
       order.items = await this.getOrderItems(id);
       order.payments = await this.getOrderPayments(id);
     }
@@ -52,7 +74,8 @@ const Order = {
     try {
       await client.query('BEGIN');
 
-      const { customer_id, user_id, items, status = 'pending', notes, shipping_address_id, billing_address_id } = orderData;
+      const { customer_id, user_id, items, notes, shipping_address_id, billing_address_id } = orderData;
+      const status = normalizeStatus(orderData.status) || 'pendiente';
 
       let subtotal = 0;
       for (const item of items) {
@@ -91,13 +114,75 @@ const Order = {
   },
 
   async updateStatus(id, status) {
-    const result = await pool.query(
-      `UPDATE sales.orders SET status = $1, updated_at = NOW(), 
-       completed_at = CASE WHEN $2 = 'delivered' THEN NOW() ELSE completed_at END
-       WHERE id = $3 RETURNING *`,
-      [status, status, id]
-    );
-    return result.rows[0];
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+
+      const newStatus = normalizeStatus(status);
+      
+      // 1. Get current order
+      const { rows: currentRows } = await client.query(
+        'SELECT * FROM sales.orders WHERE id = $1',
+        [id]
+      );
+      if (!currentRows[0]) {
+        throw new Error('Orden no encontrada');
+      }
+      const currentOrder = currentRows[0];
+      const currentStatus = normalizeStatus(currentOrder.status);
+
+      // 2. Validate status and transition
+      if (!VALID_STATUSES.includes(newStatus)) {
+        throw new Error('Estado inválido');
+      }
+      if (!VALID_TRANSITIONS[currentStatus].includes(newStatus)) {
+        throw new Error('Esta orden ya fue finalizada y no puede modificarse.');
+      }
+
+      // 3. Get order items with product info from inventory
+      const { rows: itemsRows } = await client.query(
+        `SELECT oi.*, p.stock_quantity, p.name as product_name 
+         FROM sales.order_items oi 
+         LEFT JOIN inventory.products p ON oi.product_id = p.id 
+         WHERE oi.order_id = $1`,
+        [id]
+      );
+
+      // 4. Handle side effects
+      if (currentStatus === 'pendiente' && newStatus === 'entregado') {
+        // Check stock
+        for (const item of itemsRows) {
+          if (item.quantity > item.stock_quantity) {
+            throw new Error(`Stock insuficiente para el producto "${item.product_name}": disponible ${item.stock_quantity}, requerido ${item.quantity}`);
+          }
+        }
+        // Discount inventory
+        for (const item of itemsRows) {
+          await client.query(
+            'UPDATE inventory.products SET stock_quantity = stock_quantity - $1 WHERE id = $2',
+            [item.quantity, item.product_id]
+          );
+        }
+      }
+
+      // 5. Update order status
+      const { rows: updatedRows } = await client.query(
+        `UPDATE sales.orders 
+         SET status = $1, updated_at = NOW(), 
+             completed_at = CASE WHEN $1 = 'entregado' THEN NOW() ELSE completed_at END
+         WHERE id = $2 RETURNING *`,
+        [newStatus, id]
+      );
+
+      await client.query('COMMIT');
+      
+      return await this.findById(id);
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
   },
 
   async list(limit = 50, offset = 0, filters = {}) {
@@ -145,7 +230,7 @@ const Order = {
     values.push(limit, offset);
 
     const result = await pool.query(query, values);
-    return result.rows;
+    return result.rows.map(row => ({ ...row, status: normalizeStatus(row.status) }));
   },
 
   async getOrderItems(orderId) {
