@@ -24,6 +24,14 @@ app.get('/', (req, res) => {
   });
 });
 
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    service: 'webhook-service',
+    timestamp: new Date().toISOString()
+  });
+});
+
 app.listen(config.port, '0.0.0.0', () => {
   console.log(`🚀 Webhook Service running on port ${config.port}`);
   console.log(`📡 Health check: http://localhost:${config.port}/health`);
