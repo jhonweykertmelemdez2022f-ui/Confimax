@@ -518,18 +518,18 @@ export default function SalesPage() {
                           </div>
                         </td>
                         <td className="p-4">
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 flex-col sm:flex-row">
                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${statusInfo.color}`}>
                               {statusInfo.label}
                             </span>
                             <select
                               value={sale.status}
                               onChange={(e) => handleUpdateStatus(sale.id, e.target.value)}
-                              className="text-xs bg-transparent border-none focus:outline-none cursor-pointer text-gray-500 hover:text-blue-500"
+                              className="px-3 py-1.5 bg-white dark:bg-[#111] border border-gray-200 dark:border-[#333] rounded-lg text-xs focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none dark:text-white cursor-pointer"
                             >
                               {STATUS_OPTIONS.map(opt => (
                                 <option key={opt.value} value={opt.value}>
-                                  Cambiar a {opt.label}
+                                  {opt.label}
                                 </option>
                               ))}
                             </select>
@@ -947,9 +947,25 @@ export default function SalesPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                 <div className="p-4 bg-gray-50 dark:bg-[#0a0a0a] rounded-2xl">
                   <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Estado</p>
-                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusInfo(selectedSale.status).color}`}>
-                    {getStatusInfo(selectedSale.status).label}
-                  </span>
+                  <div className="flex items-center gap-3">
+                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusInfo(selectedSale.status).color}`}>
+                      {getStatusInfo(selectedSale.status).label}
+                    </span>
+                    <select
+                      value={selectedSale.status}
+                      onChange={(e) => {
+                        handleUpdateStatus(selectedSale.id, e.target.value);
+                        setSelectedSale({ ...selectedSale, status: e.target.value });
+                      }}
+                      className="px-3 py-1.5 bg-white dark:bg-[#111] border border-gray-200 dark:border-[#333] rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none dark:text-white"
+                    >
+                      {STATUS_OPTIONS.map(opt => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
                 <div className="p-4 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl text-white">
                   <p className="text-sm opacity-80">Total</p>
