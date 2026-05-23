@@ -31,6 +31,7 @@ interface FabianaChatResponse {
 class ApiClient {
   private baseUrl: string;
   private token: string | null = null;
+  private onTokenExpired: (() => void) | null = null;
 
   constructor(baseUrl: string) {
     // Asegurar que la URL base termina en /api si es una URL absoluta de producción
@@ -42,6 +43,10 @@ class ApiClient {
     if (typeof window !== 'undefined') {
       this.token = localStorage.getItem('confimax_token');
     }
+  }
+
+  setOnTokenExpired(callback: () => void) {
+    this.onTokenExpired = callback;
   }
 
   private async request<T>(
@@ -90,6 +95,10 @@ class ApiClient {
       }
 
       if (!response.ok) {
+        if (response.status === 401 && this.onTokenExpired) {
+          this.clearToken();
+          this.onTokenExpired();
+        }
         throw new Error(data.error || data.message || `Error en la petición: ${response.status}`);
       }
 
