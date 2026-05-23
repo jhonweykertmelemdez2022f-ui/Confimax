@@ -1,5 +1,12 @@
 const { query, transaction } = require('../database/queryWrapper');
 
+const VALID_STATUSES = ['pendiente', 'entregado', 'cancelado'];
+const VALID_TRANSITIONS = {
+  'pendiente': ['entregado', 'cancelado'],
+  'entregado': [],
+  'cancelado': []
+};
+
 const Sale = {
   async findById(id) {
     const { rows } = await query(
@@ -8,7 +15,7 @@ const Sale = {
     );
     if (!rows[0]) return null;
     const items = await query(
-      'SELECT si.*, p.name as product_name FROM sale_items si LEFT JOIN products p ON si.product_id = p.id WHERE si.sale_id = $1',
+      'SELECT si.*, p.name as product_name, p.stock_quantity FROM sale_items si LEFT JOIN products p ON si.product_id = p.id WHERE si.sale_id = $1',
       [id]
     );
     rows[0].items = items.rows;
@@ -17,10 +24,10 @@ const Sale = {
 
   async create(data, items) {
     return transaction(async (client) => {
-      const { customer_id, vendor_id, subtotal, iva, total, currency = 'VES', status = 'completed', notes } = data;
+      const { customer_id, vendor_id, subtotal, iva, total, currency = 'VES', notes } = data;
       const { rows } = await query(
         'INSERT INTO sales (customer_id, vendor_id, subtotal, iva, total, currency, status, notes) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *',
-        [customer_id, vendor_id, subtotal, iva, total, currency, status, notes],
+        [customer_id, vendor_id, subtotal, iva, total, currency, 'pendiente', notes],
         client
       );
       const sale = rows[0];
@@ -31,20 +38,71 @@ const Sale = {
             [sale.id, it.product_id, it.quantity, it.unit_price, it.total],
             client
           );
-          await query(
-            'UPDATE products SET stock_quantity = stock_quantity - $1 WHERE id = $2',
-            [it.quantity, it.product_id],
-            client
-          );
         }
       }
       return sale;
     });
   },
 
-  async updateStatus(id, status) {
-    const { rows } = await query('UPDATE sales SET status = $1 WHERE id = $2 RETURNING *', [status, id]);
-    return rows[0];
+  async updateStatus(id, newStatus, userId = null) {
+    return transaction(async (client) => {
+      // 1. Get current sale
+      const { rows: currentRows } = await query(
+        'SELECT * FROM sales WHERE id = $1',
+        [id],
+        client
+      );
+      if (!currentRows[0]) {
+        throw new Error('Orden no encontrada');
+      }
+      const currentSale = currentRows[0];
+
+      // 2. Validate status and transition
+      if (!VALID_STATUSES.includes(newStatus)) {
+        throw new Error('Estado inválido');
+      }
+      if (!VALID_TRANSITIONS[currentSale.status].includes(newStatus)) {
+        throw new Error('Esta orden ya fue finalizada y no puede modificarse.');
+      }
+
+      // 3. Get sale items with product info
+      const { rows: itemsRows } = await query(
+        'SELECT si.*, p.stock_quantity FROM sale_items si LEFT JOIN products p ON si.product_id = p.id WHERE si.sale_id = $1',
+        [id],
+        client
+      );
+
+      // 4. Handle side effects
+      if (currentSale.status === 'pendiente' && newStatus === 'entregado') {
+        // Check stock
+        for (const item of itemsRows) {
+          if (item.quantity > item.stock_quantity) {
+            throw new Error(`Stock insuficiente para el producto "${item.product_name}": disponible ${item.stock_quantity}, requerido ${item.quantity}`);
+          }
+        }
+        // Discount inventory
+        for (const item of itemsRows) {
+          await query(
+            'UPDATE products SET stock_quantity = stock_quantity - $1 WHERE id = $2',
+            [item.quantity, item.product_id],
+            client
+          );
+        }
+        // TODO: Add cash balance logic here when cash table exists
+      }
+
+      // 5. Update sale status
+      const { rows: updatedRows } = await query(
+        'UPDATE sales SET status = $1, updated_at = NOW() WHERE id = $2 RETURNING *',
+        [newStatus, id],
+        client
+      );
+
+      // 6. Log status change (TODO: Add audit log or status history table later)
+      console.log(`[ORDER STATUS] Order ${id} changed from ${currentSale.status} to ${newStatus} by user ${userId}`);
+
+      return updatedRows[0];
+    });
   },
 
   async list(limit = 50, offset = 0, filters = {}) {
@@ -62,7 +120,7 @@ const Sale = {
 
   async dailySummary(date) {
     const { rows } = await query(
-      `SELECT COUNT(*) as count, COALESCE(SUM(total),0) as total FROM sales WHERE DATE(created_at) = $1 AND status = 'completed'`,
+      `SELECT COUNT(*) as count, COALESCE(SUM(total),0) as total FROM sales WHERE DATE(created_at) = $1 AND status = 'entregado'`,
       [date]
     );
     return { date, count: parseInt(rows[0].count), total: parseFloat(rows[0].total) };
