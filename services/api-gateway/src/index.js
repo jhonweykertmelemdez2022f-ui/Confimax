@@ -97,13 +97,17 @@ app.use(cors({
 app.use(express.json());
 app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 
-// Rate limiting global
+// Rate limiting global (excluyendo Fabiana)
 const limiter = rateLimit({
   windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS, 10) || 15 * 60 * 1000,
   max: parseInt(process.env.RATE_LIMIT_MAX, 10) || 1500,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Too many requests, please try again later.' },
+  skip: (req) => {
+    // Saltar rate limiting para Fabiana
+    return req.path.startsWith('/api/fabiana') || req.originalUrl.startsWith('/api/fabiana');
+  }
 });
 app.use(limiter);
 
