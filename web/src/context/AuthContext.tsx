@@ -28,6 +28,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [tokenExpired, setTokenExpired] = useState(false);
+  const [countdown, setCountdown] = useState(5);
 
   useEffect(() => {
     // Verificar sesión al cargar
@@ -43,13 +44,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Configurar callback para token expirado
     api.setOnTokenExpired(() => {
       setTokenExpired(true);
+      setCountdown(5);
       setUser(null);
       localStorage.removeItem("confimax_user");
     });
   }, []);
 
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (tokenExpired && countdown > 0) {
+      timer = setTimeout(() => {
+        setCountdown(prev => prev - 1);
+      }, 1000);
+    } else if (tokenExpired && countdown === 0) {
+      handleTokenExpiredClose();
+    }
+    return () => clearTimeout(timer);
+  }, [tokenExpired, countdown]);
+
   const handleTokenExpiredClose = () => {
     setTokenExpired(false);
+    setCountdown(5);
     router.push('/login');
   };
 
@@ -152,7 +167,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       {/* Alert de token expirado */}
       {tokenExpired && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/70 backdrop-blur-sm">
           <div className="bg-white dark:bg-[#111] rounded-3xl shadow-2xl w-full max-w-md p-6 mx-4">
             <div className="flex items-start gap-4">
               <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-500/20 flex items-center justify-center flex-shrink-0">
@@ -165,12 +180,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 <p className="text-gray-600 dark:text-gray-400 mb-4">
                   Tu sesión ha expirado. Vuelve a iniciar sesión de nuevo para continuar.
                 </p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                  Redirigiendo automáticamente en <span className="font-bold text-blue-600 dark:text-blue-400">{countdown}</span> segundos...
+                </p>
                 <div className="flex justify-end">
                   <button
                     onClick={handleTokenExpiredClose}
                     className="px-5 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl font-medium transition-all"
                   >
-                    Aceptar
+                    Ir al login ahora
                   </button>
                 </div>
               </div>
