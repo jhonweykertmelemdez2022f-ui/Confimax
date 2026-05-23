@@ -43,14 +43,13 @@ const Product = {
       `SELECT p.*, c.name as category_name 
        FROM inventory.products p 
        LEFT JOIN inventory.categories c ON p.category_id = c.id 
-       WHERE p.id = $1 AND p.active = true`,
+       WHERE p.id = $1 AND p.is_active = true`,
       [id]
     );
     if (!result.rows[0]) return null;
     const product = result.rows[0];
     product.price = product.unit_price;
     product.cost = product.cost_price;
-    product.is_active = product.active;
     const imagesResult = await pool.query(
       'SELECT * FROM inventory.product_images WHERE product_id = $1 ORDER BY display_order, created_at',
       [id]
@@ -61,14 +60,13 @@ const Product = {
 
   async findBySku(sku) {
     const result = await pool.query(
-      'SELECT * FROM inventory.products WHERE sku = $1 AND active = true',
+      'SELECT * FROM inventory.products WHERE sku = $1 AND is_active = true',
       [sku]
     );
     const product = result.rows[0];
     if (product) {
       product.price = product.unit_price;
       product.cost = product.cost_price;
-      product.is_active = product.active;
     }
     return product;
   },
@@ -78,7 +76,7 @@ const Product = {
       `SELECT p.*, c.name as category_name 
        FROM inventory.products p 
        LEFT JOIN inventory.categories c ON p.category_id = c.id 
-       WHERE p.name ILIKE $1 AND p.active = true 
+       WHERE p.name ILIKE $1 AND p.is_active = true 
        ORDER BY p.name 
        LIMIT $2`,
       [`%${query}%`, limit]
@@ -86,8 +84,7 @@ const Product = {
     return result.rows.map(product => ({
       ...product,
       price: product.unit_price,
-      cost: product.cost_price,
-      is_active: product.active
+      cost: product.cost_price
     }));
   },
 
@@ -96,7 +93,7 @@ const Product = {
       `SELECT p.*, c.name as category_name 
        FROM inventory.products p 
        LEFT JOIN inventory.categories c ON p.category_id = c.id 
-       WHERE p.name ILIKE $1 AND p.active = true 
+       WHERE p.name ILIKE $1 AND p.is_active = true 
        ORDER BY p.name 
        LIMIT $2`,
       [`${prefix}%`, limit]
@@ -104,8 +101,7 @@ const Product = {
     return result.rows.map(product => ({
       ...product,
       price: product.unit_price,
-      cost: product.cost_price,
-      is_active: product.active
+      cost: product.cost_price
     }));
   },
 
@@ -140,7 +136,7 @@ const Product = {
 
       const result = await client.query(
         `INSERT INTO inventory.products 
-         (name, sku, description, category_id, unit_price, cost_price, active, expiration_date, stock_quantity, image_url) 
+         (name, sku, description, category_id, unit_price, cost_price, is_active, expiration_date, stock_quantity, image_url) 
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
          RETURNING *`,
         [
@@ -203,7 +199,7 @@ const Product = {
       // Define allowed columns for products table
       const allowedColumns = [
         'name', 'sku', 'description', 'category_id', 
-        'active', 'expiration_date', 'stock_quantity', 'image_url',
+        'is_active', 'expiration_date', 'stock_quantity', 'image_url',
         'barcode', 'weight_class', 'expiration_class', 'size_class',
         'unit_price', 'cost_price', 'min_stock_level'
       ];
@@ -216,12 +212,9 @@ const Product = {
       if (mappedData.cost !== undefined) {
         mappedData.cost_price = mappedData.cost;
       }
-      if (mappedData.is_active !== undefined) {
-        mappedData.active = mappedData.is_active;
-      }
 
       for (const [key, value] of Object.entries(mappedData)) {
-        if (value !== undefined && key !== 'id' && key !== 'images' && key !== 'price' && key !== 'cost' && key !== 'is_active' && allowedColumns.includes(key)) {
+        if (value !== undefined && key !== 'id' && key !== 'images' && key !== 'price' && key !== 'cost' && allowedColumns.includes(key)) {
           fields.push(`${key} = $${paramCount}`);
           values.push(value);
           paramCount++;
@@ -280,7 +273,7 @@ const Product = {
       SELECT p.*, c.name as category_name 
       FROM inventory.products p 
       LEFT JOIN inventory.categories c ON p.category_id = c.id 
-      WHERE p.active = true
+      WHERE p.is_active = true
     `;
     const values = [];
     let paramCount = 1;
@@ -319,7 +312,6 @@ const Product = {
         product.images = imagesByProduct[product.id] || [];
         product.price = product.unit_price;
         product.cost = product.cost_price;
-        product.is_active = product.active;
       });
     }
     
@@ -341,7 +333,7 @@ const Product = {
       `SELECT p.*, c.name as category_name 
        FROM inventory.products p 
        LEFT JOIN inventory.categories c ON p.category_id = c.id 
-       WHERE p.active = true 
+       WHERE p.is_active = true 
          AND p.expiration_date IS NOT NULL 
          AND p.expiration_date >= CURRENT_DATE 
          AND p.expiration_date <= CURRENT_DATE + CAST($1 AS INTEGER)
@@ -351,8 +343,7 @@ const Product = {
     return result.rows.map(product => ({
       ...product,
       price: product.unit_price,
-      cost: product.cost_price,
-      is_active: product.active
+      cost: product.cost_price
     }));
   },
 };
