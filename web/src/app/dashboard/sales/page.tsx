@@ -87,9 +87,9 @@ export default function SalesPage() {
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
-  const [isCreateCustomerModalOpen, setIsCreateCustomerModalOpen] = useState(false);
   const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
   const [showCustomerDropdown, setShowCustomerDropdown] = useState(false);
+  const [showNewCustomerForm, setShowNewCustomerForm] = useState(false);
   const [customerSearch, setCustomerSearch] = useState("");
   
   // New sale form
@@ -333,7 +333,8 @@ export default function SalesPage() {
       setCustomerSearch(`${customerData.name} - ${customerData.email}`);
       
       setSuccessMsg("Cliente creado exitosamente");
-      setIsCreateCustomerModalOpen(false);
+      setShowNewCustomerForm(false);
+      setShowCustomerDropdown(false);
       setNewCustomerForm({ 
         name: "", email: "", phone: "", address: "", 
         person_type: "V", tax_id_number: "" 
@@ -612,96 +613,234 @@ export default function SalesPage() {
                   <div className="mb-4" ref={customerDropdownRef}>
                     <div className="flex items-center justify-between mb-1">
                       <label className="text-xs font-medium text-gray-500 uppercase tracking-wider">Cliente (Opcional)</label>
-                      <button
-                        onClick={() => setIsCreateCustomerModalOpen(true)}
-                        className="text-xs flex items-center gap-1 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
-                      >
-                        <UserPlus className="w-3 h-3" />
-                        Nuevo cliente
-                      </button>
-                    </div>
-                    <div className="relative">
-                      <div className="flex items-center gap-2 w-full px-4 py-2.5 bg-gray-50 dark:bg-[#0a0a0a] border border-gray-200 dark:border-[#333] rounded-xl focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent">
-                        <Search className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                        <input
-                          type="text"
-                          placeholder="Buscar cliente por nombre o email..."
-                          value={customerSearch}
-                          onChange={(e) => {
-                            setCustomerSearch(e.target.value);
-                            setShowCustomerDropdown(true);
-                            if (!e.target.value) {
-                              setSelectedCustomer("");
-                            }
+                      {!showNewCustomerForm && (
+                        <button
+                          onClick={() => {
+                            setShowNewCustomerForm(true);
+                            setShowCustomerDropdown(false);
                           }}
-                          onFocus={() => setShowCustomerDropdown(true)}
-                          className="w-full bg-transparent outline-none dark:text-white"
-                        />
-                        {customerSearch && (
+                          className="text-xs flex items-center gap-1 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
+                        >
+                          <UserPlus className="w-3 h-3" />
+                          Nuevo cliente
+                        </button>
+                      )}
+                    </div>
+
+                    {showNewCustomerForm ? (
+                      <div className="p-4 bg-gray-50 dark:bg-[#0a0a0a] rounded-xl border border-gray-200 dark:border-[#333] space-y-3">
+                        <div className="flex items-center justify-between">
+                          <h4 className="text-sm font-semibold text-gray-900 dark:text-white">Registrar Nuevo Cliente</h4>
                           <button
                             onClick={() => {
-                              setCustomerSearch("");
-                              setSelectedCustomer("");
-                              setShowCustomerDropdown(false);
+                              setShowNewCustomerForm(false);
+                              setNewCustomerForm({ 
+                                name: "", email: "", phone: "", address: "", 
+                                person_type: "V", tax_id_number: "" 
+                              });
                             }}
-                            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                            className="p-1 rounded-lg hover:bg-gray-200 dark:hover:bg-[#222] text-gray-500"
                           >
                             <X className="w-4 h-4" />
                           </button>
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Nombre *</label>
+                          <input
+                            type="text"
+                            value={newCustomerForm.name}
+                            onChange={(e) => setNewCustomerForm({ ...newCustomerForm, name: e.target.value })}
+                            className="w-full px-3 py-2 bg-white dark:bg-[#111] border border-gray-200 dark:border-[#333] rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none dark:text-white"
+                            placeholder="Nombre completo"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Email *</label>
+                          <input
+                            type="email"
+                            value={newCustomerForm.email}
+                            onChange={(e) => setNewCustomerForm({ ...newCustomerForm, email: e.target.value })}
+                            className="w-full px-3 py-2 bg-white dark:bg-[#111] border border-gray-200 dark:border-[#333] rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none dark:text-white"
+                            placeholder="cliente@ejemplo.com"
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-3">
+                          <div>
+                            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Tipo</label>
+                            <select
+                              value={newCustomerForm.person_type}
+                              onChange={(e) => setNewCustomerForm({ ...newCustomerForm, person_type: e.target.value as 'V' | 'E' | 'J' | 'G' })}
+                              className="w-full px-3 py-2 bg-white dark:bg-[#111] border border-gray-200 dark:border-[#333] rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none dark:text-white"
+                            >
+                              <option value="V">V</option>
+                              <option value="E">E</option>
+                              <option value="J">J</option>
+                              <option value="G">G</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Teléfono</label>
+                            <input
+                              type="text"
+                              value={newCustomerForm.phone}
+                              onChange={(e) => setNewCustomerForm({ ...newCustomerForm, phone: e.target.value })}
+                              className="w-full px-3 py-2 bg-white dark:bg-[#111] border border-gray-200 dark:border-[#333] rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none dark:text-white"
+                              placeholder="+58 412..."
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Cédula / RIF</label>
+                            <input
+                              type="text"
+                              value={newCustomerForm.tax_id_number}
+                              onChange={(e) => {
+                                const value = e.target.value.replace(/\D/g, '').slice(0, 9);
+                                setNewCustomerForm({ ...newCustomerForm, tax_id_number: value });
+                              }}
+                              maxLength={9}
+                              className="w-full px-3 py-2 bg-white dark:bg-[#111] border border-gray-200 dark:border-[#333] rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none dark:text-white"
+                              placeholder="12345678"
+                            />
+                          </div>
+                        </div>
+                        {newCustomerForm.tax_id_number && (
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                            {newCustomerForm.person_type}-{newCustomerForm.tax_id_number.slice(0, 8)}-{newCustomerForm.tax_id_number.length === 9 ? newCustomerForm.tax_id_number.slice(-1) : '0'}
+                          </p>
                         )}
-                        <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${showCustomerDropdown ? 'rotate-180' : ''}`} />
-                      </div>
-                      
-                      {/* Dropdown de clientes */}
-                      {showCustomerDropdown && (
-                        <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#111] border border-gray-200 dark:border-[#333] rounded-xl shadow-xl z-50 max-h-64 overflow-y-auto">
+
+                        <div>
+                          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Dirección</label>
+                          <textarea
+                            rows={2}
+                            value={newCustomerForm.address}
+                            onChange={(e) => setNewCustomerForm({ ...newCustomerForm, address: e.target.value })}
+                            className="w-full px-3 py-2 bg-white dark:bg-[#111] border border-gray-200 dark:border-[#333] rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none dark:text-white resize-none"
+                            placeholder="Dirección del cliente"
+                          />
+                        </div>
+
+                        <div className="flex justify-end gap-2">
                           <button
                             onClick={() => {
-                              setSelectedCustomer("");
-                              setCustomerSearch("");
-                              setShowCustomerDropdown(false);
+                              setShowNewCustomerForm(false);
+                              setNewCustomerForm({ 
+                                name: "", email: "", phone: "", address: "", 
+                                person_type: "V", tax_id_number: "" 
+                              });
                             }}
-                            className={`w-full p-3 text-left hover:bg-gray-50 dark:hover:bg-[#222] transition-colors flex items-center gap-3 ${!selectedCustomer ? 'bg-blue-50 dark:bg-blue-500/10' : ''}`}
+                            className="px-3 py-1.5 text-sm border border-gray-200 dark:border-[#333] rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#222] transition-colors"
                           >
-                            <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-[#222] flex items-center justify-center">
-                              <User className="w-4 h-4 text-gray-500" />
-                            </div>
-                            <div>
-                              <p className="font-medium text-gray-900 dark:text-white">Sin cliente</p>
-                              <p className="text-xs text-gray-500">Venta sin cliente registrado</p>
-                            </div>
-                            {!selectedCustomer && (
-                              <CheckCircle className="w-4 h-4 text-blue-600 dark:text-blue-400 ml-auto" />
-                            )}
+                            Cancelar
                           </button>
-                          
-                          {filteredCustomers.length === 0 && customerSearch ? (
-                            <div className="p-4 text-center text-gray-500 dark:text-gray-400">
-                              No se encontraron clientes
-                            </div>
-                          ) : (
-                            filteredCustomers.map((customer) => (
-                              <button
-                                key={customer.id}
-                                onClick={() => handleCustomerSelect(customer)}
-                                className={`w-full p-3 text-left hover:bg-gray-50 dark:hover:bg-[#222] transition-colors flex items-center gap-3 ${selectedCustomer === customer.id ? 'bg-blue-50 dark:bg-blue-500/10' : ''}`}
-                              >
-                                <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-[#222] flex items-center justify-center">
-                                  <User className="w-4 h-4 text-gray-500" />
-                                </div>
-                                <div>
-                                  <p className="font-medium text-gray-900 dark:text-white">{customer.name}</p>
-                                  <p className="text-xs text-gray-500">{customer.email}</p>
-                                </div>
-                                {selectedCustomer === customer.id && (
-                                  <CheckCircle className="w-4 h-4 text-blue-600 dark:text-blue-400 ml-auto" />
-                                )}
-                              </button>
-                            ))
-                          )}
+                          <button
+                            onClick={handleCreateCustomer}
+                            className="px-3 py-1.5 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-colors"
+                          >
+                            Guardar Cliente
+                          </button>
                         </div>
-                      )}
-                    </div>
+                      </div>
+                    ) : (
+                      <div className="relative">
+                        <div className="flex items-center gap-2 w-full px-4 py-2.5 bg-gray-50 dark:bg-[#0a0a0a] border border-gray-200 dark:border-[#333] rounded-xl focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent">
+                          <Search className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                          <input
+                            type="text"
+                            placeholder="Buscar cliente por nombre o email..."
+                            value={customerSearch}
+                            onChange={(e) => {
+                              setCustomerSearch(e.target.value);
+                              setShowCustomerDropdown(true);
+                              if (!e.target.value) {
+                                setSelectedCustomer("");
+                              }
+                            }}
+                            onFocus={() => setShowCustomerDropdown(true)}
+                            className="w-full bg-transparent outline-none dark:text-white"
+                          />
+                          {customerSearch && (
+                            <button
+                              onClick={() => {
+                                setCustomerSearch("");
+                                setSelectedCustomer("");
+                                setShowCustomerDropdown(false);
+                              }}
+                              className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          )}
+                          <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${showCustomerDropdown ? 'rotate-180' : ''}`} />
+                        </div>
+                        
+                        {/* Dropdown de clientes */}
+                        {showCustomerDropdown && (
+                          <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#111] border border-gray-200 dark:border-[#333] rounded-xl shadow-xl z-50 max-h-64 overflow-y-auto">
+                            <button
+                              onClick={() => {
+                                setSelectedCustomer("");
+                                setCustomerSearch("");
+                                setShowCustomerDropdown(false);
+                              }}
+                              className={`w-full p-3 text-left hover:bg-gray-50 dark:hover:bg-[#222] transition-colors flex items-center gap-3 ${!selectedCustomer ? 'bg-blue-50 dark:bg-blue-500/10' : ''}`}
+                            >
+                              <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-[#222] flex items-center justify-center">
+                                <User className="w-4 h-4 text-gray-500" />
+                              </div>
+                              <div>
+                                <p className="font-medium text-gray-900 dark:text-white">Sin cliente</p>
+                                <p className="text-xs text-gray-500">Venta sin cliente registrado</p>
+                              </div>
+                              {!selectedCustomer && (
+                                <CheckCircle className="w-4 h-4 text-blue-600 dark:text-blue-400 ml-auto" />
+                              )}
+                            </button>
+                            
+                            {filteredCustomers.length === 0 && customerSearch ? (
+                              <div className="p-4">
+                                <div className="text-center text-gray-500 dark:text-gray-400 mb-3">
+                                  No se encontraron clientes
+                                </div>
+                                <button
+                                  onClick={() => {
+                                    setShowNewCustomerForm(true);
+                                    setShowCustomerDropdown(false);
+                                  }}
+                                  className="w-full px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                                >
+                                  <UserPlus className="w-4 h-4" />
+                                  Registrar cliente nuevo
+                                </button>
+                              </div>
+                            ) : (
+                              filteredCustomers.map((customer) => (
+                                <button
+                                  key={customer.id}
+                                  onClick={() => handleCustomerSelect(customer)}
+                                  className={`w-full p-3 text-left hover:bg-gray-50 dark:hover:bg-[#222] transition-colors flex items-center gap-3 ${selectedCustomer === customer.id ? 'bg-blue-50 dark:bg-blue-500/10' : ''}`}
+                                >
+                                  <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-[#222] flex items-center justify-center">
+                                    <User className="w-4 h-4 text-gray-500" />
+                                  </div>
+                                  <div>
+                                    <p className="font-medium text-gray-900 dark:text-white">{customer.name}</p>
+                                    <p className="text-xs text-gray-500">{customer.email}</p>
+                                  </div>
+                                  {selectedCustomer === customer.id && (
+                                    <CheckCircle className="w-4 h-4 text-blue-600 dark:text-blue-400 ml-auto" />
+                                  )}
+                                </button>
+                              ))
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   {/* Lista de items */}
@@ -887,127 +1026,6 @@ export default function SalesPage() {
         </div>
       )}
 
-      {/* Modal de Crear Cliente */}
-      {isCreateCustomerModalOpen && (
-        <div className="fixed inset-0 z-[101] flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="bg-white dark:bg-[#111] rounded-3xl shadow-2xl w-full max-w-md p-6 mx-4">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white">Crear Nuevo Cliente</h2>
-                <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">Agrega un cliente rápido para la venta</p>
-              </div>
-              <button
-                onClick={() => setIsCreateCustomerModalOpen(false)}
-                className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-[#222] text-gray-500 transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <form onSubmit={(e) => { e.preventDefault(); handleCreateCustomer(); }} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nombre *</label>
-                <input
-                  required
-                  type="text"
-                  value={newCustomerForm.name}
-                  onChange={(e) => setNewCustomerForm({ ...newCustomerForm, name: e.target.value })}
-                  className="w-full px-4 py-2.5 bg-gray-50 dark:bg-[#0a0a0a] border border-gray-200 dark:border-[#333] rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none dark:text-white"
-                  placeholder="Nombre completo del cliente"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email *</label>
-                <input
-                  required
-                  type="email"
-                  value={newCustomerForm.email}
-                  onChange={(e) => setNewCustomerForm({ ...newCustomerForm, email: e.target.value })}
-                  className="w-full px-4 py-2.5 bg-gray-50 dark:bg-[#0a0a0a] border border-gray-200 dark:border-[#333] rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none dark:text-white"
-                  placeholder="cliente@ejemplo.com"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Teléfono</label>
-                <input
-                  type="text"
-                  value={newCustomerForm.phone}
-                  onChange={(e) => setNewCustomerForm({ ...newCustomerForm, phone: e.target.value })}
-                  className="w-full px-4 py-2.5 bg-gray-50 dark:bg-[#0a0a0a] border border-gray-200 dark:border-[#333] rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none dark:text-white"
-                  placeholder="+58 412-123-4567"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tipo de Persona</label>
-                  <select
-                    value={newCustomerForm.person_type}
-                    onChange={(e) => setNewCustomerForm({ ...newCustomerForm, person_type: e.target.value as 'V' | 'E' | 'J' | 'G' })}
-                    className="w-full px-4 py-2.5 bg-gray-50 dark:bg-[#0a0a0a] border border-gray-200 dark:border-[#333] rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none dark:text-white"
-                  >
-                    <option value="V">V - Venezolano</option>
-                    <option value="E">E - Extranjero</option>
-                    <option value="J">J - Jurídico</option>
-                    <option value="G">G - Gobierno</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Cédula / RIF <span className="text-xs text-gray-500">(8-9 caracteres)</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={newCustomerForm.tax_id_number}
-                    onChange={(e) => {
-                      const value = e.target.value.replace(/\D/g, '').slice(0, 9);
-                      setNewCustomerForm({ ...newCustomerForm, tax_id_number: value });
-                    }}
-                    maxLength={9}
-                    className="w-full px-4 py-2.5 bg-gray-50 dark:bg-[#0a0a0a] border border-gray-200 dark:border-[#333] rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none dark:text-white"
-                    placeholder="12345678 o 123456789"
-                  />
-                  {newCustomerForm.tax_id_number && (
-                    <p className="text-xs text-gray-500 mt-1">
-                      {newCustomerForm.person_type}-{newCustomerForm.tax_id_number.slice(0, 8)}-{newCustomerForm.tax_id_number.length === 9 ? newCustomerForm.tax_id_number.slice(-1) : '0'}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Dirección</label>
-                <textarea
-                  rows={2}
-                  value={newCustomerForm.address}
-                  onChange={(e) => setNewCustomerForm({ ...newCustomerForm, address: e.target.value })}
-                  className="w-full px-4 py-2.5 bg-gray-50 dark:bg-[#0a0a0a] border border-gray-200 dark:border-[#333] rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none dark:text-white resize-none"
-                  placeholder="Dirección del cliente"
-                />
-              </div>
-
-              <div className="flex justify-end gap-3 pt-4 border-t border-gray-100 dark:border-[#222]">
-                <button
-                  type="button"
-                  onClick={() => setIsCreateCustomerModalOpen(false)}
-                  className="px-4 py-2.5 border border-gray-200 dark:border-[#333] rounded-xl text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#222] transition-colors"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl font-medium transition-all"
-                >
-                  Crear Cliente
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </>
   );
 }
