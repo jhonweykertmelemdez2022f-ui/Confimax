@@ -18,7 +18,7 @@ const generateProductsPDF = (products) => {
         .text('Lista de Productos - Confimax', { align: 'center' })
         .moveDown();
 
-      // Fecha de generación
+      // Fecha de generación (hora de Venezuela)
       doc
         .fontSize(10)
         .text(`Generado el: ${new Date().toLocaleDateString('es-ES', { 
@@ -26,7 +26,8 @@ const generateProductsPDF = (products) => {
           month: 'long', 
           day: 'numeric',
           hour: '2-digit',
-          minute: '2-digit'
+          minute: '2-digit',
+          timeZone: 'America/Caracas'
         })}`, { align: 'center' })
         .moveDown(2);
 
