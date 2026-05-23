@@ -10,6 +10,12 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        // Design System Colors - New Vibrant
+        'brand-primary': '#3B82F6',
+        'brand-secondary': '#60A5FA',
+        'brand-cta': '#F97316',
+        'brand-bg': '#F8FAFC',
+        'brand-text': '#1E293B',
         // Design System Colors
         surface: '#141313',
         'surface-dim': '#0A0A0A',
@@ -82,6 +88,8 @@ const config: Config = {
         'margin-mobile': '20px',
       },
       fontFamily: {
+        'rubik': ['Rubik', 'sans-serif'],
+        'nunito-sans': ['Nunito Sans', 'sans-serif'],
         'headline-lg': ['Montserrat', 'sans-serif'],
         'body-md': ['Inter', 'sans-serif'],
         'headline-lg-mobile': ['Montserrat', 'sans-serif'],

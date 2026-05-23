@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;500;600;700&family=Rubik:wght@300;400;500;600;700&display=swap');
+
 /* Tailwind CSS directives - these are valid and required for Tailwind to work */
 @tailwind base;
 @tailwind components;

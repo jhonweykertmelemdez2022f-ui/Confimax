@@ -43,18 +43,34 @@ const Product = {
       `SELECT p.*, c.name as category_name 
        FROM inventory.products p 
        LEFT JOIN inventory.categories c ON p.category_id = c.id 
-       WHERE p.id = $1 AND p.is_active = true`,
+       WHERE p.id = $1 AND p.active = true`,
       [id]
     );
-    return result.rows[0];
+    if (!result.rows[0]) return null;
+    const product = result.rows[0];
+    product.price = product.unit_price;
+    product.cost = product.cost_price;
+    product.is_active = product.active;
+    const imagesResult = await pool.query(
+      'SELECT * FROM inventory.product_images WHERE product_id = $1 ORDER BY display_order, created_at',
+      [id]
+    );
+    product.images = imagesResult.rows;
+    return product;
   },
 
   async findBySku(sku) {
     const result = await pool.query(
-      'SELECT * FROM inventory.products WHERE sku = $1 AND is_active = true',
+      'SELECT * FROM inventory.products WHERE sku = $1 AND active = true',
       [sku]
     );
-    return result.rows[0];
+    const product = result.rows[0];
+    if (product) {
+      product.price = product.unit_price;
+      product.cost = product.cost_price;
+      product.is_active = product.active;
+    }
+    return product;
   },
 
   async searchByName(query, limit = 20) {
@@ -62,12 +78,17 @@ const Product = {
       `SELECT p.*, c.name as category_name 
        FROM inventory.products p 
        LEFT JOIN inventory.categories c ON p.category_id = c.id 
-       WHERE p.name ILIKE $1 AND p.is_active = true 
+       WHERE p.name ILIKE $1 AND p.active = true 
        ORDER BY p.name 
        LIMIT $2`,
       [`%${query}%`, limit]
     );
-    return result.rows;
+    return result.rows.map(product => ({
+      ...product,
+      price: product.unit_price,
+      cost: product.cost_price,
+      is_active: product.active
+    }));
   },
 
   async searchABC(prefix, limit = 20) {
@@ -75,57 +96,176 @@ const Product = {
       `SELECT p.*, c.name as category_name 
        FROM inventory.products p 
        LEFT JOIN inventory.categories c ON p.category_id = c.id 
-       WHERE p.name ILIKE $1 AND p.is_active = true 
+       WHERE p.name ILIKE $1 AND p.active = true 
        ORDER BY p.name 
        LIMIT $2`,
       [`${prefix}%`, limit]
     );
-    return result.rows;
+    return result.rows.map(product => ({
+      ...product,
+      price: product.unit_price,
+      cost: product.cost_price,
+      is_active: product.active
+    }));
   },
 
   async create(productData) {
-    const {
-      name, sku, description, category_id,
-      price, cost, is_active, expiration_date, stock_quantity
-    } = productData;
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      const {
+        name, sku, description, category_id,
+        price, cost, is_active, expiration_date, stock_quantity, image_url, images
+      } = productData;
 
-    const result = await pool.query(
-      `INSERT INTO inventory.products 
-       (name, sku, description, category_id, price, cost, is_active, expiration_date, stock_quantity) 
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
-       RETURNING *`,
-      [
-        name, sku, description, category_id, price, cost, 
-        is_active !== undefined ? is_active : true, 
-        expiration_date || null,
-        stock_quantity || 0
-      ]
-    );
-    return result.rows[0];
+      // Collect all image URLs
+      const imageUrls = [];
+      if (image_url) {
+        imageUrls.push(image_url);
+      }
+      if (images && Array.isArray(images)) {
+        images.forEach(img => {
+          if (typeof img === 'string') {
+            imageUrls.push(img);
+          } else if (img.url) {
+            imageUrls.push(img.url);
+          }
+        });
+      }
+
+      const primaryImageUrl = imageUrls.length > 0 ? imageUrls[0] : null;
+
+      const unitPrice = price !== undefined ? price : productData.unit_price;
+      const costPrice = cost !== undefined ? cost : productData.cost_price;
+
+      const result = await client.query(
+        `INSERT INTO inventory.products 
+         (name, sku, description, category_id, unit_price, cost_price, active, expiration_date, stock_quantity, image_url) 
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
+         RETURNING *`,
+        [
+          name, sku, description, category_id, unitPrice, costPrice, 
+          is_active !== undefined ? is_active : true, 
+          expiration_date || null,
+          stock_quantity || 0,
+          primaryImageUrl
+        ]
+      );
+      const product = result.rows[0];
+      
+      for (let i = 0; i < imageUrls.length; i++) {
+        await client.query(
+          'INSERT INTO inventory.product_images (product_id, image_url, is_primary, display_order) VALUES ($1, $2, $3, $4)',
+          [product.id, imageUrls[i], i === 0, i]
+        );
+      }
+
+      await client.query('COMMIT');
+      return await this.findById(product.id);
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
   },
 
   async update(id, productData) {
-    const fields = [];
-    const values = [];
-    let paramCount = 1;
+    const client = await pool.connect();
+    try {
+      console.log("[PRODUCT MODEL] Updating product with data:", productData);
+      await client.query('BEGIN');
+      
+      const fields = [];
+      const values = [];
+      let paramCount = 1;
 
-    for (const [key, value] of Object.entries(productData)) {
-      if (value !== undefined && key !== 'id') {
-        fields.push(`${key} = $${paramCount}`);
-        values.push(value);
+      // Collect all image URLs if provided
+      let primaryImageUrl = null;
+      if (productData.images && Array.isArray(productData.images) && productData.images.length > 0) {
+        primaryImageUrl = productData.images[0];
+        // Delete existing images to replace them
+        await client.query('DELETE FROM inventory.product_images WHERE product_id = $1', [id]);
+        
+        // Insert new images
+        for (let i = 0; i < productData.images.length; i++) {
+          const img = productData.images[i];
+          const url = typeof img === 'string' ? img : (img.url || img.image_url);
+          if (url) {
+            await client.query(
+              'INSERT INTO inventory.product_images (product_id, image_url, is_primary, display_order) VALUES ($1, $2, $3, $4)',
+              [id, url, i === 0, i]
+            );
+          }
+        }
+      }
+
+      // Define allowed columns for products table
+      const allowedColumns = [
+        'name', 'sku', 'description', 'category_id', 
+        'active', 'expiration_date', 'stock_quantity', 'image_url',
+        'barcode', 'weight_class', 'expiration_class', 'size_class',
+        'unit_price', 'cost_price', 'min_stock_level'
+      ];
+
+      // Map compatibility fields to database columns
+      const mappedData = { ...productData };
+      if (mappedData.price !== undefined) {
+        mappedData.unit_price = mappedData.price;
+      }
+      if (mappedData.cost !== undefined) {
+        mappedData.cost_price = mappedData.cost;
+      }
+      if (mappedData.is_active !== undefined) {
+        mappedData.active = mappedData.is_active;
+      }
+
+      for (const [key, value] of Object.entries(mappedData)) {
+        if (value !== undefined && key !== 'id' && key !== 'images' && key !== 'price' && key !== 'cost' && key !== 'is_active' && allowedColumns.includes(key)) {
+          fields.push(`${key} = $${paramCount}`);
+          values.push(value);
+          paramCount++;
+        }
+      }
+      
+      // Update image_url in products table
+      if (primaryImageUrl !== null) {
+        fields.push(`image_url = $${paramCount}`);
+        values.push(primaryImageUrl);
         paramCount++;
       }
+
+      values.push(id);
+
+      console.log("[PRODUCT MODEL] Fields to update:", fields);
+      console.log("[PRODUCT MODEL] Values:", values);
+
+      let result;
+      if (fields.length > 0) {
+        result = await client.query(
+          `UPDATE inventory.products SET ${fields.join(', ')}, updated_at = NOW() 
+           WHERE id = $${paramCount} AND is_active = true 
+           RETURNING *`,
+          values
+        );
+      } else {
+        result = await client.query(
+          `UPDATE inventory.products SET updated_at = NOW() 
+           WHERE id = $1 AND is_active = true 
+           RETURNING *`,
+          [id]
+        );
+      }
+
+      await client.query('COMMIT');
+      return result.rows[0];
+    } catch (error) {
+      console.error("[PRODUCT MODEL] Error updating product:", error);
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
     }
-
-    values.push(id);
-
-    const result = await pool.query(
-      `UPDATE inventory.products SET ${fields.join(', ')}, updated_at = NOW() 
-       WHERE id = $${paramCount} AND is_active = true 
-       RETURNING *`,
-      values
-    );
-    return result.rows[0];
   },
 
   async delete(id) {
@@ -140,7 +280,7 @@ const Product = {
       SELECT p.*, c.name as category_name 
       FROM inventory.products p 
       LEFT JOIN inventory.categories c ON p.category_id = c.id 
-      WHERE p.is_active = true
+      WHERE p.active = true
     `;
     const values = [];
     let paramCount = 1;
@@ -155,7 +295,35 @@ const Product = {
     values.push(limit, offset);
 
     const result = await pool.query(query, values);
-    return result.rows;
+    const products = result.rows;
+    
+    // Get images for all products
+    if (products.length > 0) {
+      const productIds = products.map(p => p.id);
+      const imagesResult = await pool.query(
+        'SELECT * FROM inventory.product_images WHERE product_id = ANY($1) ORDER BY product_id, display_order, created_at',
+        [productIds]
+      );
+      
+      // Group images by product_id
+      const imagesByProduct = {};
+      imagesResult.rows.forEach(img => {
+        if (!imagesByProduct[img.product_id]) {
+          imagesByProduct[img.product_id] = [];
+        }
+        imagesByProduct[img.product_id].push(img);
+      });
+      
+      // Add images and compatibility fields to each product
+      products.forEach(product => {
+        product.images = imagesByProduct[product.id] || [];
+        product.price = product.unit_price;
+        product.cost = product.cost_price;
+        product.is_active = product.active;
+      });
+    }
+    
+    return products;
   },
 
   async getTotalStock(productId) {
@@ -173,14 +341,19 @@ const Product = {
       `SELECT p.*, c.name as category_name 
        FROM inventory.products p 
        LEFT JOIN inventory.categories c ON p.category_id = c.id 
-       WHERE p.is_active = true 
+       WHERE p.active = true 
          AND p.expiration_date IS NOT NULL 
          AND p.expiration_date >= CURRENT_DATE 
          AND p.expiration_date <= CURRENT_DATE + CAST($1 AS INTEGER)
        ORDER BY p.expiration_date ASC`,
       [daysAhead]
     );
-    return result.rows;
+    return result.rows.map(product => ({
+      ...product,
+      price: product.unit_price,
+      cost: product.cost_price,
+      is_active: product.active
+    }));
   },
 };
 

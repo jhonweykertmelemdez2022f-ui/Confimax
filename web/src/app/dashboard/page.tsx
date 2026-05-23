@@ -3,10 +3,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
-import { 
-  Package, DollarSign, Users, Activity, Plus, 
-  ShoppingCart, UserPlus, ShieldAlert, CheckCircle2 
-} from "lucide-react";
 import { gsap } from "gsap";
 import Link from "next/link";
 
@@ -22,6 +18,7 @@ export default function DashboardOverviewPage() {
   
   const [loading, setLoading] = useState(true);
   const statsRef = useRef<HTMLDivElement>(null);
+  const hasAnimated = useRef(false);
 
   useEffect(() => {
     loadOverviewData();
@@ -56,149 +53,133 @@ export default function DashboardOverviewPage() {
   };
 
   useEffect(() => {
-    if (!loading && statsRef.current) {
+    if (!loading && statsRef.current && !hasAnimated.current) {
+      hasAnimated.current = true;
       gsap.fromTo(statsRef.current.children,
-        { y: 30, opacity: 0 },
-        { y: 0, opacity: 1, stagger: 0.1, duration: 0.6, ease: "back.out(1.2)" }
+        { y: 20, opacity: 0 },
+        { y: 0, opacity: 1, stagger: 0.1, duration: 0.5, ease: "power2.out" }
       );
     }
   }, [loading]);
 
   if (loading) {
     return (
-      <div className="h-full min-h-[400px] flex items-center justify-center">
-        <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+      <div className="h-full min-h-[400px] flex items-center justify-center bg-transparent">
+        <span className="material-symbols-outlined text-[48px] text-data-blue animate-spin">autorenew</span>
       </div>
     );
   }
 
   const statCards = [
-    { title: "Total Productos", value: stats.totalProducts, icon: Package, color: "from-blue-500 to-indigo-500" },
-    { title: "Ventas Registradas", value: stats.totalSales, icon: DollarSign, color: "from-purple-600 to-indigo-500" },
-    { title: "Clientes", value: stats.totalCustomers, icon: Users, color: "from-indigo-600 to-blue-500" },
-    { title: "Alertas de Stock", value: stats.lowStockCount, icon: ShieldAlert, color: "from-slate-600 to-indigo-800" }
+    { title: "INVENTARIO (SKU)", value: stats.totalProducts, icon: "inventory_2", code: "PRD" },
+    { title: "TRANSACCIONES", value: stats.totalSales, icon: "receipt_long", code: "TRX" },
+    { title: "CLIENTES REG.", value: stats.totalCustomers, icon: "group", code: "USR" },
+    { title: "ALERTAS STOCK", value: stats.lowStockCount, icon: "warning", code: "WRN", isAlert: stats.lowStockCount > 0 }
   ];
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">Panel General</h1>
-        <p className="text-gray-500 dark:text-gray-400 mt-1">Bienvenido al resumen de la plataforma Confimax.</p>
+    <div className="space-y-12 pb-12">
+      <div className="border-b-2 border-slate-900 dark:border-white pb-6 relative">
+        <div className="crosshair-bl" />
+        <h1 className="font-headline-lg text-4xl md:text-5xl uppercase tracking-tighter text-slate-900 dark:text-white mb-2">PANEL DE CONTROL</h1>
+        <p className="font-data-label text-xs tracking-widest uppercase text-slate-500 dark:text-slate-400">
+          RESUMEN OPERATIVO CONFIMAX
+        </p>
       </div>
 
       {/* Tarjetas de Estadísticas */}
       <div ref={statsRef} className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
         {statCards.map((stat, i) => (
-          <div key={i} className="stat-card relative overflow-hidden bg-white dark:bg-[#111] rounded-3xl p-6 border border-gray-100 dark:border-[#222] shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-            <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${stat.color} rounded-full blur-3xl opacity-10 dark:opacity-20 -mr-10 -mt-10 pointer-events-none`}></div>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">{stat.title}</p>
-                <h3 className="text-4xl font-bold text-gray-900 dark:text-white tracking-tight">{stat.value}</h3>
-              </div>
-              <div className={`w-14 h-14 rounded-2xl flex items-center justify-center bg-gradient-to-br ${stat.color} shadow-lg text-white`}>
-                <stat.icon className="w-7 h-7" />
-              </div>
-            </div>
+          <div key={i} className={`relative p-6 border-2 border-slate-900 dark:border-white bg-white dark:bg-surface-bright flex flex-col group transition-all duration-300 hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] hover:-translate-y-1 hover:-translate-x-1 ${stat.isAlert ? "border-error shadow-[4px_4px_0px_0px_rgba(255,0,0,1)]" : "shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]"}`}>
+            <span className={`absolute top-4 right-4 font-data-label text-[10px] tracking-widest border border-slate-900/20 dark:border-white/20 px-2 py-0.5 ${stat.isAlert ? "text-error border-error bg-error/10" : "text-slate-500"}`}>
+              {stat.code}
+            </span>
+            <span className={`material-symbols-outlined text-[32px] mb-4 ${stat.isAlert ? "text-error" : "text-data-blue"}`}>
+              {stat.icon}
+            </span>
+            <h3 className="font-display-xl text-5xl font-black text-slate-900 dark:text-white leading-none tracking-tighter mb-2">
+              {stat.value}
+            </h3>
+            <p className="font-data-label text-xs uppercase tracking-widest text-slate-600 dark:text-slate-400 mt-auto pt-4 border-t border-slate-900/10 dark:border-white/10">
+              {stat.title}
+            </p>
           </div>
         ))}
       </div>
 
       {/* Panel de Acciones Rápidas */}
-      <div className="bg-white dark:bg-[#111] border border-gray-100 dark:border-[#222] rounded-3xl p-6 shadow-sm">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="p-2 bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 rounded-xl">
-            <Plus className="w-5 h-5" />
-          </div>
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white">Acciones Rápidas</h2>
+      <div className="border-2 border-slate-900 dark:border-white bg-white dark:bg-surface p-6 md:p-8 relative">
+        <div className="crosshair-tl" />
+        <div className="crosshair-tr" />
+        
+        <div className="flex items-center gap-3 mb-8">
+          <span className="material-symbols-outlined text-[24px] text-data-blue">bolt</span>
+          <h2 className="font-headline-lg-mobile text-2xl uppercase tracking-tighter text-slate-900 dark:text-white">ACCIONES RÁPIDAS</h2>
         </div>
         
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Link href="/dashboard/sales" className="group flex items-center gap-4 p-4 rounded-2xl border border-gray-100 dark:border-[#222] bg-gray-50 hover:bg-gradient-to-br hover:from-blue-600 hover:to-purple-600 dark:bg-[#161616] hover:text-white transition-all duration-300 shadow-sm hover:shadow-lg hover:-translate-y-0.5">
-            <div className="w-12 h-12 rounded-xl bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 flex items-center justify-center group-hover:bg-white/20 group-hover:text-white transition-colors">
-              <ShoppingCart className="w-6 h-6" />
-            </div>
-            <div>
-              <h4 className="font-semibold text-gray-900 dark:text-white group-hover:text-white transition-colors">Registrar Venta</h4>
-              <p className="text-xs text-gray-500 dark:text-gray-400 group-hover:text-white/80 transition-colors">Generar nueva transacción</p>
-            </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <Link href="/dashboard/sales" className="flex flex-col border border-slate-900 dark:border-white p-6 bg-slate-50 dark:bg-surface-dim hover:bg-data-blue hover:text-white transition-colors group">
+            <span className="material-symbols-outlined text-[32px] mb-4 group-hover:text-white text-slate-900 dark:text-white">shopping_cart</span>
+            <h4 className="font-headline-lg-mobile text-lg uppercase tracking-tight mb-2">REGISTRAR VENTA</h4>
+            <p className="font-data-label text-[10px] tracking-widest uppercase text-slate-500 dark:text-slate-400 group-hover:text-white/70">Nueva transacción</p>
           </Link>
 
-          <Link href="/dashboard/inventory" className="group flex items-center gap-4 p-4 rounded-2xl border border-gray-100 dark:border-[#222] bg-gray-50 hover:bg-gradient-to-br hover:from-blue-600 hover:to-purple-600 dark:bg-[#161616] hover:text-white transition-all duration-300 shadow-sm hover:shadow-lg hover:-translate-y-0.5">
-            <div className="w-12 h-12 rounded-xl bg-purple-100 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400 flex items-center justify-center group-hover:bg-white/20 group-hover:text-white transition-colors">
-              <Package className="w-6 h-6" />
-            </div>
-            <div>
-              <h4 className="font-semibold text-gray-900 dark:text-white group-hover:text-white transition-colors">Nuevo Producto</h4>
-              <p className="text-xs text-gray-500 dark:text-gray-400 group-hover:text-white/80 transition-colors">Agregar item al inventario</p>
-            </div>
+          <Link href="/dashboard/inventory" className="flex flex-col border border-slate-900 dark:border-white p-6 bg-slate-50 dark:bg-surface-dim hover:bg-data-blue hover:text-white transition-colors group">
+            <span className="material-symbols-outlined text-[32px] mb-4 group-hover:text-white text-slate-900 dark:text-white">inventory_2</span>
+            <h4 className="font-headline-lg-mobile text-lg uppercase tracking-tight mb-2">NUEVO PRODUCTO</h4>
+            <p className="font-data-label text-[10px] tracking-widest uppercase text-slate-500 dark:text-slate-400 group-hover:text-white/70">Agregar al inventario</p>
           </Link>
 
-          <Link href="/dashboard/customers" className="group flex items-center gap-4 p-4 rounded-2xl border border-gray-100 dark:border-[#222] bg-gray-50 hover:bg-gradient-to-br hover:from-blue-600 hover:to-purple-600 dark:bg-[#161616] hover:text-white transition-all duration-300 shadow-sm hover:shadow-lg hover:-translate-y-0.5">
-            <div className="w-12 h-12 rounded-xl bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center group-hover:bg-white/20 group-hover:text-white transition-colors">
-              <Users className="w-6 h-6" />
-            </div>
-            <div>
-              <h4 className="font-semibold text-gray-900 dark:text-white group-hover:text-white transition-colors">Nuevo Cliente</h4>
-              <p className="text-xs text-gray-500 dark:text-gray-400 group-hover:text-white/80 transition-colors">Registrar en el directorio</p>
-            </div>
+          <Link href="/dashboard/customers" className="flex flex-col border border-slate-900 dark:border-white p-6 bg-slate-50 dark:bg-surface-dim hover:bg-data-blue hover:text-white transition-colors group">
+            <span className="material-symbols-outlined text-[32px] mb-4 group-hover:text-white text-slate-900 dark:text-white">person_add</span>
+            <h4 className="font-headline-lg-mobile text-lg uppercase tracking-tight mb-2">NUEVO CLIENTE</h4>
+            <p className="font-data-label text-[10px] tracking-widest uppercase text-slate-500 dark:text-slate-400 group-hover:text-white/70">Registro en directorio</p>
           </Link>
 
           {user?.role === "admin" && (
-            <Link href="/dashboard/users" className="group flex items-center gap-4 p-4 rounded-2xl border border-gray-100 dark:border-[#222] bg-gray-50 hover:bg-gradient-to-br hover:from-blue-600 hover:to-purple-600 dark:bg-[#161616] hover:text-white transition-all duration-300 shadow-sm hover:shadow-lg hover:-translate-y-0.5">
-              <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-500/20 text-slate-600 dark:text-slate-400 flex items-center justify-center group-hover:bg-white/20 group-hover:text-white transition-colors">
-                <UserPlus className="w-6 h-6" />
-              </div>
-              <div>
-                <h4 className="font-semibold text-gray-900 dark:text-white group-hover:text-white transition-colors">Añadir Usuario</h4>
-                <p className="text-xs text-gray-500 dark:text-gray-400 group-hover:text-white/80 transition-colors">Administrar accesos de personal</p>
-              </div>
+            <Link href="/dashboard/users" className="flex flex-col border border-slate-900 dark:border-white p-6 bg-slate-50 dark:bg-surface-dim hover:bg-data-blue hover:text-white transition-colors group">
+              <span className="material-symbols-outlined text-[32px] mb-4 group-hover:text-white text-slate-900 dark:text-white">admin_panel_settings</span>
+              <h4 className="font-headline-lg-mobile text-lg uppercase tracking-tight mb-2">AÑADIR USUARIO</h4>
+              <p className="font-data-label text-[10px] tracking-widest uppercase text-slate-500 dark:text-slate-400 group-hover:text-white/70">Control de acceso</p>
             </Link>
           )}
         </div>
       </div>
 
       {/* Actividad y Atención Requerida */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white dark:bg-[#111] border border-gray-100 dark:border-[#222] rounded-3xl p-6 shadow-sm">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="p-2 bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 rounded-xl">
-              <Activity className="w-5 h-5" />
-            </div>
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Actividad Reciente</h2>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="border-2 border-slate-900 dark:border-white bg-white dark:bg-surface p-6 relative">
+          <div className="crosshair-tl" />
+          <div className="flex items-center gap-3 mb-6 border-b border-slate-900/20 dark:border-white/20 pb-4">
+            <span className="material-symbols-outlined text-[24px] text-slate-900 dark:text-white">timeline</span>
+            <h2 className="font-headline-lg-mobile text-xl uppercase tracking-tighter text-slate-900 dark:text-white">ACTIVIDAD RECIENTE</h2>
           </div>
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <div className="w-32 h-32 bg-gray-100 dark:bg-[#222] rounded-full flex items-center justify-center opacity-50 mb-4">
-              <Activity className="w-12 h-12 text-gray-400 dark:text-gray-500" />
-            </div>
-            <p className="text-gray-500 dark:text-gray-400">Las gráficas y actividad en tiempo real estarán disponibles pronto.</p>
+          <div className="flex flex-col items-center justify-center py-16 text-center bg-slate-50 dark:bg-surface-dim border border-slate-900/10 dark:border-white/10">
+            <span className="material-symbols-outlined text-[48px] text-slate-300 dark:text-slate-700 mb-4">insights</span>
+            <p className="font-data-label text-xs uppercase tracking-widest text-slate-500 dark:text-slate-500 bg-slate-200 dark:bg-surface p-2">MÓDULO DE GRÁFICAS EN DESARROLLO</p>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-[#111] border border-gray-100 dark:border-[#222] rounded-3xl p-6 shadow-sm">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="p-2 bg-purple-100 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400 rounded-xl">
-              <ShieldAlert className="w-5 h-5" />
-            </div>
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Atención Requerida</h2>
+        <div className="border-2 border-slate-900 dark:border-white bg-white dark:bg-surface p-6 relative">
+          <div className="crosshair-tr" />
+          <div className="flex items-center gap-3 mb-6 border-b border-slate-900/20 dark:border-white/20 pb-4">
+            <span className="material-symbols-outlined text-[24px] text-error">notification_important</span>
+            <h2 className="font-headline-lg-mobile text-xl uppercase tracking-tighter text-slate-900 dark:text-white">ATENCIÓN REQUERIDA</h2>
           </div>
+          
           {stats.lowStockCount > 0 ? (
-            <div className="p-4 bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-500/20 rounded-2xl">
-              <div className="flex items-start gap-3">
-                <ShieldAlert className="w-5 h-5 text-purple-600 dark:text-purple-400 mt-0.5" />
-                <div>
-                  <h4 className="font-semibold text-purple-800 dark:text-purple-400">Stock Bajo Detectado</h4>
-                  <p className="text-sm text-purple-600 dark:text-purple-300 mt-1">Hay {stats.lowStockCount} producto(s) con inventario bajo. Revisa la sección de Inventario para reabastecer.</p>
-                </div>
+            <div className="p-6 border-2 border-error bg-error/5 flex items-start gap-4">
+              <span className="material-symbols-outlined text-[32px] text-error">warning</span>
+              <div>
+                <h4 className="font-headline-lg-mobile text-lg uppercase tracking-tight text-error mb-1">STOCK CRÍTICO</h4>
+                <p className="font-body-md text-slate-700 dark:text-slate-300">Se detectaron <strong className="font-data-label font-bold mx-1 bg-error text-white px-2 py-0.5">{stats.lowStockCount}</strong> artículos con inventario bajo. Reabastecer inmediatamente.</p>
               </div>
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <div className="w-16 h-16 bg-blue-100 dark:bg-blue-500/20 rounded-full flex items-center justify-center mb-4">
-                <CheckCircle2 className="w-8 h-8 text-blue-600 dark:text-blue-400" />
-              </div>
-              <p className="text-gray-500 dark:text-gray-400 font-medium">Todo está en orden.</p>
-              <p className="text-sm text-gray-400 mt-1">El stock es saludable.</p>
+            <div className="flex flex-col items-center justify-center py-16 text-center bg-slate-50 dark:bg-surface-dim border border-slate-900/10 dark:border-white/10">
+              <span className="material-symbols-outlined text-[48px] text-[#00FF66] mb-4">check_circle</span>
+              <p className="font-headline-lg-mobile text-lg uppercase tracking-tight text-slate-900 dark:text-white mb-2">TODO EN ORDEN</p>
+              <p className="font-data-label text-xs uppercase tracking-widest text-slate-500">STOCK SALUDABLE</p>
             </div>
           )}
         </div>

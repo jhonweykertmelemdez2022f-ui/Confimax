@@ -1,162 +1,143 @@
 "use client";
 
-import { ShieldCheck, Target, Users, Award, Truck, Package } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
+import Link from "next/link";
 
 export default function NosotrosPage() {
-  const headerRef = useRef<HTMLDivElement>(null);
+  const heroRef = useRef<HTMLDivElement>(null);
   const statsRef = useRef<HTMLDivElement>(null);
   const valuesRef = useRef<HTMLDivElement>(null);
   const processRef = useRef<HTMLDivElement>(null);
   const ctaRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Animación del header
-    if (headerRef.current) {
-      gsap.fromTo(headerRef.current, 
-        { opacity: 0, y: -30 },
-        { opacity: 1, y: 0, duration: 0.8, ease: "power3.out" }
+    if (heroRef.current) {
+      gsap.fromTo(heroRef.current.children, 
+        { opacity: 0, y: 40 },
+        { opacity: 1, y: 0, duration: 1, stagger: 0.15, ease: "power3.out" }
       );
     }
 
-    // Animación de las estadísticas
     if (statsRef.current) {
       gsap.fromTo(statsRef.current.children, 
-        { opacity: 0, scale: 0.8 },
-        { opacity: 1, scale: 1, duration: 0.6, stagger: 0.1, ease: "back.out(1.7)", delay: 0.3 }
+        { opacity: 0, scale: 0.95 },
+        { opacity: 1, scale: 1, duration: 0.6, stagger: 0.1, ease: "power2.out", delay: 0.4 }
       );
     }
 
-    // Animación de los valores
     if (valuesRef.current) {
       gsap.fromTo(valuesRef.current.children, 
-        { opacity: 0, y: 40, rotateY: 15 },
-        { opacity: 1, y: 0, rotateY: 0, duration: 0.8, stagger: 0.15, ease: "power3.out", delay: 0.6 }
-      );
-    }
-
-    // Animación del proceso
-    if (processRef.current) {
-      gsap.fromTo(processRef.current.children, 
-        { opacity: 0, x: -30 },
-        { opacity: 1, x: 0, duration: 0.8, stagger: 0.2, ease: "power3.out", delay: 0.9 }
-      );
-    }
-
-    // Animación del CTA
-    if (ctaRef.current) {
-      gsap.fromTo(ctaRef.current, 
-        { opacity: 0, scale: 0.9 },
-        { opacity: 1, scale: 1, duration: 0.6, ease: "elastic.out(1, 0.5)", delay: 1.2 }
+        { opacity: 0, y: 20 },
+        { opacity: 1, y: 0, duration: 0.8, stagger: 0.15, ease: "power3.out", scrollTrigger: {
+          trigger: valuesRef.current,
+          start: "top 80%"
+        }}
       );
     }
   }, []);
 
   const values = [
-    { icon: <ShieldCheck className="w-8 h-8" />, title: "PRODUCTOS CONFIABLES", desc: "Elegimos marcas y frescos que puedas llevar tranquilo a tu mesa." },
-    { icon: <Target className="w-8 h-8" />, title: "PRECIOS JUSTOS", desc: "Buscamos ofertas reales para que la compra semanal rinda mejor." },
-    { icon: <Users className="w-8 h-8" />, title: "TRATO CERCANO", desc: "Atendemos con paciencia, claridad y ganas de ayudarte." },
-    { icon: <Award className="w-8 h-8" />, title: "SERVICIO CONSTANTE", desc: "Mejoramos la variedad, la atención y la experiencia de compra cada día." },
+    { icon: "verified", title: "CALIDAD", desc: "Seleccionamos minuciosamente cada producto fresco y marca para tu tranquilidad." },
+    { icon: "sell", title: "PRECIOS", desc: "Mantenemos márgenes bajos y ofertas reales para cuidar la economía de tu hogar." },
+    { icon: "group", title: "TRATO HUMANO", desc: "Detrás de cada pedido hay personas esforzándose por darte la mejor atención." },
+    { icon: "military_tech", title: "MEJORA CONSTANTE", desc: "Escuchamos tus sugerencias para ampliar nuestro catálogo y mejorar el servicio." },
   ];
 
   const stats = [
-    { value: "12+", label: "AÑOS ATENDIENDO" },
-    { value: "5000+", label: "COMPRAS DESPACHADAS" },
-    { value: "300+", label: "PRODUCTOS PARA EL HOGAR" },
-    { value: "98%", label: "CLIENTES QUE VUELVEN" },
+    { value: "12+", label: "AÑOS ATENDIENDO", code: "EXP" },
+    { value: "5K+", label: "ENTREGAS HECHAS", code: "DLV" },
+    { value: "300+", label: "PRODUCTOS ACTIVOS", code: "SKU" },
+    { value: "98%", label: "SATISFACCIÓN", code: "RTG" },
   ];
 
   return (
-    <main className="min-h-screen pt-12 pb-20 bg-white dark:bg-background">
-      {/* Hero */}
-      <section ref={headerRef} className="relative py-20 overflow-hidden border-b border-slate-900 dark:border-white">
-        <div className="w-full px-margin-page text-center">
-          <h1 className="font-headline-lg text-headline-lg text-slate-900 dark:text-white mb-6 uppercase">Sobre Confimax</h1>
-          <p className="font-body-md text-body-md text-slate-600 dark:text-slate-400 max-w-3xl mx-auto">
-            Somos un supermercado cercano, pensado para resolver la compra diaria con buenos precios, productos útiles y atención amable.
-            Nuestra misión es que cada visita sea rápida, clara y conveniente para tu hogar.
+    <main className="min-h-screen flex-grow flex flex-col bg-transparent">
+      {/* Hero Section */}
+      <section ref={heroRef} className="relative w-full border-b border-slate-900 dark:border-white min-h-[60vh] flex flex-col justify-center px-6 md:px-margin-page py-20 bg-transparent">
+        {/* Crosshairs */}
+        <div className="crosshair-tl" />
+        <div className="crosshair-tr" />
+
+        <div className="z-10 flex flex-col max-w-5xl gap-6">
+          <span className="self-start font-data-label text-data-label text-slate-500 dark:text-secondary tracking-widest uppercase border border-slate-900/20 dark:border-white/20 px-3 py-1 bg-slate-100 dark:bg-surface-dim">
+            NOSOTROS // HISTORIA
+          </span>
+          <h1 className="font-display-xl text-display-xl text-slate-900 dark:text-white uppercase tracking-tighter leading-none mb-2">
+            MÁS QUE UN<br />SÚPER
+          </h1>
+          <p className="font-body-md text-body-md text-slate-600 dark:text-slate-400 max-w-2xl border-l-2 border-data-blue pl-4 bg-slate-100/50 dark:bg-surface-variant/30 p-4 mt-2">
+            Confimax nació para resolver la compra diaria con buenos precios, variedad y un servicio excepcional. Cambiamos la forma de hacer el súper, haciéndola simple, rápida y transparente.
           </p>
         </div>
       </section>
 
-      {/* Stats */}
-      <section ref={statsRef} className="py-12 bg-white dark:bg-surface border-b border-slate-900 dark:border-white">
-        <div className="w-full px-margin-page">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {stats.map((stat, idx) => (
-              <div key={idx} className="text-center border-r border-slate-900/20 dark:border-white/20 last:border-r-0">
-                <p className="font-display-xl text-display-xl text-slate-900 dark:text-white mb-1">{stat.value}</p>
-                <p className="font-data-label font-data-label text-xs uppercase text-slate-500 dark:text-slate-400">{stat.label}</p>
+      {/* Stats - Data Grid */}
+      <section className="w-full border-b border-slate-900 dark:border-white bg-transparent">
+        <div ref={statsRef} className="grid grid-cols-2 lg:grid-cols-4">
+          {stats.map((stat, idx) => (
+            <div key={idx} className={`p-8 flex flex-col items-center text-center hover:bg-slate-50 dark:hover:bg-surface-bright transition-colors relative group border-b lg:border-b-0 ${idx % 2 === 0 ? "border-r border-slate-900 dark:border-white" : "lg:border-r border-slate-900 dark:border-white"} ${idx === 3 ? "lg:border-r-0" : ""}`}>
+              <span className="absolute top-4 left-4 font-data-label text-[10px] text-slate-400 dark:text-slate-500">{stat.code}</span>
+              <p className="font-display-xl text-[48px] md:text-[64px] text-slate-900 dark:text-white font-black leading-none mt-4 mb-2">{stat.value}</p>
+              <p className="font-data-label text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">{stat.label}</p>
+              
+              <div className="absolute bottom-0 left-0 w-full h-[2px] bg-slate-900/20 dark:bg-white/20">
+                <div className="h-full w-0 group-hover:w-full bg-data-blue transition-all duration-500" />
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
       </section>
 
-      {/* Values */}
-      <section ref={valuesRef} className="py-20">
-        <div className="w-full px-margin-page">
-          <div className="text-center mb-12">
-            <h2 className="font-headline-lg text-headline-lg text-slate-900 dark:text-white mb-4 uppercase">Nuestros Valores</h2>
-            <p className="font-body-md text-body-md text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">Principios que guían cada compra, cada recomendación y cada atención en tienda.</p>
-          </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {values.map((value, idx) => (
-              <div key={idx} className="bg-white dark:bg-surface border border-slate-900 dark:border-white p-6 text-center hover:border-data-blue transition-colors">
-                <div className="inline-flex items-center justify-center w-14 h-14 border border-slate-900 dark:border-white text-slate-900 dark:text-white mb-4">
-                  {value.icon}
-                </div>
-                <h3 className="font-headline-lg-mobile text-headline-lg-mobile text-slate-900 dark:text-white mb-2 uppercase">{value.title}</h3>
-                <p className="font-body-md text-body-md text-slate-600 dark:text-slate-400 text-sm">{value.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Process */}
-      <section ref={processRef} className="py-20 bg-white dark:bg-surface border-t border-b border-slate-900 dark:border-white">
-        <div className="w-full px-margin-page">
-          <div className="text-center mb-12">
-            <h2 className="font-headline-lg text-headline-lg text-slate-900 dark:text-white mb-4 uppercase">Cómo Trabajamos</h2>
-            <p className="font-body-md text-body-md text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">Una forma simple de comprar lo necesario sin perder tiempo.</p>
-          </div>
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              { icon: <Package className="w-6 h-6" />, step: "01", title: "Escoge", desc: "Revisa alimentos, frescos, limpieza y básicos para armar tu compra." },
-              { icon: <Truck className="w-6 h-6" />, step: "02", title: "Aparta", desc: "Agrega al carrito y confirma lo que necesitas sin vueltas." },
-              { icon: <ShieldCheck className="w-6 h-6" />, step: "03", title: "Retira o recibe", desc: "Te ayudamos a cerrar la compra con atención rápida y amable." },
-            ].map((item, idx) => (
-              <div key={idx} className="relative">
-                <div className="bg-slate-50 dark:bg-surface-dim border border-slate-900 dark:border-white p-6 h-full">
-                  <span className="font-data-label font-data-label text-xs uppercase text-data-blue tracking-wider mb-2 block">{item.step}</span>
-                  <div className="inline-flex items-center justify-center w-10 h-10 border border-data-blue text-data-blue mb-4">
-                    {item.icon}
-                  </div>
-                  <h3 className="font-headline-lg-mobile text-headline-lg-mobile text-slate-900 dark:text-white mb-2 uppercase">{item.title}</h3>
-                  <p className="font-body-md text-body-md text-slate-600 dark:text-slate-400 text-sm">{item.desc}</p>
-                </div>
-                {idx < 2 && (
-                  <div className="hidden md:block absolute top-1/2 -right-4 w-8 h-[1px] bg-slate-900/20 dark:bg-white/20" />
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section ref={ctaRef} className="py-20">
-        <div className="w-full px-margin-page text-center">
-          <div className="bg-white dark:bg-surface border border-slate-900 dark:border-white p-8 md:p-12">
-            <h2 className="font-headline-lg text-headline-lg text-slate-900 dark:text-white mb-4 uppercase">¿Listo para hacer tu compra?</h2>
-            <p className="font-body-md text-body-md text-slate-600 dark:text-slate-400 mb-8 max-w-2xl mx-auto">
-              Escríbenos si necesitas un producto, quieres consultar precios o deseas que te ayudemos a armar tu lista.
+      {/* Values Grid */}
+      <section className="py-24 px-6 md:px-margin-page border-b border-slate-900 dark:border-white bg-slate-50/50 dark:bg-surface-dim/30">
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-16">
+            <h2 className="font-headline-lg text-headline-lg text-slate-900 dark:text-white uppercase mb-4">NUESTROS VALORES</h2>
+            <div className="w-24 h-1 bg-data-blue mb-6"></div>
+            <p className="font-body-md text-slate-600 dark:text-slate-400 max-w-2xl text-lg">
+              Principios inquebrantables que guían cada entrega y cada interacción con nuestros clientes.
             </p>
-            <a href="/contacto" className="btn-precision inline-flex">
-              Contactar ahora
-            </a>
+          </div>
+          
+          <div ref={valuesRef} className="grid md:grid-cols-2 gap-8 lg:gap-12">
+            {values.map((value, idx) => (
+              <div key={idx} className="flex gap-6 p-6 border border-slate-900 dark:border-white bg-white dark:bg-surface-bright hover:border-data-blue transition-colors group relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-16 h-16 bg-slate-100 dark:bg-surface-variant -mr-8 -mt-8 rotate-45 transform group-hover:bg-data-blue/10 transition-colors" />
+                <div className="flex-shrink-0 flex items-start justify-center pt-1">
+                  <span className="material-symbols-outlined text-[32px] text-slate-900 dark:text-white group-hover:text-data-blue transition-colors">
+                    {value.icon}
+                  </span>
+                </div>
+                <div>
+                  <h3 className="font-headline-lg-mobile text-xl text-slate-900 dark:text-white uppercase mb-2 tracking-tight">{value.title}</h3>
+                  <p className="font-body-md text-slate-600 dark:text-slate-400">{value.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* High Contrast CTA */}
+      <section className="py-24 px-6 md:px-margin-page bg-transparent relative">
+        <div className="max-w-5xl mx-auto border-2 border-slate-900 dark:border-white p-12 md:p-20 text-center relative overflow-hidden bg-slate-900 dark:bg-white text-white dark:text-slate-900 group">
+          <div className="absolute top-0 left-0 w-full h-full bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.05)_50%,transparent_75%,transparent_100%)] dark:bg-[linear-gradient(45deg,transparent_25%,rgba(0,0,0,0.05)_50%,transparent_75%,transparent_100%)] bg-[length:250%_250%,100%_100%] group-hover:bg-[position:200%_0,0_0] transition-all duration-[2s] ease-linear" />
+          
+          <div className="relative z-10 flex flex-col items-center">
+            <h2 className="font-headline-lg text-4xl md:text-5xl uppercase tracking-tighter mb-6">
+              ¿LISTO PARA COMPRAR?
+            </h2>
+            <p className="font-body-md text-lg text-slate-300 dark:text-slate-700 mb-10 max-w-2xl mx-auto border-l-2 border-data-blue pl-4 py-2 bg-black/20 dark:bg-white/50">
+              No pierdas más tiempo en el supermercado. Empieza a comprar online y descubre la comodidad de Confimax.
+            </p>
+            <Link 
+              href="/catalogo" 
+              className="btn-precision inline-flex items-center gap-3 bg-white text-slate-900 border-none hover:bg-slate-200 dark:bg-slate-900 dark:text-white dark:hover:bg-slate-800"
+            >
+              IR AL CATÁLOGO
+              <span className="material-symbols-outlined text-[20px]">arrow_forward</span>
+            </Link>
           </div>
         </div>
       </section>

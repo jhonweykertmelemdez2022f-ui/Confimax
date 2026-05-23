@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
-import { Search, RefreshCw, AlertTriangle, Terminal, Activity, Eye, EyeOff } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 export default function AuditPage() {
@@ -17,8 +16,6 @@ export default function AuditPage() {
   const [filterRole, setFilterRole] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
   const [expandedLogs, setExpandedLogs] = useState<Set<number>>(new Set());
-
-  const listRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!authLoading && user?.role !== "admin") {
@@ -64,223 +61,215 @@ export default function AuditPage() {
   });
 
   const formatJSON = (data: any) => {
-    if (!data) return <span className="text-gray-400 italic">—</span>;
+    if (!data) return <span className="text-slate-400 italic">—</span>;
     return (
-      <pre className="text-xs bg-gray-100 dark:bg-gray-800 p-3 rounded-lg overflow-x-auto mt-2 text-gray-700 dark:text-gray-300">
+      <pre className="font-data-label text-[10px] bg-slate-900 dark:bg-white text-white dark:text-slate-900 p-3 overflow-x-auto mt-2 tracking-wider">
         {JSON.stringify(data, null, 2)}
       </pre>
     );
   };
 
-  const getOperationColor = (op: string) => {
-    switch(op) {
-      case 'CREATE': return 'bg-green-100 text-green-700 border-green-200 dark:bg-green-500/10 dark:text-green-400 dark:border-green-500/20';
-      case 'UPDATE': return 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20';
-      case 'DELETE': return 'bg-red-100 text-red-700 border-red-200 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20';
-      case 'LOGIN': return 'bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-500/10 dark:text-purple-400 dark:border-purple-500/20';
-      default: return 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-500/10 dark:text-gray-400 dark:border-gray-500/20';
-    }
-  };
-
   if (user?.role !== "admin") return null;
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="space-y-8 pb-12">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 border-b-2 border-slate-900 dark:border-white pb-6 relative">
+        <div className="crosshair-bl" />
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white flex items-center gap-3">
-            <Terminal className="w-8 h-8 text-purple-500" />
-            Auditoría del Sistema
+          <h1 className="font-headline-lg text-4xl uppercase tracking-tighter text-slate-900 dark:text-white flex items-center gap-3">
+            <span className="material-symbols-outlined text-[36px]">history</span>
+            AUDITORÍA DE SISTEMA
           </h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1">Registro detallado de todas las operaciones realizadas.</p>
+          <p className="font-data-label text-xs tracking-widest uppercase text-slate-500 dark:text-slate-400 mt-2">
+            REGISTRO DETALLADO DE OPERACIONES Y ACCESOS
+          </p>
         </div>
         
         <button 
           onClick={() => loadAuditLogs()}
-          className="flex items-center gap-2 px-5 py-2.5 border border-gray-200 dark:border-[#333] bg-white dark:bg-[#111] text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-[#222] transition-colors rounded-xl font-medium shadow-sm"
+          className="btn-precision inline-flex items-center gap-2 bg-white text-slate-900 hover:bg-slate-900 hover:text-white dark:bg-slate-900 dark:text-white dark:hover:bg-white dark:hover:text-slate-900 min-h-[44px]"
         >
-          <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin text-purple-500' : 'text-gray-500 dark:text-gray-400'}`} />
-          <span className="font-semibold">Actualizar</span>
+          <span className={`material-symbols-outlined ${loading ? 'animate-spin' : ''}`}>sync</span>
+          ACTUALIZAR DATOS
         </button>
       </div>
 
       {errorMsg && (
-        <div className="p-4 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-2xl flex items-center gap-3 text-red-600 dark:text-red-400">
-          <AlertTriangle className="w-5 h-5" />
-          <span className="font-medium">{errorMsg}</span>
+        <div className="p-4 border-2 border-error bg-error/10 text-error flex items-center gap-3">
+          <span className="material-symbols-outlined text-[24px]">warning</span>
+          <span className="font-data-label text-sm uppercase font-bold tracking-widest">{errorMsg}</span>
         </div>
       )}
 
-      <div className="bg-white dark:bg-[#111] rounded-3xl border border-gray-200 dark:border-[#333] shadow-sm overflow-hidden flex flex-col h-[750px]">
-        <div className="p-4 border-b border-gray-200 dark:border-[#333] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-gray-50 dark:bg-[#151515]">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+      {/* Controles y Tabla */}
+      <div className="border-2 border-slate-900 dark:border-white bg-white dark:bg-surface relative">
+        <div className="crosshair-tl" />
+        <div className="crosshair-tr" />
+        
+        <div className="p-4 border-b-2 border-slate-900 dark:border-white flex flex-col xl:flex-row xl:items-center gap-4 bg-slate-50 dark:bg-surface-dim">
+          <div className="relative flex-1 min-w-[300px]">
+            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">search</span>
             <input 
               type="text" 
-              placeholder="Buscar por operación, entidad, usuario o ID..." 
+              placeholder="Buscar por operación, entidad, ID..." 
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-[#111] border border-gray-200 dark:border-[#333] rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all text-gray-900 dark:text-white text-sm"
+              className="w-full pl-10 pr-4 py-3 min-h-[44px] bg-white dark:bg-surface-bright border border-slate-900 dark:border-white font-data-label uppercase tracking-widest text-xs focus:outline-none focus:ring-1 focus:ring-data-blue focus:border-data-blue"
             />
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-4">
             <select 
               value={filterOp} 
               onChange={(e) => setFilterOp(e.target.value)}
-              className="px-3 py-2.5 bg-white dark:bg-[#111] border border-gray-200 dark:border-[#333] rounded-xl text-sm outline-none text-gray-700 dark:text-gray-300"
+              className="min-h-[44px] px-4 bg-white dark:bg-surface-bright border border-slate-900 dark:border-white font-data-label text-xs uppercase tracking-widest cursor-pointer focus:outline-none focus:ring-1 focus:ring-data-blue"
             >
-              <option value="">Todas las Operaciones</option>
-              <option value="CREATE">Crear</option>
-              <option value="UPDATE">Actualizar</option>
-              <option value="DELETE">Eliminar</option>
-              <option value="LOGIN">Login</option>
+              <option value="">TODAS LAS OPERACIONES</option>
+              <option value="CREATE">CREATE</option>
+              <option value="UPDATE">UPDATE</option>
+              <option value="DELETE">DELETE</option>
+              <option value="LOGIN">LOGIN</option>
             </select>
             <select 
               value={filterRole} 
               onChange={(e) => setFilterRole(e.target.value)}
-              className="px-3 py-2.5 bg-white dark:bg-[#111] border border-gray-200 dark:border-[#333] rounded-xl text-sm outline-none text-gray-700 dark:text-gray-300"
+              className="min-h-[44px] px-4 bg-white dark:bg-surface-bright border border-slate-900 dark:border-white font-data-label text-xs uppercase tracking-widest cursor-pointer focus:outline-none focus:ring-1 focus:ring-data-blue"
             >
-              <option value="">Todos los Roles</option>
-              <option value="admin">Admin</option>
-              <option value="usuario">Usuario</option>
+              <option value="">TODOS LOS ROLES</option>
+              <option value="admin">ADMIN</option>
+              <option value="usuario">USUARIO</option>
             </select>
           </div>
-          <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 bg-white dark:bg-[#111] px-4 py-2 rounded-xl border border-gray-200 dark:border-[#333] self-start sm:self-auto shadow-sm">
-            <Activity className="w-4 h-4 text-purple-500" />
-            <span className="font-semibold">{filteredLogs.length} eventos</span>
+          <div className="min-h-[44px] flex items-center justify-center px-6 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-data-label text-xs uppercase tracking-widest font-bold ml-auto">
+            {filteredLogs.length} EVENTOS
           </div>
         </div>
 
-        <div className="flex-1 overflow-auto bg-gray-50 dark:bg-[#0a0a0a] p-4" ref={listRef}>
+        <div className="overflow-x-auto bg-white dark:bg-surface h-[600px] overflow-y-auto brutal-scrollbar">
           {filteredLogs.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-gray-400 dark:text-gray-500 gap-2">
-              <Activity className="w-10 h-10 stroke-[1.5]" />
-              <span>No hay eventos que coincidan con la búsqueda.</span>
+            <div className="flex flex-col items-center justify-center h-full py-20 text-slate-500">
+              <span className="material-symbols-outlined text-[64px] mb-4">search_off</span>
+              <span className="font-headline-lg-mobile text-lg uppercase tracking-tight text-slate-900 dark:text-white mb-2">SIN RESULTADOS</span>
+              <span className="font-data-label text-xs tracking-widest uppercase">No hay eventos para estos filtros</span>
             </div>
           ) : (
-            <div className="space-y-3">
-              {filteredLogs.map((log: any, idx: number) => (
-                <div 
-                  key={idx} 
-                  className="bg-white dark:bg-[#111] rounded-2xl border border-gray-200 dark:border-[#333] overflow-hidden hover:border-purple-500/40 dark:hover:border-purple-500/40 hover:shadow-md transition-all"
-                >
-                  {/* Cabecera del log */}
-                  <div className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 cursor-pointer" onClick={() => toggleExpand(idx)}>
-                    <div className="flex items-center gap-4">
-                      <span className={`px-4 py-1.5 rounded-full text-xs font-bold tracking-wide border ${getOperationColor(log.operation)}`}>
-                        {log.operation}
-                      </span>
-                      <div className="flex flex-col">
-                        <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                          {log.username || 'Sistema'} 
-                          <span className="text-xs font-normal text-gray-500 ml-2 px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded-md">
-                            Rol: {log.role || (log.username === 'admin' ? 'admin' : 'usuario')}
+            <table className="w-full border-collapse">
+              <thead className="sticky top-0 bg-slate-100 dark:bg-surface-dim border-b-2 border-slate-900 dark:border-white z-10">
+                <tr>
+                  <th className="p-4 text-left font-data-label text-xs tracking-widest uppercase text-slate-500">OPERACIÓN</th>
+                  <th className="p-4 text-left font-data-label text-xs tracking-widest uppercase text-slate-500">USUARIO</th>
+                  <th className="p-4 text-left font-data-label text-xs tracking-widest uppercase text-slate-500">ENTIDAD/ID</th>
+                  <th className="p-4 text-right font-data-label text-xs tracking-widest uppercase text-slate-500">FECHA/HORA</th>
+                  <th className="p-4 text-center w-16"></th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-900/10 dark:divide-white/10">
+                {filteredLogs.map((log: any, idx: number) => {
+                  const isExpanded = expandedLogs.has(idx);
+                  return (
+                    <React.Fragment key={idx}>
+                      <tr 
+                        className={`hover:bg-slate-50 dark:hover:bg-surface-dim transition-colors cursor-pointer ${isExpanded ? 'bg-slate-50 dark:bg-surface-dim' : ''}`}
+                        onClick={() => toggleExpand(idx)}
+                      >
+                        <td className="p-4">
+                          <span className={`inline-block border border-slate-900 dark:border-white px-2 py-1 font-data-label text-[10px] uppercase font-bold tracking-widest
+                            ${log.operation === 'DELETE' ? 'bg-error text-white border-error' : 
+                              log.operation === 'CREATE' ? 'bg-[#00FF66] text-slate-900 border-[#00FF66]' : 
+                              'bg-transparent text-slate-900 dark:text-white'}`}>
+                            {log.operation}
                           </span>
-                        </p>
-                        <div className="flex flex-wrap gap-2 mt-1">
+                        </td>
+                        <td className="p-4">
+                          <p className="font-headline-lg-mobile text-sm uppercase mb-1">{log.username || 'SISTEMA'}</p>
+                          <span className="font-data-label text-[10px] uppercase tracking-widest px-2 py-0.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900">
+                            {log.role || (log.username === 'admin' ? 'ADMIN' : 'USUARIO')}
+                          </span>
+                        </td>
+                        <td className="p-4">
                           {log.entity && (
-                            <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                              <span className="px-2 py-0.5 bg-purple-100 dark:bg-purple-500/10 text-purple-700 dark:text-purple-400 rounded-md font-medium">
-                                {log.entity}
-                              </span>
+                            <span className="inline-block border border-data-blue text-data-blue px-2 py-0.5 font-data-label text-[10px] uppercase tracking-widest mb-1 mr-2">
+                              {log.entity}
                             </span>
                           )}
                           {log.recordId && (
-                            <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                              ID: <span className="font-mono font-semibold text-gray-700 dark:text-gray-300">{String(log.recordId)}</span>
+                            <span className="font-data-label text-[10px] uppercase tracking-widest text-slate-500">
+                              ID: {String(log.recordId)}
                             </span>
                           )}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="text-left sm:text-right">
-                        <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                          {new Date(log.timestamp).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}
-                        </p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                          {new Date(log.timestamp).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                        </p>
-                      </div>
-                      <div className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800">
-                        {expandedLogs.has(idx) ? <EyeOff className="w-4 h-4 text-gray-500" /> : <Eye className="w-4 h-4 text-gray-500" />}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Detalles expandidos */}
-                  {expandedLogs.has(idx) && (
-                    <div className="border-t border-gray-200 dark:border-[#333] p-4 bg-gray-50 dark:bg-[#0a0a0a]">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {/* Columna izquierda: datos técnicos */}
-                        <div className="space-y-4">
-                          {log.ipAddress && (
-                            <div>
-                              <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">Dirección IP</h4>
-                              <p className="text-sm font-mono text-gray-700 dark:text-gray-300 bg-white dark:bg-[#111] px-3 py-2 rounded-lg border border-gray-200 dark:border-[#333]">
-                                {log.ipAddress}
-                              </p>
+                        </td>
+                        <td className="p-4 text-right">
+                          <p className="font-data-label text-xs uppercase tracking-widest font-bold">
+                            {new Date(log.timestamp).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                          </p>
+                          <p className="font-data-label text-[10px] uppercase tracking-widest text-slate-500 mt-1">
+                            {new Date(log.timestamp).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                          </p>
+                        </td>
+                        <td className="p-4 text-center">
+                          <button className="min-w-[44px] min-h-[44px] flex items-center justify-center text-slate-500 hover:text-slate-900 dark:hover:text-white">
+                            <span className="material-symbols-outlined">{isExpanded ? "expand_less" : "expand_more"}</span>
+                          </button>
+                        </td>
+                      </tr>
+                      {isExpanded && (
+                        <tr className="bg-slate-100 dark:bg-surface-dim border-b border-slate-900 dark:border-white">
+                          <td colSpan={5} className="p-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                              <div className="space-y-6">
+                                <div>
+                                  <h4 className="font-data-label text-[10px] uppercase tracking-widest text-slate-500 border-b border-slate-900/20 dark:border-white/20 pb-2 mb-3">
+                                    DATOS DE RED
+                                  </h4>
+                                  <div className="grid grid-cols-2 gap-4">
+                                    {log.ipAddress && (
+                                      <div>
+                                        <p className="font-data-label text-[10px] uppercase text-slate-500">IP ADDRESS</p>
+                                        <p className="font-data-label text-xs mt-1 border border-slate-900/20 dark:border-white/20 bg-white dark:bg-surface p-2">{log.ipAddress}</p>
+                                      </div>
+                                    )}
+                                    {log.userId && (
+                                      <div>
+                                        <p className="font-data-label text-[10px] uppercase text-slate-500">USER ID</p>
+                                        <p className="font-data-label text-xs mt-1 border border-slate-900/20 dark:border-white/20 bg-white dark:bg-surface p-2">{log.userId}</p>
+                                      </div>
+                                    )}
+                                  </div>
+                                  {log.endpoint && (
+                                    <div className="mt-4">
+                                      <p className="font-data-label text-[10px] uppercase text-slate-500">ENDPOINT</p>
+                                      <p className="font-data-label text-xs mt-1 border border-slate-900/20 dark:border-white/20 bg-white dark:bg-surface p-2 break-all">{log.endpoint}</p>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="space-y-6">
+                                <div>
+                                  <h4 className="font-data-label text-[10px] uppercase tracking-widest text-slate-500 border-b border-slate-900/20 dark:border-white/20 pb-2 mb-3">
+                                    PAYLOAD
+                                  </h4>
+                                  {log.oldData && (
+                                    <div className="mb-4">
+                                      <span className="font-data-label text-[10px] uppercase font-bold text-error">OLD_DATA</span>
+                                      {formatJSON(log.oldData)}
+                                    </div>
+                                  )}
+                                  {log.newData && (
+                                    <div>
+                                      <span className="font-data-label text-[10px] uppercase font-bold text-[#00FF66]">NEW_DATA</span>
+                                      {formatJSON(log.newData)}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
                             </div>
-                          )}
-                          {log.endpoint && (
-                            <div>
-                              <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">Endpoint</h4>
-                              <p className="text-sm font-mono text-gray-700 dark:text-gray-300 bg-white dark:bg-[#111] px-3 py-2 rounded-lg border border-gray-200 dark:border-[#333] break-all">
-                                {log.endpoint}
-                              </p>
-                            </div>
-                          )}
-                          {log.userAgent && (
-                            <div>
-                              <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">User Agent</h4>
-                              <p className="text-xs text-gray-700 dark:text-gray-300 bg-white dark:bg-[#111] px-3 py-2 rounded-lg border border-gray-200 dark:border-[#333] break-all">
-                                {log.userAgent}
-                              </p>
-                            </div>
-                          )}
-                          {log.userId && (
-                            <div>
-                              <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">User ID</h4>
-                              <p className="text-sm font-mono text-gray-700 dark:text-gray-300 bg-white dark:bg-[#111] px-3 py-2 rounded-lg border border-gray-200 dark:border-[#333]">
-                                {log.userId}
-                              </p>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Columna derecha: datos del registro */}
-                        <div className="space-y-4">
-                          {log.oldData && (
-                            <div>
-                              <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1 flex items-center gap-1">
-                                <span className="w-2 h-2 bg-red-500 rounded-full"></span>
-                                Datos Anteriores
-                              </h4>
-                              {formatJSON(log.oldData)}
-                            </div>
-                          )}
-                          {log.newData && (
-                            <div>
-                              <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1 flex items-center gap-1">
-                                <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                                Datos Nuevos
-                              </h4>
-                              {formatJSON(log.newData)}
-                            </div>
-                          )}
-                          {log.errorMessage && (
-                            <div className="bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 p-4 rounded-xl">
-                              <h4 className="text-xs font-semibold text-red-700 dark:text-red-400 uppercase tracking-wide mb-1">Error</h4>
-                              <p className="text-sm text-red-600 dark:text-red-300">{log.errorMessage}</p>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
+                  );
+                })}
+              </tbody>
+            </table>
           )}
         </div>
       </div>

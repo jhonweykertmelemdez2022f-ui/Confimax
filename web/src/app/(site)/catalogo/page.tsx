@@ -2,11 +2,10 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Search, Filter, Grid3X3, List, Package, RefreshCw, AlertTriangle } from "lucide-react";
-import ProductCard from "@/components/ProductCard";
 import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
 import { gsap } from "gsap";
+import ProductCard from "@/components/ProductCard";
 
 interface Product {
   id: string;
@@ -40,16 +39,14 @@ export default function CatalogoPage() {
   const headerRef = useRef<HTMLDivElement>(null);
   const controlsRef = useRef<HTMLDivElement>(null);
 
-  // 1. Proteger ruta: Redirigir a Login si no está autenticado
   useEffect(() => {
     if (!authLoading && !user) {
       router.push("/login");
     }
   }, [user, authLoading, router]);
 
-  // 2. Cargar productos desde el Microservicio de Inventario
   useEffect(() => {
-    if (!user) return; // Esperar a que esté autenticado
+    if (!user) return;
 
     const fetchProducts = async () => {
       try {
@@ -59,7 +56,6 @@ export default function CatalogoPage() {
         const response = await api.getProducts() as any;
         const fetchedData = response.data || response || [];
         
-        // Mapear el formato PostgreSQL (unit_price, stock_quantity) al formato del frontend
         const mappedProducts = (Array.isArray(fetchedData) ? fetchedData : []).map((p: any) => ({
           id: p.id || p.product_id || String(Math.random()),
           name: p.name || p.title || "Producto",
@@ -86,26 +82,24 @@ export default function CatalogoPage() {
     fetchProducts();
   }, [user]);
 
-  // 3. Ejecutar animaciones estéticas al cargar
   useEffect(() => {
     if (loadingProducts || authLoading) return;
 
     if (headerRef.current) {
       gsap.fromTo(headerRef.current, 
-        { opacity: 0, y: -30 },
+        { opacity: 0, y: -20 },
         { opacity: 1, y: 0, duration: 0.8, ease: "power3.out" }
       );
     }
 
     if (controlsRef.current) {
       gsap.fromTo(controlsRef.current, 
-        { opacity: 0, scale: 0.95 },
+        { opacity: 0, scale: 0.98 },
         { opacity: 1, scale: 1, duration: 0.6, ease: "power3.out", delay: 0.2 }
       );
     }
   }, [loadingProducts, authLoading]);
 
-  // 4. Filtrar y Ordenar productos reactivamente
   const filteredProducts = productsList.filter(p => {
     const matchesCategory = selectedCategory === "Todas" || p.category === selectedCategory.toLowerCase();
     const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -115,16 +109,14 @@ export default function CatalogoPage() {
     if (sortBy === "precio-asc") return a.price - b.price;
     if (sortBy === "precio-desc") return b.price - a.price;
     if (sortBy === "rating") return b.rating - a.rating;
-    return 0; // Default destacados / orden natural
+    return 0; 
   });
 
-  // Pantalla de carga técnica ultra premium
   if (authLoading || (user && loadingProducts)) {
     return (
-      <div className="min-h-[70vh] flex flex-col items-center justify-center bg-white dark:bg-background">
+      <div className="min-h-[70vh] flex flex-col items-center justify-center bg-transparent">
         <div className="relative w-16 h-16 mb-4">
-          <RefreshCw className="w-12 h-12 text-data-blue animate-spin absolute top-2 left-2" />
-          <div className="w-16 h-16 border-2 border-slate-900/10 dark:border-white/10 rounded-full" />
+          <span className="material-symbols-outlined text-[48px] text-data-blue animate-spin">autorenew</span>
         </div>
         <p className="font-data-label text-xs tracking-widest text-slate-500 dark:text-slate-400 uppercase animate-pulse">
           {authLoading ? "AUTENTICANDO SESIÓN..." : "SINCRONIZANDO INVENTARIO CLOUD..."}
@@ -133,126 +125,153 @@ export default function CatalogoPage() {
     );
   }
 
-  // Redirigiendo...
   if (!user) {
     return null;
   }
 
   return (
-    <main className="min-h-screen pt-8 pb-20 bg-white dark:bg-background">
-      <div className="w-full px-margin-page">
-        {/* Header */}
-        <div ref={headerRef} className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2 mb-1.5">
-              <span className="font-data-label text-[10px] bg-data-blue/10 text-data-blue px-2 py-0.5 border border-data-blue/30 uppercase">
-                Sesión Activa: {user.role}
+    <main className="min-h-screen pt-8 pb-20 bg-transparent flex-grow flex flex-col">
+      <div className="w-full px-6 md:px-margin-page">
+        {/* Header Block - Brutalist Design */}
+        <section ref={headerRef} className="relative w-full border-b border-slate-900 dark:border-white py-12 mb-12">
+          {/* Crosshairs */}
+          <div className="crosshair-tl" />
+          <div className="crosshair-tr" />
+          
+          <div className="flex flex-col gap-4 relative z-10">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="font-data-label text-[10px] bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-3 py-1 uppercase tracking-widest">
+                ACTIVO: {user.role}
               </span>
-              <span className="font-data-label text-[10px] text-slate-500 dark:text-slate-400 uppercase">
+              <span className="font-data-label text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-widest">
                 {user.email}
               </span>
             </div>
-            <h1 className="font-headline-lg text-headline-lg text-slate-900 dark:text-white uppercase">Mercado Confimax</h1>
-            <p className="font-body-md text-body-md text-slate-600 dark:text-slate-400">Compra alimentos, frescos, despensa y limpieza con precios pensados para el día a día.</p>
+            <h1 className="font-headline-lg text-headline-lg text-slate-900 dark:text-white uppercase tracking-tighter leading-none mb-2">
+              CATÁLOGO<br/>CONFIMAX
+            </h1>
+            <p className="font-body-md text-body-md text-slate-600 dark:text-slate-400 max-w-2xl border-l-2 border-data-blue pl-4 bg-slate-100/50 dark:bg-surface-variant/30 p-4">
+              Encuentra todo lo que necesitas para tu despensa y hogar. Productos garantizados y con precios justos.
+            </p>
           </div>
-        </div>
+        </section>
 
-        {/* Error de Conexión */}
+        {/* Error Block */}
         {errorMsg && (
-          <div className="bg-error/10 border border-error p-4 mb-8 flex items-start gap-3">
-            <AlertTriangle className="w-5 h-5 text-error flex-shrink-0 mt-0.5" />
+          <div className="bg-error/10 border border-error p-6 mb-12 flex items-start gap-4">
+            <span className="material-symbols-outlined text-[24px] text-error mt-1">warning</span>
             <div>
-              <h4 className="font-data-label text-xs uppercase text-error mb-1">Error de sincronización</h4>
-              <p className="font-body-sm text-xs text-slate-600 dark:text-slate-400">{errorMsg}</p>
+              <h4 className="font-data-label text-sm uppercase text-error mb-2 tracking-widest">Error de sincronización</h4>
+              <p className="font-body-md text-slate-700 dark:text-red-200">{errorMsg}</p>
             </div>
           </div>
         )}
 
-        {/* Controls */}
-        <div ref={controlsRef} className="bg-white dark:bg-surface border border-slate-900 dark:border-white p-4 mb-8">
-          <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
+        {/* Controls Block - Brutalist */}
+        <div ref={controlsRef} className="border border-slate-900 dark:border-white bg-slate-50 dark:bg-surface-dim p-6 md:p-8 mb-12 relative group transition-colors">
+          <div className="absolute top-0 left-0 w-full h-1 bg-slate-900/20 dark:bg-white/20">
+             <div className="h-full w-1/3 bg-data-blue" />
+          </div>
+          
+          <div className="flex flex-col xl:flex-row gap-6 items-start xl:items-center justify-between mt-2">
+            
             {/* Search */}
-            <div className="relative flex-1 max-w-md w-full">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+            <div className="relative flex-1 w-full xl:max-w-md">
+              <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[20px] text-slate-500">search</span>
               <input
                 type="text"
-                placeholder="Buscar en el catálogo de productos..."
+                placeholder="Buscar productos..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-slate-50 dark:bg-surface-dim border border-slate-900 dark:border-white py-2.5 pl-10 pr-4 text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-500 focus:outline-none focus:border-data-blue transition-all font-body-md"
+                className="w-full bg-white dark:bg-surface-bright border border-slate-900 dark:border-white py-3 pl-12 pr-4 text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-500 focus:outline-none focus:border-data-blue focus:ring-1 focus:ring-data-blue transition-all font-body-md min-h-[44px]"
               />
             </div>
 
-            {/* Filters & View */}
-            <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
-              {/* Category Filter */}
-              <div className="flex items-center gap-2">
-                <Filter className="w-4 h-4 text-slate-500" />
+            {/* Filters */}
+            <div className="flex flex-wrap items-center gap-4 w-full xl:w-auto">
+              <div className="relative w-full sm:w-auto flex-1 sm:flex-none">
                 <select
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="bg-slate-50 dark:bg-surface-dim border border-slate-900 dark:border-white py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-data-blue font-data-label uppercase"
+                  className="appearance-none w-full bg-white dark:bg-surface-bright border border-slate-900 dark:border-white py-3 pl-12 pr-10 text-slate-900 dark:text-white focus:outline-none focus:border-data-blue focus:ring-1 focus:ring-data-blue transition-all font-data-label uppercase tracking-widest cursor-pointer min-h-[44px]"
                 >
                   {categories.map(cat => (
-                    <option key={cat} value={cat}>{cat.charAt(0).toUpperCase() + cat.slice(1)}</option>
+                    <option key={cat} value={cat}>{cat.toUpperCase()}</option>
                   ))}
                 </select>
+                <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[20px] text-slate-500 pointer-events-none">filter_list</span>
+                <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-[20px] text-slate-500 pointer-events-none">expand_more</span>
               </div>
 
-              {/* Sort */}
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="bg-slate-50 dark:bg-surface-dim border border-slate-900 dark:border-white py-2 px-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-data-blue font-data-label uppercase"
-              >
-                <option value="destacados">Destacados</option>
-                <option value="precio-asc">Precio: Menor a Mayor</option>
-                <option value="precio-desc">Precio: Mayor a Menor</option>
-                <option value="rating">Mejor Valorados</option>
-              </select>
+              <div className="relative w-full sm:w-auto flex-1 sm:flex-none">
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="appearance-none w-full bg-white dark:bg-surface-bright border border-slate-900 dark:border-white py-3 pl-6 pr-10 text-slate-900 dark:text-white focus:outline-none focus:border-data-blue focus:ring-1 focus:ring-data-blue transition-all font-data-label uppercase tracking-widest cursor-pointer min-h-[44px]"
+                >
+                  <option value="destacados">DESTACADOS</option>
+                  <option value="precio-asc">PRECIO ASC</option>
+                  <option value="precio-desc">PRECIO DESC</option>
+                  <option value="rating">VALORADOS</option>
+                </select>
+                <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-[20px] text-slate-500 pointer-events-none">expand_more</span>
+              </div>
 
               {/* View Toggle */}
-              <div className="flex bg-slate-50 dark:bg-surface-dim border border-slate-900 dark:border-white p-1 ml-auto lg:ml-0">
+              <div className="flex bg-white dark:bg-surface-bright border border-slate-900 dark:border-white p-1 ml-auto sm:ml-0">
                 <button
                   onClick={() => setViewMode("grid")}
-                  className={`p-2 transition-colors ${viewMode === "grid" ? "bg-slate-900 dark:bg-white text-white dark:text-background" : "text-slate-500 hover:text-slate-900 dark:hover:text-white"}`}
+                  className={`p-2 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center ${viewMode === "grid" ? "bg-slate-900 dark:bg-white text-white dark:text-slate-900" : "text-slate-500 hover:text-slate-900 dark:hover:text-white"}`}
                   aria-label="Vista de cuadrícula"
                 >
-                  <Grid3X3 className="w-4 h-4" />
+                  <span className="material-symbols-outlined text-[20px]">grid_view</span>
                 </button>
                 <button
                   onClick={() => setViewMode("list")}
-                  className={`p-2 transition-colors ${viewMode === "list" ? "bg-slate-900 dark:bg-white text-white dark:text-background" : "text-slate-500 hover:text-slate-900 dark:hover:text-white"}`}
+                  className={`p-2 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center ${viewMode === "list" ? "bg-slate-900 dark:bg-white text-white dark:text-slate-900" : "text-slate-500 hover:text-slate-900 dark:hover:text-white"}`}
                   aria-label="Vista de lista"
                 >
-                  <List className="w-4 h-4" />
+                  <span className="material-symbols-outlined text-[20px]">view_list</span>
                 </button>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Results Count */}
-        <p className="font-data-label text-slate-500 dark:text-slate-400 text-sm mb-6">
-          {filteredProducts.length} PRODUCTOS ENCONTRADOS
-        </p>
+        {/* Results Info */}
+        <div className="flex items-center justify-between mb-8 pb-4 border-b border-slate-900/20 dark:border-white/20">
+          <h2 className="font-headline-lg-mobile text-slate-900 dark:text-white uppercase">
+            {selectedCategory === "Todas" ? "INVENTARIO COMPLETO" : `C/ ${selectedCategory.toUpperCase()}`}
+          </h2>
+          <span className="font-data-label text-sm text-slate-500 dark:text-slate-400 uppercase tracking-widest border border-slate-900/20 dark:border-white/20 px-3 py-1">
+            {filteredProducts.length} ITEMS
+          </span>
+        </div>
 
         {/* Products Grid/List */}
         <div className={viewMode === "grid" 
           ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" 
-          : "space-y-4"
+          : "flex flex-col gap-6"
         }>
           {filteredProducts.map((product) => (
-            <ProductCard key={product.id} product={product} viewMode={viewMode} />
+            <div key={product.id} className="transition-transform duration-300 hover:-translate-y-1">
+              <ProductCard product={product} viewMode={viewMode} />
+            </div>
           ))}
         </div>
 
         {/* Empty State */}
         {filteredProducts.length === 0 && !loadingProducts && (
-          <div className="text-center py-20">
-            <Package className="w-16 h-16 text-slate-500 mx-auto mb-4" />
-            <h3 className="font-headline-lg-mobile text-slate-900 dark:text-white mb-2 uppercase">No hay productos disponibles</h3>
-            <p className="font-body-md text-slate-600 dark:text-slate-400 mb-6">No encontramos productos en stock bajo estos filtros.</p>
+          <div className="text-center py-20 border border-slate-900 dark:border-white bg-slate-50 dark:bg-surface-dim mt-8 relative">
+            <div className="crosshair-tl" />
+            <div className="crosshair-tr" />
+            <div className="crosshair-bl" />
+            <div className="crosshair-br" />
+            <span className="material-symbols-outlined text-[64px] text-slate-500 mb-6">inventory_2</span>
+            <h3 className="font-headline-lg-mobile text-slate-900 dark:text-white mb-4 uppercase">NO ENCONTRADO</h3>
+            <p className="font-body-md text-slate-600 dark:text-slate-400 max-w-md mx-auto bg-white/50 dark:bg-surface-bright/50 p-4 border border-slate-900/10 dark:border-white/10">
+              No hay productos que coincidan con la búsqueda actual o los filtros seleccionados.
+            </p>
           </div>
         )}
       </div>

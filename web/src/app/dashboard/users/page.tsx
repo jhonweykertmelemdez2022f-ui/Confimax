@@ -1,10 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
-import { Plus, Search, RefreshCw, AlertTriangle, CheckCircle, ShieldCheck, UserCog } from "lucide-react";
-import { SquarePenIcon, DeleteIcon } from "@/components/AnimatedIcons";
 import { gsap } from "gsap";
 import { useRouter } from "next/navigation";
 
@@ -16,6 +14,12 @@ interface SystemUser {
   role: string;
 }
 
+const ROLE_OPTIONS = [
+  { value: 'vendor', label: 'VENDEDOR', color: 'bg-blue-100 text-blue-800 border-blue-300' },
+  { value: 'manager', label: 'GERENTE', color: 'bg-indigo-100 text-indigo-800 border-indigo-300' },
+  { value: 'admin', label: 'ADMIN', color: 'bg-purple-100 text-purple-800 border-purple-300' }
+];
+
 export default function UsersPage() {
   const { user, isLoading: authLoading } = useAuth();
   const router = useRouter();
@@ -25,6 +29,7 @@ export default function UsersPage() {
   const [search, setSearch] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
+  const [roleFilter, setRoleFilter] = useState("all");
 
   const [showModal, setShowModal] = useState(false);
   const [editingUser, setEditingUser] = useState<SystemUser | null>(null);
@@ -33,6 +38,7 @@ export default function UsersPage() {
   });
 
   const listRef = useRef<HTMLDivElement>(null);
+  const hasAnimated = useRef(false);
 
   useEffect(() => {
     if (!authLoading && user?.role !== "admin") {
@@ -63,13 +69,14 @@ export default function UsersPage() {
   };
 
   useEffect(() => {
-    if (!loading && listRef.current) {
+    if (!loading && listRef.current && !hasAnimated.current) {
+      hasAnimated.current = true;
       gsap.fromTo(".user-row",
         { y: 15, opacity: 0 },
         { y: 0, opacity: 1, stagger: 0.05, duration: 0.4, ease: "power2.out" }
       );
     }
-  }, [loading, systemUsers]);
+  }, [loading]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -113,148 +120,160 @@ export default function UsersPage() {
     }
   };
 
-  const filteredUsers = systemUsers.filter(u => 
-    u.username.toLowerCase().includes(search.toLowerCase()) || 
-    u.email.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredUsers = systemUsers.filter(u => {
+    const matchesSearch = u.username.toLowerCase().includes(search.toLowerCase()) || u.email.toLowerCase().includes(search.toLowerCase());
+    const matchesRole = roleFilter === "all" || u.role === roleFilter;
+    return matchesSearch && matchesRole;
+  });
 
   if (user?.role !== "admin") return null;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-[#0a0a1f] dark:text-[#f0f0ff] flex items-center gap-3">
-            <ShieldCheck className="w-8 h-8 text-[#5548e0] dark:text-[#6c63ff]" />
-            Usuarios del Sistema
+          <h1 className="font-display-xl text-4xl font-black uppercase tracking-tighter text-slate-900 dark:text-white">
+            USUARIOS DEL SISTEMA
           </h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1">Administra accesos, roles y permisos de la plataforma.</p>
+          <p className="font-data-label text-xs tracking-widest uppercase text-slate-500 dark:text-slate-400 mt-2">
+            ADMINISTRA ACCESOS, ROLES Y PERMISOS DE LA PLATAFORMA.
+          </p>
         </div>
         
-        <div className="flex items-center gap-3">
+        <div className="flex gap-4">
           <button 
             onClick={() => loadUsers()}
-            className="p-2.5 rounded-xl border border-[#e0e0f0] dark:border-[#2a2a3a] bg-[#fafafe] dark:bg-[#1a1a26] text-gray-600 dark:text-gray-300 hover:bg-[#5548e0]/10 dark:hover:bg-[#6c63ff]/10 transition-colors"
+            className="min-h-[44px] min-w-[44px] flex items-center justify-center border-2 border-slate-900 dark:border-white text-slate-900 dark:text-white hover:bg-slate-900 hover:text-white dark:hover:bg-white dark:hover:text-slate-900 transition-colors"
           >
-            <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin text-[#5548e0] dark:text-[#6c63ff]' : ''}`} />
+            <span className={`material-symbols-outlined ${loading ? 'animate-spin' : ''}`}>sync</span>
           </button>
-          
-          <button
+          <button 
             onClick={() => {
               setEditingUser(null);
               setFormData({ username: "", name: "", email: "", password: "", role: "vendor" });
               setShowModal(true);
             }}
-            className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-500 dark:to-purple-500 text-white rounded-xl font-medium transition-all shadow-md hover:shadow-lg shadow-blue-500/20 dark:shadow-purple-500/20 hover:scale-[1.02] active:scale-[0.98]"
+            className="btn-precision inline-flex items-center gap-2 bg-slate-900 text-white dark:bg-white dark:text-slate-900 hover:bg-data-blue dark:hover:bg-data-blue hover:text-white dark:hover:text-white min-h-[44px]"
           >
-            <Plus className="w-5 h-5" />
-            <span>Añadir Usuario</span>
+            <span className="material-symbols-outlined">add</span>
+            AÑADIR USUARIO
           </button>
-        </div>
+          </div>
       </div>
 
       {errorMsg && (
-        <div className="p-4 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-2xl flex items-center gap-3 text-red-600 dark:text-red-400">
-          <AlertTriangle className="w-5 h-5" />
-          <span className="font-medium">{errorMsg}</span>
+        <div className="p-4 border-2 border-error bg-error/10 flex items-center gap-3 text-error">
+          <span className="material-symbols-outlined">warning</span>
+          <span className="font-data-label font-bold text-sm uppercase">{errorMsg}</span>
         </div>
       )}
 
       {successMsg && (
-        <div className="p-4 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-500/20 rounded-2xl flex items-center gap-3 text-blue-600 dark:text-blue-400">
-          <CheckCircle className="w-5 h-5 text-blue-500" />
-          <span className="font-medium">{successMsg}</span>
+        <div className="p-4 border-2 border-data-blue bg-data-blue/10 flex items-center gap-3 text-data-blue">
+          <span className="material-symbols-outlined">check_circle</span>
+          <span className="font-data-label font-bold text-sm uppercase">{successMsg}</span>
         </div>
       )}
 
-      <div className="bg-[#fafafe] dark:bg-[#1a1a26] rounded-3xl border border-[#e0e0f0] dark:border-[#2a2a3a] shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-[#e0e0f0] dark:border-[#2a2a3a] flex items-center">
+      <div className="border-2 border-slate-900 dark:border-white bg-white dark:bg-surface relative">
+        <div className="crosshair-tl" />
+        <div className="crosshair-tr" />
+
+        <div className="p-4 border-b-2 border-slate-900 dark:border-white flex flex-col md:flex-row gap-4 bg-slate-50 dark:bg-surface-dim">
           <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">search</span>
             <input 
               type="text" 
-              placeholder="Buscar usuario por nombre o correo..." 
+              placeholder="BUSCAR POR NOMBRE O CORREO..." 
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-[#12121a] border border-[#e0e0f0] dark:border-[#2a2a3a] rounded-xl focus:ring-2 focus:ring-[#5548e0] dark:focus:ring-[#6c63ff] focus:border-transparent outline-none transition-all text-[#0a0a1f] dark:text-[#f0f0ff]"
+              className="w-full pl-10 pr-4 py-3 min-h-[44px] bg-white dark:bg-surface-bright border border-slate-900 dark:border-white font-data-label uppercase tracking-widest text-xs focus:outline-none focus:ring-1 focus:ring-data-blue"
             />
           </div>
+          <select
+            value={roleFilter}
+            onChange={(e) => setRoleFilter(e.target.value)}
+            className="min-h-[44px] px-4 bg-white dark:bg-surface-bright border border-slate-900 dark:border-white font-data-label text-xs uppercase tracking-widest cursor-pointer focus:outline-none focus:ring-1 focus:ring-data-blue"
+          >
+            <option value="all">TODOS LOS ROLES</option>
+            {ROLE_OPTIONS.map(opt => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
         </div>
 
-        <div className="overflow-x-auto" ref={listRef}>
+        <div className="overflow-x-auto min-h-[500px]" ref={listRef}>
           <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-[#f5f5ff] dark:bg-[#12121a] border-b border-[#e0e0f0] dark:border-[#2a2a3a]">
-                <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Usuario</th>
-                <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Rol de Acceso</th>
-                <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Email</th>
-                <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">Acciones</th>
+            <thead className="bg-slate-100 dark:bg-surface-dim border-b-2 border-slate-900 dark:border-white">
+              <tr>
+                <th className="p-4 font-data-label text-xs tracking-widest uppercase text-slate-500 border-r border-slate-900/10 dark:border-white/10">USUARIO</th>
+                <th className="p-4 font-data-label text-xs tracking-widest uppercase text-slate-500 border-r border-slate-900/10 dark:border-white/10">ROL DE ACCESO</th>
+                <th className="p-4 font-data-label text-xs tracking-widest uppercase text-slate-500 border-r border-slate-900/10 dark:border-white/10">EMAIL</th>
+                <th className="p-4 font-data-label text-xs tracking-widest uppercase text-slate-500 text-center">CMD</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#e0e0f0] dark:divide-[#2a2a3a]">
+            <tbody className="divide-y divide-slate-900/10 dark:divide-white/10">
               {filteredUsers.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="p-8 text-center text-gray-500 dark:text-gray-400">
-                    No se encontraron usuarios en el sistema.
+                  <td colSpan={4} className="p-16 text-center">
+                     <span className="material-symbols-outlined text-[48px] text-slate-300 mb-4">search_off</span>
+                     <p className="font-headline-lg-mobile text-lg uppercase tracking-tight text-slate-900 dark:text-white">SIN RESULTADOS</p>
                   </td>
                 </tr>
               ) : (
-                filteredUsers.map((u) => (
-                  <tr key={u.id} className="user-row hover:bg-[#5548e0]/5 dark:hover:bg-[#6c63ff]/5 transition-colors group">
-                    <td className="p-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-600 to-purple-600 dark:from-blue-500 dark:to-purple-500 text-white flex items-center justify-center font-bold">
-                          {u.username.charAt(0).toUpperCase()}
+                filteredUsers.map((u) => {
+                  const roleInfo = ROLE_OPTIONS.find(opt => opt.value === u.role) || ROLE_OPTIONS[0];
+                  return (
+                    <tr key={u.id} className="user-row hover:bg-slate-50 dark:hover:bg-surface-dim transition-colors group">
+                      <td className="p-4 border-r border-slate-900/10 dark:border-white/10">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-slate-900 dark:bg-white text-white dark:text-slate-900 flex items-center justify-center font-display-xl text-xl font-black">
+                            {u.username.charAt(0).toUpperCase()}
+                          </div>
+                          <div>
+                            <p className="font-headline-lg-mobile text-sm uppercase text-slate-900 dark:text-white">{u.username}</p>
+                            {u.name && <p className="font-data-label text-[10px] uppercase text-slate-500">{u.name}</p>}
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-semibold text-gray-900 dark:text-white">{u.username}</p>
-                          {u.name && <p className="text-xs text-gray-500 dark:text-gray-400">{u.name}</p>}
-                        </div>
-                      </div>
-                    </td>
-                    <td className="p-4">
-                      <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border capitalize ${
-                        u.role === 'admin' 
-                          ? 'bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-500/20 dark:text-purple-400 dark:border-purple-500/30'
-                          : u.role === 'manager'
-                          ? 'bg-indigo-100 text-indigo-700 border-indigo-200 dark:bg-indigo-500/20 dark:text-indigo-400 dark:border-indigo-500/30'
-                          : 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-500/20 dark:text-blue-400 dark:border-blue-500/30'
-                      }`}>
-                        {u.role === 'admin' && <ShieldCheck className="w-3.5 h-3.5" />}
-                        {u.role === 'manager' && <UserCog className="w-3.5 h-3.5" />}
-                        {u.role}
-                      </span>
-                    </td>
-                    <td className="p-4 text-gray-600 dark:text-gray-300">
-                      {u.email}
-                    </td>
-                    <td className="p-4 text-right">
-                      {u.id !== user?.id && (
-                        <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button 
-                            onClick={() => {
-                              setEditingUser(u);
-                              setFormData({
-                                username: u.username, name: u.name || "", email: u.email,
-                                password: "", role: u.role
-                              });
-                              setShowModal(true);
-                            }}
-                            className="p-2 text-[#5548e0] dark:text-[#6c63ff] hover:bg-[#5548e0]/10 dark:hover:bg-[#6c63ff]/10 rounded-lg transition-colors"
-                          >
-                            <SquarePenIcon />
-                          </button>
-                          <button 
-                            onClick={() => handleDelete(u.id)}
-                            className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors"
-                          >
-                            <DeleteIcon />
-                          </button>
-                        </div>
-                      )}
-                    </td>
-                  </tr>
-                ))
+                      </td>
+                      <td className="p-4 border-r border-slate-900/10 dark:border-white/10">
+                        <span className="font-data-label text-[10px] font-bold tracking-widest uppercase px-2 py-1 border bg-slate-100 dark:bg-surface text-slate-900 dark:text-white">
+                          {roleInfo.label}
+                        </span>
+                      </td>
+                      <td className="p-4 border-r border-slate-900/10 dark:border-white/10">
+                        <p className="font-data-label text-xs uppercase tracking-widest text-slate-900 dark:text-white">
+                          {u.email}
+                        </p>
+                      </td>
+                      <td className="p-4 text-center">
+                        {u.id !== user?.id && (
+                          <div className="flex items-center justify-center gap-2">
+                            <button 
+                              onClick={() => {
+                                setEditingUser(u);
+                                setFormData({
+                                  username: u.username, name: u.name || "", email: u.email,
+                                  password: "", role: u.role
+                                });
+                                setShowModal(true);
+                              }}
+                              className="min-w-[44px] min-h-[44px] inline-flex items-center justify-center border border-slate-900 dark:border-white text-slate-900 dark:text-white hover:bg-slate-900 hover:text-white dark:hover:bg-white dark:hover:text-slate-900 transition-colors"
+                            >
+                              <span className="material-symbols-outlined">edit</span>
+                            </button>
+                            <button 
+                              onClick={() => handleDelete(u.id)}
+                              className="min-w-[44px] min-h-[44px] inline-flex items-center justify-center border border-error text-error bg-error/10 hover:bg-error hover:text-white transition-colors"
+                            >
+                              <span className="material-symbols-outlined">delete</span>
+                            </button>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
@@ -262,49 +281,51 @@ export default function UsersPage() {
       </div>
 
       {showModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md">
-          <div className="bg-white dark:bg-[#1a1a26] rounded-3xl w-full max-w-xl shadow-2xl border border-[#e0e0f0] dark:border-[#2a2a3a] overflow-hidden">
-            <div className="px-6 py-4 border-b border-[#e0e0f0] dark:border-[#2a2a3a] flex items-center justify-between">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                {editingUser ? 'Editar Usuario' : 'Añadir Usuario'}
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+          <div className="bg-white dark:bg-surface border-2 border-slate-900 dark:border-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] w-full max-w-xl relative">
+            <div className="crosshair-tl" />
+            <div className="crosshair-tr" />
+            <div className="p-4 border-b-2 border-slate-900 dark:border-white bg-slate-50 dark:bg-surface-dim flex items-center justify-between shrink-0">
+              <h2 className="font-headline-lg-mobile text-xl uppercase tracking-tighter">
+                {editingUser ? 'EDITAR USUARIO' : 'AÑADIR USUARIO'}
               </h2>
-              <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                &times;
+              <button onClick={() => setShowModal(false)} className="p-1 hover:text-error transition-colors">
+                <span className="material-symbols-outlined">close</span>
               </button>
             </div>
             <form onSubmit={handleSave} className="p-6 space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="col-span-2 sm:col-span-1">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Username</label>
-                  <input required type="text" value={formData.username} onChange={e => setFormData({...formData, username: e.target.value})} className="w-full px-4 py-2.5 rounded-xl border border-[#e0e0f0] dark:border-[#2a2a3a] bg-[#f5f5ff]/50 dark:bg-[#12121a] text-[#0a0a1f] dark:text-[#f0f0ff] focus:ring-2 focus:ring-[#5548e0] dark:focus:ring-[#6c63ff] outline-none" />
+                  <label className="font-data-label text-[10px] tracking-widest uppercase font-bold block mb-1">USERNAME</label>
+                  <input required type="text" value={formData.username} onChange={e => setFormData({...formData, username: e.target.value})} className="w-full px-4 py-3 min-h-[44px] bg-white dark:bg-surface-bright border border-slate-900 dark:border-white font-data-label text-sm outline-none focus:ring-1 focus:ring-data-blue" />
                 </div>
                 <div className="col-span-2 sm:col-span-1">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nombre Real</label>
-                  <input type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full px-4 py-2.5 rounded-xl border border-[#e0e0f0] dark:border-[#2a2a3a] bg-[#f5f5ff]/50 dark:bg-[#12121a] text-[#0a0a1f] dark:text-[#f0f0ff] focus:ring-2 focus:ring-[#5548e0] dark:focus:ring-[#6c63ff] outline-none" />
+                  <label className="font-data-label text-[10px] tracking-widest uppercase font-bold block mb-1">NOMBRE REAL</label>
+                  <input type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full px-4 py-3 min-h-[44px] bg-white dark:bg-surface-bright border border-slate-900 dark:border-white font-data-label text-sm outline-none focus:ring-1 focus:ring-data-blue" />
                 </div>
                 <div className="col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Correo Electrónico</label>
-                  <input required type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} className="w-full px-4 py-2.5 rounded-xl border border-[#e0e0f0] dark:border-[#2a2a3a] bg-[#f5f5ff]/50 dark:bg-[#12121a] text-[#0a0a1f] dark:text-[#f0f0ff] focus:ring-2 focus:ring-[#5548e0] dark:focus:ring-[#6c63ff] outline-none" />
+                  <label className="font-data-label text-[10px] tracking-widest uppercase font-bold block mb-1">CORREO ELECTRÓNICO</label>
+                  <input required type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} className="w-full px-4 py-3 min-h-[44px] bg-white dark:bg-surface-bright border border-slate-900 dark:border-white font-data-label text-sm outline-none focus:ring-1 focus:ring-data-blue" />
                 </div>
                 <div className="col-span-2 sm:col-span-1">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Contraseña {editingUser && '(Dejar vacío para no cambiar)'}</label>
-                  <input type="password" required={!editingUser} value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} className="w-full px-4 py-2.5 rounded-xl border border-[#e0e0f0] dark:border-[#2a2a3a] bg-[#f5f5ff]/50 dark:bg-[#12121a] text-[#0a0a1f] dark:text-[#f0f0ff] focus:ring-2 focus:ring-[#5548e0] dark:focus:ring-[#6c63ff] outline-none" />
+                  <label className="font-data-label text-[10px] tracking-widest uppercase font-bold block mb-1">CONTRASEÑA {editingUser && '(DEJAR VACÍO PARA NO CAMBIAR)'}</label>
+                  <input type="password" required={!editingUser} value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} className="w-full px-4 py-3 min-h-[44px] bg-white dark:bg-surface-bright border border-slate-900 dark:border-white font-data-label text-sm outline-none focus:ring-1 focus:ring-data-blue" />
                 </div>
                 <div className="col-span-2 sm:col-span-1">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Rol de Acceso</label>
-                  <select value={formData.role} onChange={e => setFormData({...formData, role: e.target.value})} className="w-full px-4 py-2.5 rounded-xl border border-[#e0e0f0] dark:border-[#2a2a3a] bg-[#f5f5ff]/50 dark:bg-[#12121a] text-[#0a0a1f] dark:text-[#f0f0ff] focus:ring-2 focus:ring-[#5548e0] dark:focus:ring-[#6c63ff] outline-none">
-                    <option value="vendor">Vendedor</option>
-                    <option value="manager">Gerente</option>
-                    <option value="admin">Administrador</option>
+                  <label className="font-data-label text-[10px] tracking-widest uppercase font-bold block mb-1">ROL DE ACCESO</label>
+                  <select value={formData.role} onChange={e => setFormData({...formData, role: e.target.value})} className="w-full px-4 py-3 min-h-[44px] bg-white dark:bg-surface-bright border border-slate-900 dark:border-white font-data-label text-sm outline-none focus:ring-1 focus:ring-data-blue">
+                    <option value="vendor">VENDEDOR</option>
+                    <option value="manager">GERENTE</option>
+                    <option value="admin">ADMINISTRADOR</option>
                   </select>
                 </div>
               </div>
-              <div className="pt-4 flex justify-end gap-3 border-t border-[#e0e0f0] dark:border-[#2a2a3a]">
-                <button type="button" onClick={() => setShowModal(false)} className="px-5 py-2.5 rounded-xl font-medium text-gray-500 dark:text-gray-400 hover:bg-[#e0e0f0] dark:hover:bg-[#2a2a3a]">
-                  Cancelar
+              <div className="pt-4 flex justify-end gap-3 border-t-2 border-slate-900 dark:border-white mt-6">
+                <button type="button" onClick={() => setShowModal(false)} className="min-h-[44px] px-5 py-2.5 border border-slate-900 dark:border-white font-data-label text-xs tracking-widest uppercase font-bold text-slate-900 dark:text-white hover:bg-slate-900 hover:text-white dark:hover:bg-white dark:hover:text-slate-900 transition-colors">
+                  CANCELAR
                 </button>
-                <button type="submit" disabled={loading} className="px-5 py-2.5 rounded-xl font-medium text-white bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-500 dark:to-purple-500 shadow-md shadow-blue-500/20 dark:shadow-purple-500/20 hover:scale-[1.02] active:scale-[0.98] transition-transform disabled:opacity-50">
-                  {loading ? 'Guardando...' : 'Guardar Usuario'}
+                <button type="submit" disabled={loading} className="min-h-[44px] px-5 py-2.5 bg-slate-900 text-white dark:bg-white dark:text-slate-900 hover:bg-data-blue dark:hover:bg-data-blue hover:text-white dark:hover:text-white font-data-label text-xs tracking-widest uppercase font-bold transition-colors disabled:opacity-50">
+                  {loading ? 'GUARDANDO...' : 'GUARDAR USUARIO'}
                 </button>
               </div>
             </form>
