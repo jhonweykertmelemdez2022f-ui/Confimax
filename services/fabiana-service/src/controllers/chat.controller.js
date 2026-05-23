@@ -7,10 +7,10 @@ const groq = new Groq({
 });
 
 const formatDataForContext = (data, role) => {
-  let context = '';
+  let context = '\n\nINFORMACIÓN CONTEXTUAL (USA ESTOS DATOS PARA RESPONDER EN FORMATO DE TABLA MARKDOWN):\n';
   
   if (data.products && data.products.length > 0) {
-    context += '\n\n=== PRODUCTOS DISPONIBLES ===\n';
+    context += '\n\n## PRODUCTOS DISPONIBLES\n';
     context += '| Producto | SKU | Precio | Stock |\n';
     context += '|----------|-----|--------|-------|\n';
     data.products.forEach(p => {
@@ -19,7 +19,7 @@ const formatDataForContext = (data, role) => {
   }
   
   if (data.customers && data.customers.length > 0) {
-    context += '\n\n=== CLIENTES ===\n';
+    context += '\n\n## CLIENTES\n';
     context += '| Nombre | Email | Teléfono |\n';
     context += '|--------|-------|----------|\n';
     data.customers.forEach(c => {
@@ -28,7 +28,7 @@ const formatDataForContext = (data, role) => {
   }
   
   if (data.sales && data.sales.length > 0) {
-    context += '\n\n=== VENTAS RECIENTES ===\n';
+    context += '\n\n## VENTAS RECIENTES\n';
     context += '| Venta # | Cliente | Total | Fecha |\n';
     context += '|---------|---------|-------|-------|\n';
     data.sales.forEach(s => {
@@ -38,13 +38,15 @@ const formatDataForContext = (data, role) => {
   }
   
   if (data.users && data.users.length > 0) {
-    context += '\n\n=== USUARIOS ===\n';
+    context += '\n\n## USUARIOS\n';
     context += '| Usuario | Email | Rol |\n';
     context += '|---------|-------|-----|\n';
     data.users.forEach(u => {
       context += `| ${u.username} | ${u.email} | ${u.role} |\n`;
     });
   }
+  
+  context += '\n\nINSTRUCCIONES: RESPONDE USANDO EXACTAMENTE EL MISMO FORMATO DE TABLA MARKDOWN. NO USES LISTAS, USA SOLO TABLAS.\n';
   
   return context;
 };
