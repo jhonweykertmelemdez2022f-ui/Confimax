@@ -93,9 +93,9 @@ const Order = {
   async updateStatus(id, status) {
     const result = await pool.query(
       `UPDATE sales.orders SET status = $1, updated_at = NOW(), 
-       completed_at = CASE WHEN $1 = 'delivered' THEN NOW() ELSE completed_at END
-       WHERE id = $2 RETURNING *`,
-      [status, id]
+       completed_at = CASE WHEN $2 = 'delivered' THEN NOW() ELSE completed_at END
+       WHERE id = $3 RETURNING *`,
+      [status, status, id]
     );
     return result.rows[0];
   },
