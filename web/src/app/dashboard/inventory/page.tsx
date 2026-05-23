@@ -72,7 +72,7 @@ export default function InventoryPage() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const payload = {
+      const payload: any = {
         name: formData.name,
         sku: formData.sku,
         description: formData.description,
@@ -81,9 +81,12 @@ export default function InventoryPage() {
         is_active: true,
         stock_quantity: parseInt(formData.stock),
         category_id: formData.category_id,
-        image_url: formData.image,
         expiration_date: formData.expiration_date || null
       };
+
+      if (formData.image && formData.image.trim() !== "") {
+        payload.image_url = formData.image;
+      }
 
       if (editingProduct) {
         await api.updateProduct(editingProduct.id, payload);

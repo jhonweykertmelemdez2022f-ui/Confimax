@@ -66,31 +66,55 @@ const Product = {
       ? parseFloat(cost_price)
       : (unit_price ? parseFloat(unit_price) * 0.7 : 0.0);
 
+    const insertFields = ['name', 'sku', 'barcode', 'description', 'category_id', 'unit_price', 'cost_price', 'stock_quantity', 'min_stock_level', 'expiration_date'];
+    const insertValues = [
+      name, 
+      sku, 
+      barcode || null, 
+      description || null, 
+      finalCategoryId, 
+      unit_price ? parseFloat(unit_price) : 0.0, 
+      finalCostPrice, 
+      finalStockQuantity,
+      finalMinStockLevel, 
+      expiration_date || null
+    ];
+
+    // Only add image_url if it's provided
+    if (image_url) {
+      insertFields.push('image_url');
+      insertValues.push(image_url);
+    }
+
+    const placeholders = insertValues.map((_, i) => `$${i + 1}`).join(',');
     const { rows } = await query(
-      'INSERT INTO products (name, sku, barcode, description, category_id, unit_price, cost_price, stock_quantity, min_stock_level, expiration_date, image_url) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING *',
-      [
-        name, 
-        sku, 
-        barcode || null, 
-        description || null, 
-        finalCategoryId, 
-        unit_price ? parseFloat(unit_price) : 0.0, 
-        finalCostPrice, 
-        finalStockQuantity,
-        finalMinStockLevel, 
-        expiration_date || null, 
-        image_url || null
-      ]
+      `INSERT INTO products (${insertFields.join(',')}) VALUES (${placeholders}) RETURNING *`,
+      insertValues
     );
     return rows[0];
   },
 
   async update(id, data) {
-    const fields = []; const values = []; let idx = 1;
-    ['name','sku','barcode','description','category_id','unit_price','cost_price','stock_quantity','min_stock_level','expiration_date','image_url','active'].forEach((f) => {
-      if (data[f] !== undefined) { fields.push(`${f} = $${idx++}`); values.push(data[f]); }
+    const fields = []; 
+    const values = []; 
+    let idx = 1;
+    
+    const allowedFields = ['name','sku','barcode','description','category_id','unit_price','cost_price','stock_quantity','min_stock_level','expiration_date','active'];
+    
+    // Only add image_url if it's explicitly provided and not null/undefined
+    if (data.image_url !== undefined) {
+      allowedFields.push('image_url');
+    }
+
+    allowedFields.forEach((f) => {
+      if (data[f] !== undefined) { 
+        fields.push(`${f} = $${idx++}`); 
+        values.push(data[f]); 
+      }
     });
+
     if (!fields.length) return null;
+    
     values.push(id);
     const { rows } = await query(`UPDATE products SET ${fields.join(', ')} WHERE id = $${idx} RETURNING *`, values);
     return rows[0];
