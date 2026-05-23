@@ -47,6 +47,14 @@ const cacheService = {
     if (!redisClient) return;
     await redisClient.del(key);
   },
+
+  async delPattern(pattern) {
+    if (!redisClient) return;
+    const keys = await redisClient.keys(pattern);
+    if (keys.length > 0) {
+      await redisClient.del(keys);
+    }
+  },
 };
 
 module.exports = {
