@@ -64,8 +64,6 @@ const Product = {
     );
     if (!result.rows[0]) return null;
     const product = result.rows[0];
-    product.price = product.unit_price;
-    product.cost = product.cost_price;
     
     const tableExists = await checkProductImagesTable();
     if (tableExists) {
@@ -89,12 +87,7 @@ const Product = {
       'SELECT * FROM inventory.products WHERE sku = $1 AND is_active = true',
       [sku]
     );
-    const product = result.rows[0];
-    if (product) {
-      product.price = product.unit_price;
-      product.cost = product.cost_price;
-    }
-    return product;
+    return result.rows[0];
   },
 
   async searchByName(query, limit = 20) {
@@ -107,11 +100,7 @@ const Product = {
        LIMIT $2`,
       [`%${query}%`, limit]
     );
-    return result.rows.map(product => ({
-      ...product,
-      price: product.unit_price,
-      cost: product.cost_price
-    }));
+    return result.rows;
   },
 
   async searchABC(prefix, limit = 20) {
@@ -124,11 +113,7 @@ const Product = {
        LIMIT $2`,
       [`${prefix}%`, limit]
     );
-    return result.rows.map(product => ({
-      ...product,
-      price: product.unit_price,
-      cost: product.cost_price
-    }));
+    return result.rows;
   },
 
   async create(productData) {
@@ -157,16 +142,13 @@ const Product = {
 
       const primaryImageUrl = imageUrls.length > 0 ? imageUrls[0] : null;
 
-      const unitPrice = price !== undefined ? price : productData.unit_price;
-      const costPrice = cost !== undefined ? cost : productData.cost_price;
-
       const result = await client.query(
         `INSERT INTO inventory.products 
-         (name, sku, description, category_id, unit_price, cost_price, is_active, expiration_date, stock_quantity, image_url) 
+         (name, sku, description, category_id, price, cost, is_active, expiration_date, stock_quantity, image_url) 
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
          RETURNING *`,
         [
-          name, sku, description, category_id, unitPrice, costPrice, 
+          name, sku, description, category_id, price, cost, 
           is_active !== undefined ? is_active : true, 
           expiration_date || null,
           stock_quantity || 0,
@@ -233,20 +215,11 @@ const Product = {
         'name', 'sku', 'description', 'category_id', 
         'is_active', 'expiration_date', 'stock_quantity', 'image_url',
         'barcode', 'weight_class', 'expiration_class', 'size_class',
-        'unit_price', 'cost_price', 'min_stock_level'
+        'price', 'cost', 'min_stock_level'
       ];
 
-      // Map compatibility fields to database columns
-      const mappedData = { ...productData };
-      if (mappedData.price !== undefined) {
-        mappedData.unit_price = mappedData.price;
-      }
-      if (mappedData.cost !== undefined) {
-        mappedData.cost_price = mappedData.cost;
-      }
-
-      for (const [key, value] of Object.entries(mappedData)) {
-        if (value !== undefined && key !== 'id' && key !== 'images' && key !== 'price' && key !== 'cost' && allowedColumns.includes(key)) {
+      for (const [key, value] of Object.entries(productData)) {
+        if (value !== undefined && key !== 'id' && key !== 'images' && allowedColumns.includes(key)) {
           fields.push(`${key} = $${paramCount}`);
           values.push(value);
           paramCount++;
@@ -323,7 +296,8 @@ const Product = {
     const products = result.rows;
     
     // Get images for all products if table exists
-    if (products.length > 0) {
+    const tableExists = await checkProductImagesTable();
+    if (tableExists && products.length > 0) {
       try {
         const productIds = products.map(p => p.id);
         const imagesResult = await pool.query(
@@ -340,20 +314,20 @@ const Product = {
           imagesByProduct[img.product_id].push(img);
         });
         
-        // Add images and compatibility fields to each product
+        // Add images to each product
         products.forEach(product => {
           product.images = imagesByProduct[product.id] || [];
-          product.price = product.unit_price;
-          product.cost = product.cost_price;
         });
       } catch (err) {
         // If product_images table doesn't exist, set images as empty array for all products
         products.forEach(product => {
           product.images = [];
-          product.price = product.unit_price;
-          product.cost = product.cost_price;
         });
       }
+    } else {
+      products.forEach(product => {
+        product.images = [];
+      });
     }
     
     return products;
@@ -381,11 +355,7 @@ const Product = {
        ORDER BY p.expiration_date ASC`,
       [daysAhead]
     );
-    return result.rows.map(product => ({
-      ...product,
-      price: product.unit_price,
-      cost: product.cost_price
-    }));
+    return result.rows;
   },
 };
 
