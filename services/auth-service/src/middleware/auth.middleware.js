@@ -29,7 +29,19 @@ const authorize = (...roles) => {
       return res.status(401).json({ message: 'Not authenticated' });
     }
 
-    if (!roles.includes(req.user.role)) {
+    // Map old role values to new ones for backward compatibility
+    let userRole = req.user.role;
+    if (userRole === 'cliente') userRole = 'customer';
+    if (userRole === 'vendedor') userRole = 'vendor';
+
+    // Also map requested roles for backward compatibility
+    const normalizedRoles = roles.map(role => {
+      if (role === 'cliente') return 'customer';
+      if (role === 'vendedor') return 'vendor';
+      return role;
+    });
+
+    if (!normalizedRoles.includes(userRole)) {
       return res.status(403).json({ message: 'Insufficient permissions' });
     }
 
