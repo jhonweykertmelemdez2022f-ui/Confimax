@@ -60,9 +60,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* Botón menú móvil */}
       <button 
         onClick={() => setIsSidebarOpen(true)}
-        className="lg:hidden fixed top-4 left-4 z-50 p-3 bg-white dark:bg-surface border border-slate-900 dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] text-slate-900 dark:text-white"
+        className="lg:hidden fixed top-3 left-3 z-50 p-2.5 bg-data-blue text-white border-2 border-slate-900 dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all"
       >
-        <span className="material-symbols-outlined text-[28px]">menu</span>
+        <span className="material-symbols-outlined text-[24px]">menu</span>
       </button>
  
       {/* Overlay móvil */}
@@ -76,7 +76,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* Sidebar - Brutalist */}
       <aside className={`
         fixed lg:static top-0 left-0 min-h-screen z-50
-        w-72 bg-white dark:bg-surface border-r-2 border-slate-900 dark:border-white
+        w-64 lg:w-72 bg-white dark:bg-surface border-r-2 border-slate-900 dark:border-white
         transform transition-transform duration-300 ease-in-out
         ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         flex flex-col
@@ -93,13 +93,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <p className="font-data-label text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-widest mt-1">Admin Panel</p>
             </div>
           </div>
-          <button onClick={() => setIsSidebarOpen(false)} className="lg:hidden p-2 text-slate-500 hover:text-slate-900 dark:hover:text-white border border-slate-900 dark:border-white relative z-10">
+          <button onClick={() => setIsSidebarOpen(false)} className="lg:hidden p-2 text-slate-900 dark:text-white border border-slate-900 dark:border-white bg-slate-100 dark:bg-surface-dim">
             <span className="material-symbols-outlined text-[20px]">close</span>
           </button>
         </div>
 
         <div className="p-4 flex-1 overflow-y-auto brutal-scrollbar">
-          <div className="mb-6 p-4 border border-slate-900 dark:border-white bg-white dark:bg-surface-bright">
+          <div className="mb-6 p-4 border border-slate-900 dark:border-white bg-white dark:bg-surface-bright shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
             <p className="font-data-label text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1">OPERADOR</p>
             <p className="font-headline-lg-mobile text-lg truncate uppercase leading-none mb-2">{user.name}</p>
             <span className="inline-block px-3 py-1 font-data-label text-[10px] font-bold bg-slate-900 dark:bg-white text-white dark:text-slate-900 border border-transparent uppercase tracking-widest">
@@ -120,13 +120,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     sidebar-link flex items-center gap-3 px-4 py-3 border transition-all duration-200 group
                     ${isActive 
                       ? 'border-slate-900 dark:border-white bg-data-blue text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] translate-y-[-2px] translate-x-[-2px]' 
-                      : 'border-transparent text-slate-600 dark:text-slate-400 hover:border-slate-900/30 dark:hover:border-white/30 hover:bg-slate-50 dark:hover:bg-surface-dim hover:text-slate-900 dark:hover:text-white'}
+                      : 'border-transparent text-slate-800 dark:text-slate-200 hover:border-slate-900/30 dark:hover:border-white/30 hover:bg-slate-50 dark:hover:bg-surface-dim hover:text-slate-900 dark:hover:text-white'}
                   `}
                 >
                   <span className={`material-symbols-outlined text-[20px] ${isActive ? 'text-white' : 'group-hover:text-data-blue'}`}>
                     {link.icon}
                   </span>
-                  <span className="font-data-label text-xs font-bold uppercase tracking-widest">{link.name}</span>
+                  <span className="font-data-label text-sm font-bold uppercase tracking-widest">{link.name}</span>
                 </Link>
               );
             })}
@@ -136,14 +136,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <div className="p-4 border-t-2 border-slate-900 dark:border-white bg-slate-100 dark:bg-surface-dim flex flex-col gap-3">
           <button
             onClick={(e) => toggleTheme({ x: e.clientX, y: e.clientY })}
-            className="w-full flex items-center justify-center lg:justify-between px-3 py-3 border border-slate-900 dark:border-white bg-white dark:bg-surface hover:bg-slate-50 dark:hover:bg-surface-bright transition-colors font-data-label text-xs uppercase tracking-widest font-bold"
+            className="w-full flex items-center justify-between px-4 py-3 border border-slate-900 dark:border-white bg-white dark:bg-surface hover:bg-slate-50 dark:hover:bg-surface-bright transition-colors font-data-label text-xs uppercase tracking-widest font-bold"
           >
-            <div className="flex items-center gap-3">
-              <span className="material-symbols-outlined text-[24px]">
-                {theme === "dark" ? "light_mode" : "dark_mode"}
-              </span>
-              <span className="hidden lg:inline">{theme === "dark" ? "MODO CLARO" : "MODO OSCURO"}</span>
-            </div>
+            <span className="hidden lg:inline">{theme === "dark" ? "MODO CLARO" : "TEMA ACTUAL"}</span>
+            <span className="lg:hidden">{theme === "dark" ? "CLARO" : "OSCURO"}</span>
+            <span className="material-symbols-outlined text-[20px]">
+              {theme === "dark" ? "light_mode" : "dark_mode"}
+            </span>
           </button>
           
           <button
@@ -151,7 +150,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             className="w-full flex items-center gap-3 px-4 py-3 border border-error bg-error/10 text-error hover:bg-error hover:text-white transition-colors font-data-label text-xs uppercase tracking-widest font-bold"
           >
             <span className="material-symbols-outlined text-[20px]">logout</span>
-            CERRAR SESIÓN
+            SALIR
           </button>
         </div>
       </aside>

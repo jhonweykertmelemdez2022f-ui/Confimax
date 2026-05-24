@@ -234,7 +234,7 @@ export default function Navbar() {
             <Link href="/" className="font-headline-lg text-headline-lg text-slate-900 dark:text-white uppercase tracking-tighter hidden md:block">
               CONFIMAX
             </Link>
-            <Link href="/" className="font-headline-lg-mobile text-headline-lg-mobile text-slate-900 dark:text-white uppercase tracking-tighter md:hidden">
+            <Link href="/" className="font-headline-lg-mobile text-2xl text-slate-900 dark:text-white uppercase tracking-tighter md:hidden">
               CONFIMAX
             </Link>
           </div>
@@ -249,21 +249,21 @@ export default function Navbar() {
 
           <div className="flex items-center gap-2 sm:gap-4">
             <button
-              className="theme-toggle text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors duration-200 border border-slate-900 dark:border-white p-2 sm:px-4 sm:py-2 uppercase flex items-center gap-2"
+              className="theme-toggle text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors duration-200 border border-slate-900 dark:border-white p-1.5 sm:px-4 sm:py-2 uppercase flex items-center gap-2"
               onClick={(event) => toggleTheme({ x: event.clientX, y: event.clientY })}
             >
-              {theme === "dark" ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-              <span className="hidden sm:inline font-data-label text-data-label">{theme === "dark" ? "CLARO" : "OSCURO"}</span>
+              {theme === "dark" ? <Sun className="w-4 h-4 sm:w-5 sm:h-5" /> : <Moon className="w-4 h-4 sm:w-5 sm:h-5" />}
+              <span className="hidden sm:inline font-data-label text-[10px] sm:text-data-label">{theme === "dark" ? "CLARO" : "OSCURO"}</span>
             </button>
 
             <button
-              className="text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors duration-200 p-2 border border-transparent hover:border-slate-900 dark:hover:border-white focus:outline-none relative"
+              className="text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors duration-200 p-1.5 sm:p-2 border border-slate-900 dark:border-white hover:border-slate-900 dark:hover:border-white focus:outline-none relative bg-white dark:bg-surface sm:bg-transparent"
               onClick={() => setIsOpen(true)}
               aria-label="Abrir carrito"
             >
-              <ShoppingCart className="w-6 h-6" />
+              <ShoppingCart className="w-5 h-5 sm:w-6 sm:h-6" />
               {totalItems > 0 && (
-                <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 bg-accent-pink text-white text-[10px] leading-5 text-center font-data-label rounded-full">
+                <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 bg-accent-pink text-white text-[10px] leading-5 text-center font-data-label rounded-full shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
                   {totalItems}
                 </span>
               )}
@@ -304,7 +304,7 @@ export default function Navbar() {
               <Link
                 key={link.name}
                 href={link.href}
-                className={`${isActive(link.href) ? "text-data-blue border-l-4 border-data-blue bg-blue-50/50 dark:bg-blue-900/10 pl-3 font-bold" : "text-slate-700 dark:text-slate-300 pl-4 border-l-4 border-transparent"} hover:bg-slate-100 dark:hover:bg-surface-bright font-data-label text-data-label uppercase py-4 transition-colors`}
+                className={`${isActive(link.href) ? "text-data-blue border-l-4 border-data-blue bg-blue-50/50 dark:bg-blue-900/10 pl-3 font-bold" : "text-slate-900 dark:text-slate-100 pl-4 border-l-4 border-transparent"} hover:bg-slate-100 dark:hover:bg-surface-bright font-data-label text-sm uppercase py-4 transition-colors border-b border-slate-100 dark:border-white/5`}
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 {link.name}
@@ -312,13 +312,16 @@ export default function Navbar() {
             ))}
           </div>
 
-          <div className="p-4 border-t border-slate-200 dark:border-white/10 flex items-center justify-between">
-            <p className="text-xs text-slate-500 dark:text-secondary text-center uppercase font-data-label">Confimax v1.0</p>
+          <div className="p-6 border-t border-slate-900 dark:border-white bg-slate-50 dark:bg-surface-dim flex items-center justify-between">
+            <div className="flex flex-col">
+              <p className="text-[10px] text-slate-500 dark:text-secondary uppercase font-data-label tracking-widest">Confimax System</p>
+              <p className="text-[10px] text-slate-400 dark:text-slate-500 uppercase font-data-label">v1.0.2 - 2026</p>
+            </div>
             <button
-              className="theme-toggle text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors duration-200 p-2 rounded-full"
+              className="theme-toggle text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors duration-200 p-3 border border-slate-900 dark:border-white bg-white dark:bg-surface"
               onClick={(event) => toggleTheme({ x: event.clientX, y: event.clientY })}
             >
-              {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              {theme === "dark" ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
             </button>
           </div>
         </div>
