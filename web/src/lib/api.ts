@@ -408,10 +408,26 @@ class ApiClient {
 
   // Fabiana Chatbot Service
   async chatWithFabiana(messages: Array<{ role: 'user' | 'assistant'; content: string }>, role?: string) {
-    return this.request<FabianaChatResponse>('/fabiana/chat', {
-      method: 'POST',
-      body: JSON.stringify({ messages, role: role || 'cliente' }),
-    }, true);
+    const url = `${this.baseUrl}/fabiana/chat`;
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ messages, role: role || 'cliente' }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error en la petición: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data as FabianaChatResponse;
+    } catch (error) {
+      console.error('API Error [/fabiana/chat]:', error);
+      throw error;
+    }
   }
 
   async downloadProductsPDF() {
