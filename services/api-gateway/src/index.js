@@ -182,6 +182,20 @@ if (MONOLITH_MODE) {
   const backendTarget = process.env.BACKEND_SERVICE_URL || 'http://backend:3006';
   console.log(`[GATEWAY] 🚀 Running in MONOLITH MODE: Proxying all /api/* -> ${backendTarget}`);
 
+  // Fabiana Service (chatbot) - PRIMERO, PUBLICO, NO REQUIERE AUTH!
+  app.use('/api/fabiana', createServiceProxy('fabiana-monolith', {
+    target: backendTarget,
+    pathRewrite: { '^/api/fabiana': '/fabiana' },
+    changeOrigin: true,
+  }));
+
+  // Webhook Service (publico) - PRIMERO, NO REQUIERE AUTH!
+  app.use('/api/webhooks', createServiceProxy('webhook-monolith', {
+    target: backendTarget,
+    pathRewrite: { '^/api/webhooks': '/webhooks' },
+    changeOrigin: true,
+  }));
+
   // Compatibilidad de rutas unificadas (/api/backend/audit -> /api/audit)
   app.use('/api/backend', authenticateGateway, createServiceProxy('backend-monolith-compat', {
     target: backendTarget,
@@ -196,6 +210,12 @@ if (MONOLITH_MODE) {
   }));
 } else {
   console.log(`[GATEWAY] 🧩 Running in MICROSERVICES MODE`);
+
+  // Fabiana Service (chatbot) - PRIMERO, PUBLICO, NO REQUIERE AUTH!
+  app.use('/api/fabiana', createServiceProxy('fabiana', SERVICES.fabiana));
+
+  // Webhook Service (publico) - PRIMERO, NO REQUIERE AUTH!
+  app.use('/api/webhooks', createServiceProxy('webhook', SERVICES.webhook));
 
   // Auth service (login/register publicos, resto protegido)
   app.use('/api/auth', createServiceProxy('auth', SERVICES.auth));
@@ -224,12 +244,6 @@ if (MONOLITH_MODE) {
     pathRewrite: { '^/api/notifications': '/notifications' },
     changeOrigin: true,
   }));
-
-  // Fabiana Service (chatbot)
-  app.use('/api/fabiana', createServiceProxy('fabiana', SERVICES.fabiana));
-
-  // Webhook Service (publico)
-  app.use('/api/webhooks', createServiceProxy('webhook', SERVICES.webhook));
 
   // Backend unificado (protegido por JWT)
   app.use('/api/backend', authenticateGateway, createServiceProxy('backend', SERVICES.backend));
