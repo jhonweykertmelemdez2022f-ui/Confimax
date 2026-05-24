@@ -37,7 +37,7 @@ const Profile = {
   },
 
   async create(profileData) {
-    const { username, email, password, role = 'vendor' } = profileData;
+    const { username, email, password, role = 'cliente' } = profileData;
     const result = await pool.query(
       `INSERT INTO public.users (username, email, password, role, active) 
        VALUES ($1, $2, $3, $4, true) 

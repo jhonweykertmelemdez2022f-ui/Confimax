@@ -23,7 +23,7 @@ const AuthService = {
       username: cleanUsername,
       email: cleanEmail,
       password: hashedPassword || password,
-      role: role || 'customer',
+      role: role || 'cliente',
       phone,
     });
 

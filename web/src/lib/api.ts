@@ -377,7 +377,7 @@ class ApiClient {
     return this.request(`/backend/audit${queryString}`, { method: 'GET' });
   }
 
-  async createUser(data: { username: string; email: string; password?: string; role: string; name?: string }) {
+  async createUser(data: { username: string; email: string; password?: string; role: string; active?: boolean }) {
     return this.request('/auth/users', {
       method: 'POST',
       body: JSON.stringify({
@@ -385,12 +385,12 @@ class ApiClient {
         email: data.email,
         password: data.password || 'Confimax123*',
         role: data.role,
-        name: data.name
+        active: data.active !== undefined ? data.active : true
       }),
     });
   }
 
-  async updateUser(id: string, data: { username?: string; email?: string; role?: string; name?: string }) {
+  async updateUser(id: string, data: { username?: string; email?: string; role?: string; active?: boolean }) {
     return this.request(`/auth/users/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),

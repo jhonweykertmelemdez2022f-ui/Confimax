@@ -5,7 +5,7 @@ const { User } = require('../models/user.model');
 
 const AuthService = {
   async register(data) {
-    const { username, email, password, role = 'vendor' } = data;
+    const { username, email, password, role = 'cliente' } = data;
     const existing = await User.findByUsername(username) || await User.findByEmail(email);
     if (existing) throw new Error('Username or email already exists');
     const hash = await bcrypt.hash(password, config.bcrypt.saltRounds);

@@ -9,15 +9,20 @@ import { useRouter } from "next/navigation";
 interface SystemUser {
   id: string;
   username: string;
-  name?: string;
   email: string;
+  password?: string;
   role: string;
+  active: boolean;
+  last_login: string | null;
+  created_at: string;
+  updated_at: string;
+  permissions: string[];
 }
 
 const ROLE_OPTIONS = [
+  { value: 'customer', label: 'CLIENTE', color: 'bg-green-100 text-green-800 border-green-300' },
   { value: 'vendor', label: 'VENDEDOR', color: 'bg-blue-100 text-blue-800 border-blue-300' },
-  { value: 'manager', label: 'GERENTE', color: 'bg-indigo-100 text-indigo-800 border-indigo-300' },
-  { value: 'admin', label: 'ADMIN', color: 'bg-purple-100 text-purple-800 border-purple-300' }
+  { value: 'admin', label: 'ADMINISTRADOR', color: 'bg-purple-100 text-purple-800 border-purple-300' }
 ];
 
 export default function UsersPage() {
@@ -34,7 +39,7 @@ export default function UsersPage() {
   const [showModal, setShowModal] = useState(false);
   const [editingUser, setEditingUser] = useState<SystemUser | null>(null);
   const [formData, setFormData] = useState({
-    username: "", name: "", email: "", password: "", role: "vendor"
+    username: "", email: "", password: "", role: "customer", active: true
   });
 
   const listRef = useRef<HTMLDivElement>(null);
@@ -55,10 +60,14 @@ export default function UsersPage() {
       const data = Array.isArray(res.data || res) ? (res.data || res) : [];
       setSystemUsers(data.map((u: any) => ({
         id: u.id,
-        username: u.name || u.username || "",
-        name: u.name || u.username || "",
+        username: u.username || "",
         email: u.email || "",
-        role: u.role || "vendor"
+        role: u.role || "customer",
+        active: u.active !== undefined ? u.active : true,
+        last_login: u.last_login || null,
+        created_at: u.created_at || new Date().toISOString(),
+        updated_at: u.updated_at || new Date().toISOString(),
+        permissions: u.permissions || []
       })));
     } catch (err) {
       console.error(err);
@@ -92,7 +101,7 @@ export default function UsersPage() {
       
       setShowModal(false);
       setEditingUser(null);
-      setFormData({ username: "", name: "", email: "", password: "", role: "vendor" });
+      setFormData({ username: "", email: "", password: "", role: "customer", active: true });
       await loadUsers();
       
       setTimeout(() => setSuccessMsg(""), 3000);
@@ -150,7 +159,7 @@ export default function UsersPage() {
           <button 
             onClick={() => {
               setEditingUser(null);
-              setFormData({ username: "", name: "", email: "", password: "", role: "vendor" });
+              setFormData({ username: "", email: "", password: "", role: "customer", active: true });
               setShowModal(true);
             }}
             className="btn-precision inline-flex items-center gap-2 bg-slate-900 text-white dark:bg-white dark:text-slate-900 hover:bg-data-blue dark:hover:bg-data-blue hover:text-white dark:hover:text-white min-h-[44px]"
@@ -207,15 +216,17 @@ export default function UsersPage() {
             <thead className="bg-slate-100 dark:bg-surface-dim border-b-2 border-slate-900 dark:border-white">
               <tr>
                 <th className="p-4 font-data-label text-xs tracking-widest uppercase text-slate-500 border-r border-slate-900/10 dark:border-white/10">USUARIO</th>
-                <th className="p-4 font-data-label text-xs tracking-widest uppercase text-slate-500 border-r border-slate-900/10 dark:border-white/10">ROL DE ACCESO</th>
-                <th className="p-4 font-data-label text-xs tracking-widest uppercase text-slate-500 border-r border-slate-900/10 dark:border-white/10">EMAIL</th>
-                <th className="p-4 font-data-label text-xs tracking-widest uppercase text-slate-500 text-center">CMD</th>
+                <th className="p-4 font-data-label text-xs tracking-widest uppercase text-slate-500 border-r border-slate-900/10 dark:border-white/10">ROL</th>
+                <th className="p-4 font-data-label text-xs tracking-widest uppercase text-slate-500 border-r border-slate-900/10 dark:border-white/10">ESTADO</th>
+                <th className="p-4 font-data-label text-xs tracking-widest uppercase text-slate-500 border-r border-slate-900/10 dark:border-white/10">ÚLTIMO ACCESO</th>
+                <th className="p-4 font-data-label text-xs tracking-widest uppercase text-slate-500 border-r border-slate-900/10 dark:border-white/10">CREADO</th>
+                <th className="p-4 font-data-label text-xs tracking-widest uppercase text-slate-500 text-center">ACCIONES</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-900/10 dark:divide-white/10">
               {filteredUsers.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="p-16 text-center">
+                  <td colSpan={6} className="p-16 text-center">
                      <span className="material-symbols-outlined text-[48px] text-slate-300 mb-4">search_off</span>
                      <p className="font-headline-lg-mobile text-lg uppercase tracking-tight text-slate-900 dark:text-white">SIN RESULTADOS</p>
                   </td>
@@ -232,7 +243,7 @@ export default function UsersPage() {
                           </div>
                           <div>
                             <p className="font-headline-lg-mobile text-sm uppercase text-slate-900 dark:text-white">{u.username}</p>
-                            {u.name && <p className="font-data-label text-[10px] uppercase text-slate-500">{u.name}</p>}
+                            <p className="font-data-label text-[10px] uppercase text-slate-500">{u.email}</p>
                           </div>
                         </div>
                       </td>
@@ -242,8 +253,18 @@ export default function UsersPage() {
                         </span>
                       </td>
                       <td className="p-4 border-r border-slate-900/10 dark:border-white/10">
+                        <span className={`font-data-label text-[10px] font-bold tracking-widest uppercase px-2 py-1 border ${u.active ? 'bg-green-100 text-green-800 border-green-300' : 'bg-red-100 text-red-800 border-red-300'}`}>
+                          {u.active ? 'ACTIVO' : 'INACTIVO'}
+                        </span>
+                      </td>
+                      <td className="p-4 border-r border-slate-900/10 dark:border-white/10">
                         <p className="font-data-label text-xs uppercase tracking-widest text-slate-900 dark:text-white">
-                          {u.email}
+                          {u.last_login ? new Date(u.last_login).toLocaleDateString('es-ES') : 'NUNCA'}
+                        </p>
+                      </td>
+                      <td className="p-4 border-r border-slate-900/10 dark:border-white/10">
+                        <p className="font-data-label text-xs uppercase tracking-widest text-slate-900 dark:text-white">
+                          {new Date(u.created_at).toLocaleDateString('es-ES')}
                         </p>
                       </td>
                       <td className="p-4 text-center">
@@ -253,8 +274,8 @@ export default function UsersPage() {
                               onClick={() => {
                                 setEditingUser(u);
                                 setFormData({
-                                  username: u.username, name: u.name || "", email: u.email,
-                                  password: "", role: u.role
+                                  username: u.username, email: u.email,
+                                  password: "", role: u.role, active: u.active
                                 });
                                 setShowModal(true);
                               }}
@@ -296,12 +317,8 @@ export default function UsersPage() {
             <form onSubmit={handleSave} className="p-6 space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="col-span-2 sm:col-span-1">
-                  <label className="font-data-label text-[10px] tracking-widest uppercase font-bold block mb-1">USERNAME</label>
+                  <label className="font-data-label text-[10px] tracking-widest uppercase font-bold block mb-1">USUARIO</label>
                   <input required type="text" value={formData.username} onChange={e => setFormData({...formData, username: e.target.value})} className="w-full px-4 py-3 min-h-[44px] bg-white dark:bg-surface-bright border border-slate-900 dark:border-white font-data-label text-sm outline-none focus:ring-1 focus:ring-data-blue" />
-                </div>
-                <div className="col-span-2 sm:col-span-1">
-                  <label className="font-data-label text-[10px] tracking-widest uppercase font-bold block mb-1">NOMBRE REAL</label>
-                  <input type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full px-4 py-3 min-h-[44px] bg-white dark:bg-surface-bright border border-slate-900 dark:border-white font-data-label text-sm outline-none focus:ring-1 focus:ring-data-blue" />
                 </div>
                 <div className="col-span-2">
                   <label className="font-data-label text-[10px] tracking-widest uppercase font-bold block mb-1">CORREO ELECTRÓNICO</label>
@@ -314,10 +331,14 @@ export default function UsersPage() {
                 <div className="col-span-2 sm:col-span-1">
                   <label className="font-data-label text-[10px] tracking-widest uppercase font-bold block mb-1">ROL DE ACCESO</label>
                   <select value={formData.role} onChange={e => setFormData({...formData, role: e.target.value})} className="w-full px-4 py-3 min-h-[44px] bg-white dark:bg-surface-bright border border-slate-900 dark:border-white font-data-label text-sm outline-none focus:ring-1 focus:ring-data-blue">
+                    <option value="customer">CLIENTE</option>
                     <option value="vendor">VENDEDOR</option>
-                    <option value="manager">GERENTE</option>
                     <option value="admin">ADMINISTRADOR</option>
                   </select>
+                </div>
+                <div className="col-span-2 flex items-center gap-3">
+                  <input type="checkbox" checked={formData.active} onChange={e => setFormData({...formData, active: e.target.checked})} className="w-5 h-5 cursor-pointer" />
+                  <label className="font-data-label text-[10px] tracking-widest uppercase font-bold">USUARIO ACTIVO</label>
                 </div>
               </div>
               <div className="pt-4 flex justify-end gap-3 border-t-2 border-slate-900 dark:border-white mt-6">

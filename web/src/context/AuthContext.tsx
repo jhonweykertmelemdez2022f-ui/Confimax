@@ -82,9 +82,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const rawUser = response.user || response.data;
       const roleMapping: Record<string, "admin" | "cliente" | "vendedor"> = {
         admin: "admin",
-        vendor: "vendedor",
         vendedor: "vendedor",
-        customer: "cliente",
         cliente: "cliente",
       };
       
@@ -119,9 +117,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const rawUser = response.user || response.data;
       const roleMapping: Record<string, "admin" | "cliente" | "vendedor"> = {
         admin: "admin",
-        vendor: "vendedor",
         vendedor: "vendedor",
-        customer: "cliente",
         cliente: "cliente",
       };
       
