@@ -282,18 +282,10 @@ export default function Navbar() {
         )}
 
         {/* Sidebar Drawer */}
-        <div
-          ref={(el) => {
-            if (el) {
-              if (isMobileMenuOpen) {
-                gsap.to(el, { x: 0, duration: 0.3, ease: "power3.out" });
-              } else {
-                gsap.to(el, { x: "-100%", duration: 0.3, ease: "power3.in" });
-              }
-            }
-          }}
-          className="fixed top-0 left-0 bottom-0 z-50 w-3/4 max-w-sm bg-white dark:bg-surface shadow-2xl border-r border-slate-900 dark:border-white transform -translate-x-full md:hidden flex flex-col"
-        >
+        {isMobileMenuOpen && (
+          <div
+            className="fixed top-0 left-0 bottom-0 z-50 w-3/4 max-w-sm bg-white dark:bg-surface shadow-2xl border-r border-slate-900 dark:border-white flex flex-col"
+          >
           <div className="flex items-center justify-between p-4 border-b border-slate-900 dark:border-white">
             <span className="font-headline-lg-mobile text-headline-lg-mobile text-slate-900 dark:text-white uppercase tracking-tighter">
               CONFIMAX
@@ -330,6 +322,7 @@ export default function Navbar() {
             </button>
           </div>
         </div>
+        )}
       </nav>
       <CartDrawer />
     </>
