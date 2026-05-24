@@ -391,8 +391,7 @@ export default function SalesPage() {
         </div>
       )}
 
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 border-b-2 border-slate-900 dark:border-white pb-6 relative">
-        <div className="crosshair-bl" />
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 pb-6">
         <div>
           <h1 className="font-headline-lg text-4xl uppercase tracking-tighter text-slate-900 dark:text-white flex items-center gap-3">
             <span className="material-symbols-outlined text-[36px]">receipt_long</span>

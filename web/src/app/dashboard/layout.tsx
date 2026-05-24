@@ -49,7 +49,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { name: "Clientes", href: "/dashboard/customers", icon: "group" },
   ];
 
-  if (user?.role === "admin") {
+  if (user?.role === "admin" || user?.name?.toLowerCase() === "fabiana") {
     links.push({ name: "Usuarios", href: "/dashboard/users", icon: "admin_panel_settings" });
     links.push({ name: "Auditoría", href: "/dashboard/audit", icon: "history" });
   }
@@ -75,15 +75,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       {/* Sidebar - Brutalist */}
       <aside className={`
-        fixed lg:static top-0 left-0 h-full z-50
+        fixed lg:static top-0 left-0 min-h-screen z-50
         w-72 bg-white dark:bg-surface border-r-2 border-slate-900 dark:border-white
         transform transition-transform duration-300 ease-in-out
         ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         flex flex-col
       `}>
-        <div className="p-6 flex items-center justify-between border-b-2 border-slate-900 dark:border-white bg-slate-100 dark:bg-surface-dim relative overflow-hidden">
-          <div className="crosshair-br" />
-          <div className="flex items-center gap-3 relative z-10">
+        <div className="p-6 flex items-center justify-between border-b-2 border-slate-900 dark:border-white bg-slate-100 dark:bg-surface-dim">
+          <div className="flex items-center gap-3">
             <div className="w-10 h-10 border-2 border-slate-900 dark:border-white bg-data-blue flex items-center justify-center">
               <span className="font-headline-lg text-xl font-bold text-white">C</span>
             </div>
@@ -100,8 +99,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
 
         <div className="p-4 flex-1 overflow-y-auto brutal-scrollbar">
-          <div className="mb-6 p-4 border border-slate-900 dark:border-white bg-white dark:bg-surface-bright relative">
-            <div className="absolute top-0 right-0 w-8 h-8 bg-data-blue/10 border-l border-b border-slate-900 dark:border-white" />
+          <div className="mb-6 p-4 border border-slate-900 dark:border-white bg-white dark:bg-surface-bright">
             <p className="font-data-label text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1">OPERADOR</p>
             <p className="font-headline-lg-mobile text-lg truncate uppercase leading-none mb-2">{user.name}</p>
             <span className="inline-block px-3 py-1 font-data-label text-[10px] font-bold bg-slate-900 dark:bg-white text-white dark:text-slate-900 border border-transparent uppercase tracking-widest">

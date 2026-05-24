@@ -79,8 +79,7 @@ export default function DashboardOverviewPage() {
 
   return (
     <div className="space-y-12 pb-12">
-      <div className="border-b-2 border-slate-900 dark:border-white pb-6 relative">
-        <div className="crosshair-bl" />
+      <div className="pb-6">
         <h1 className="font-headline-lg text-4xl md:text-5xl uppercase tracking-tighter text-slate-900 dark:text-white mb-2">PANEL DE CONTROL</h1>
         <p className="font-data-label text-xs tracking-widest uppercase text-slate-500 dark:text-slate-400">
           RESUMEN OPERATIVO CONFIMAX
