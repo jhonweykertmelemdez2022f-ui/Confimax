@@ -247,13 +247,13 @@ export default function Navbar() {
             ))}
           </nav>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             <button
-              className="theme-toggle text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors duration-200 font-data-label text-data-label border border-slate-900 dark:border-white px-4 py-2 uppercase flex items-center gap-2"
+              className="theme-toggle text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors duration-200 border border-slate-900 dark:border-white p-2 sm:px-4 sm:py-2 uppercase flex items-center gap-2"
               onClick={(event) => toggleTheme({ x: event.clientX, y: event.clientY })}
             >
-              {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-              <span className="hidden md:inline">{theme === "dark" ? "CLARO" : "OSCURO"}</span>
+              {theme === "dark" ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+              <span className="hidden sm:inline font-data-label text-data-label">{theme === "dark" ? "CLARO" : "OSCURO"}</span>
             </button>
 
             <button
@@ -261,7 +261,7 @@ export default function Navbar() {
               onClick={() => setIsOpen(true)}
               aria-label="Abrir carrito"
             >
-              <ShoppingCart className="w-5 h-5" />
+              <ShoppingCart className="w-6 h-6" />
               {totalItems > 0 && (
                 <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 bg-accent-pink text-white text-[10px] leading-5 text-center font-data-label rounded-full">
                   {totalItems}

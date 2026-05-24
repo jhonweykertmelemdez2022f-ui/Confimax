@@ -60,9 +60,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* Botón menú móvil */}
       <button 
         onClick={() => setIsSidebarOpen(true)}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-white dark:bg-surface border border-slate-900 dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] text-slate-900 dark:text-white"
+        className="lg:hidden fixed top-4 left-4 z-50 p-3 bg-white dark:bg-surface border border-slate-900 dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] text-slate-900 dark:text-white"
       >
-        <span className="material-symbols-outlined">menu</span>
+        <span className="material-symbols-outlined text-[28px]">menu</span>
       </button>
  
       {/* Overlay móvil */}
@@ -136,13 +136,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <div className="p-4 border-t-2 border-slate-900 dark:border-white bg-slate-100 dark:bg-surface-dim flex flex-col gap-3">
           <button
             onClick={(e) => toggleTheme({ x: e.clientX, y: e.clientY })}
-            className="w-full flex items-center justify-between px-4 py-3 border border-slate-900 dark:border-white bg-white dark:bg-surface hover:bg-slate-50 dark:hover:bg-surface-bright transition-colors font-data-label text-xs uppercase tracking-widest font-bold"
+            className="w-full flex items-center justify-center lg:justify-between px-3 py-3 border border-slate-900 dark:border-white bg-white dark:bg-surface hover:bg-slate-50 dark:hover:bg-surface-bright transition-colors font-data-label text-xs uppercase tracking-widest font-bold"
           >
             <div className="flex items-center gap-3">
-              <span className="material-symbols-outlined text-[20px]">
+              <span className="material-symbols-outlined text-[24px]">
                 {theme === "dark" ? "light_mode" : "dark_mode"}
               </span>
-              <span>{theme === "dark" ? "MODO CLARO" : "MODO OSCURO"}</span>
+              <span className="hidden lg:inline">{theme === "dark" ? "MODO CLARO" : "MODO OSCURO"}</span>
             </div>
           </button>
           
