@@ -57,7 +57,7 @@ export default function Chatbot() {
       const data = await api.chatWithFabiana([{
         role: userMessage.role,
         content: userMessage.content
-      }], user?.role);
+      }], user?.role || 'cliente');
 
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),

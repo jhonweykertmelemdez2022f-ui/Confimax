@@ -7,10 +7,21 @@ const groq = new Groq({
 });
 
 const formatDataForContext = (data, role) => {
-  let context = '\n\nINFORMACIÓN CONTEXTUAL (USA ESTOS DATOS PARA RESPONDER EN FORMATO DE TABLA MARKDOWN):\n';
+  let context = `\n\n=== DATOS DISPONIBLES PARA TU ROL (${role.toUpperCase()}) ===\n`;
+  
+  // Explicar claramente las restricciones del rol
+  if (role === 'cliente') {
+    context += '\nRESTRICCIONES: Como CLIENTE, solo puedes ver el CATÁLOGO DE PRODUCTOS. No tienes acceso a clientes, ventas ni usuarios.\n';
+  } else if (role === 'vendedor') {
+    context += '\nRESTRICCIONES: Como VENDEDOR, puedes ver PRODUCTOS, CLIENTES y VENTAS. No tienes acceso a USUARIOS ni AUDITORÍA.\n';
+  } else if (role === 'admin') {
+    context += '\nRESTRICCIONES: Como ADMINISTRADOR, tienes acceso a TODO: productos, clientes, ventas y usuarios.\n';
+  }
+  
+  context += '\nINFORMACIÓN CONTEXTUAL ACTUAL (usa solo estos datos):\n';
   
   if (data.products && data.products.length > 0) {
-    context += '\n\n## PRODUCTOS DISPONIBLES\n';
+    context += '\n## PRODUCTOS DISPONIBLES\n';
     context += '| Producto | SKU | Precio | Stock |\n';
     context += '|----------|-----|--------|-------|\n';
     data.products.forEach(p => {
@@ -19,7 +30,7 @@ const formatDataForContext = (data, role) => {
   }
   
   if (data.customers && data.customers.length > 0) {
-    context += '\n\n## CLIENTES\n';
+    context += '\n## CLIENTES\n';
     context += '| Nombre | Email | Teléfono |\n';
     context += '|--------|-------|----------|\n';
     data.customers.forEach(c => {
@@ -28,7 +39,7 @@ const formatDataForContext = (data, role) => {
   }
   
   if (data.sales && data.sales.length > 0) {
-    context += '\n\n## VENTAS RECIENTES\n';
+    context += '\n## VENTAS RECIENTES\n';
     context += '| Venta # | Cliente | Total | Fecha |\n';
     context += '|---------|---------|-------|-------|\n';
     data.sales.forEach(s => {
@@ -38,7 +49,7 @@ const formatDataForContext = (data, role) => {
   }
   
   if (data.users && data.users.length > 0) {
-    context += '\n\n## USUARIOS\n';
+    context += '\n## USUARIOS\n';
     context += '| Usuario | Email | Rol |\n';
     context += '|---------|-------|-----|\n';
     data.users.forEach(u => {
@@ -46,7 +57,7 @@ const formatDataForContext = (data, role) => {
     });
   }
   
-  context += '\n\nINSTRUCCIONES: RESPONDE USANDO EXACTAMENTE EL MISMO FORMATO DE TABLA MARKDOWN. NO USES LISTAS, USA SOLO TABLAS.\n';
+  context += '\n\nINSTRUCCIONES: RESPONDE USANDO EXACTAMENTE EL MISMO FORMATO DE TABLA MARKDOWN. NO USES LISTAS, USA SOLO TABLAS. Si el usuario pregunta por información que no tiene acceso (según su rol), explícale claramente que no tiene permisos para ver esos datos.\n';
   
   return context;
 };
