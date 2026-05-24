@@ -19,12 +19,17 @@ const AuthService = {
     // Encriptar la contraseña con bcrypt antes de guardarla en base de datos
     const hashedPassword = password ? await bcrypt.hash(password, 10) : null;
 
+    // Normalize role to consistent values
+    let normalizedRole = role || 'customer';
+    if (normalizedRole === 'cliente') normalizedRole = 'customer';
+    if (normalizedRole === 'vendedor') normalizedRole = 'vendor';
+    
     const profile = await Profile.create({
       username: cleanUsername,
       email: cleanEmail,
       password: hashedPassword || password,
-      role: role || 'cliente',
-      phone,
+      role: normalizedRole,
+      active: userData.active !== undefined ? userData.active : true,
     });
 
     const tokens = await this.generateTokens(profile);
@@ -32,9 +37,10 @@ const AuthService = {
     return {
       user: {
         id: profile.id,
-        name: profile.name,
+        username: profile.username,
         email: profile.email,
         role: profile.role,
+        active: profile.active,
       },
       ...tokens,
     };
@@ -97,9 +103,10 @@ const AuthService = {
     return {
       user: {
         id: profile.id,
-        name: profile.name,
+        username: profile.username,
         email: profile.email,
         role: profile.role,
+        active: profile.active,
       },
       ...tokens,
     };
@@ -107,7 +114,7 @@ const AuthService = {
 
   async generateTokens(profile) {
     const accessToken = jwt.sign(
-      { userId: profile.id, name: profile.name, role: profile.role },
+      { userId: profile.id, username: profile.username, role: profile.role },
       config.jwtSecret,
       { expiresIn: config.jwtExpiration }
     );

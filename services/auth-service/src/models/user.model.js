@@ -28,21 +28,22 @@ const Profile = {
     return result.rows[0];
   },
 
-  async findById(id) {
+  async findById(id, includeInactive = false) {
     const result = await pool.query(
-      'SELECT id, email, username as name, role, active as is_active, created_at FROM public.users WHERE id = $1 AND active = true',
+      `SELECT id, email, username, role, active, created_at, last_login, permissions 
+       FROM public.users WHERE id = $1 ${!includeInactive ? 'AND active = true' : ''}`,
       [id]
     );
     return result.rows[0];
   },
 
   async create(profileData) {
-    const { username, email, password, role = 'cliente' } = profileData;
+    const { username, email, password, role = 'customer', active = true } = profileData;
     const result = await pool.query(
       `INSERT INTO public.users (username, email, password, role, active) 
-       VALUES ($1, $2, $3, $4, true) 
-       RETURNING id, email, username as name, role, created_at`,
-      [username, email, password, role]
+       VALUES ($1, $2, $3, $4, $5) 
+       RETURNING id, email, username, role, active, created_at, last_login, permissions`,
+      [username, email, password, role, active]
     );
     return result.rows[0];
   },
@@ -56,8 +57,8 @@ const Profile = {
 
   async list(limit = 50, offset = 0) {
     const result = await pool.query(
-      `SELECT id, email, username as name, role, active as is_active, created_at, last_login 
-       FROM public.users WHERE active = true 
+      `SELECT id, email, username, role, active, created_at, last_login, permissions 
+       FROM public.users 
        ORDER BY created_at DESC 
        LIMIT $1 OFFSET $2`,
       [limit, offset]
@@ -73,15 +74,16 @@ const Profile = {
   },
 
   async update(id, updateData) {
-    const { username, email, role } = updateData;
+    const { username, email, role, active } = updateData;
     const result = await pool.query(
       `UPDATE public.users 
        SET username = COALESCE($1, username), 
            email = COALESCE($2, email), 
-           role = COALESCE($3, role)
-       WHERE id = $4 AND active = true
-       RETURNING id, email, username as name, role, created_at`,
-      [username, email, role, id]
+           role = COALESCE($3, role),
+           active = COALESCE($4, active)
+       WHERE id = $5
+       RETURNING id, email, username, role, active, created_at, last_login, permissions`,
+      [username, email, role, active, id]
     );
     return result.rows[0];
   },

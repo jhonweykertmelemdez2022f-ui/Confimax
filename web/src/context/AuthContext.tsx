@@ -84,6 +84,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         admin: "admin",
         vendedor: "vendedor",
         cliente: "cliente",
+        vendor: "vendedor",
+        customer: "cliente",
       };
       
       const userData: User = {
@@ -119,6 +121,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         admin: "admin",
         vendedor: "vendedor",
         cliente: "cliente",
+        vendor: "vendedor",
+        customer: "cliente",
       };
       
       const userData: User = {
