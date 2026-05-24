@@ -1,0 +1,29 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copy package files for all services
+COPY services/shared/package*.json ./services/shared/
+COPY services/auth-service/package*.json ./services/auth-service/
+
+# Install dependencies for shared first
+WORKDIR /app/services/shared
+RUN npm install --omit=dev
+
+# Install dependencies for auth service
+WORKDIR /app/services/auth-service
+RUN npm install --omit=dev
+
+# Copy all source code
+WORKDIR /app
+COPY services/shared ./services/shared
+COPY services/auth-service ./services/auth-service
+
+WORKDIR /app/services/auth-service
+
+EXPOSE 3001
+
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:3001/health || exit 1
+
+CMD ["node", "src/index.js"]

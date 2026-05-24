@@ -1,0 +1,20 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copy package files
+COPY services/api-gateway/package*.json ./services/api-gateway/
+
+# Install dependencies
+WORKDIR /app/services/api-gateway
+RUN npm install --omit=dev
+
+# Copy all source code
+WORKDIR /app
+COPY services/api-gateway ./services/api-gateway
+
+WORKDIR /app/services/api-gateway
+
+EXPOSE 8080
+
+CMD ["node", "src/index.js"]

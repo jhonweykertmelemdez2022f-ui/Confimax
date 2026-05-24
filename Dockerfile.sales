@@ -1,0 +1,26 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copy package files for all services
+COPY services/shared/package*.json ./services/shared/
+COPY services/sales-service/package*.json ./services/sales-service/
+
+# Install dependencies for shared first
+WORKDIR /app/services/shared
+RUN npm install --omit=dev
+
+# Install dependencies for sales service
+WORKDIR /app/services/sales-service
+RUN npm install --omit=dev
+
+# Copy all source code
+WORKDIR /app
+COPY services/shared ./services/shared
+COPY services/sales-service ./services/sales-service
+
+WORKDIR /app/services/sales-service
+
+EXPOSE 3003
+
+CMD ["node", "src/index.js"]

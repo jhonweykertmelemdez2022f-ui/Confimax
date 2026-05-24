@@ -1,0 +1,20 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Copy package files
+COPY services/fabiana-service/package*.json ./services/fabiana-service/
+
+# Install dependencies
+WORKDIR /app/services/fabiana-service
+RUN npm install --omit=dev
+
+# Copy all source code
+WORKDIR /app
+COPY services/fabiana-service ./services/fabiana-service
+
+WORKDIR /app/services/fabiana-service
+
+EXPOSE 3006
+
+CMD ["node", "src/index.js"]

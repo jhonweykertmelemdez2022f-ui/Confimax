@@ -37,12 +37,8 @@ services:
 
   # Auth Service
   auth-service:
-    image: node:18-alpine
+    image: reiastora/confimax-auth-service:latest
     container_name: confimax-auth-service
-    working_dir: /app
-    volumes:
-      - ./services:/app/services
-    command: sh -c "cd /app/services/auth-service && npm install --omit=dev && node src/index.js"
     environment:
       NODE_ENV: production
       PORT: 3001
@@ -63,12 +59,8 @@ services:
 
   # Inventory Service
   inventory-service:
-    image: node:18-alpine
+    image: reiastora/confimax-inventory-service:latest
     container_name: confimax-inventory-service
-    working_dir: /app
-    volumes:
-      - ./services:/app/services
-    command: sh -c "cd /app/services/inventory-service && npm install --omit=dev && node src/index.js"
     environment:
       NODE_ENV: production
       PORT: 3002
@@ -87,12 +79,8 @@ services:
 
   # Sales Service
   sales-service:
-    image: node:18-alpine
+    image: reiastora/confimax-sales-service:latest
     container_name: confimax-sales-service
-    working_dir: /app
-    volumes:
-      - ./services:/app/services
-    command: sh -c "cd /app/services/sales-service && npm install --omit=dev && node src/index.js"
     environment:
       NODE_ENV: production
       PORT: 3003
@@ -111,12 +99,8 @@ services:
 
   # Customers Service
   customers-service:
-    image: node:18-alpine
+    image: reiastora/confimax-customers-service:latest
     container_name: confimax-customers-service
-    working_dir: /app
-    volumes:
-      - ./services:/app/services
-    command: sh -c "cd /app/services/customers-service && npm install --omit=dev && node src/index.js"
     environment:
       NODE_ENV: production
       PORT: 3004
@@ -135,12 +119,8 @@ services:
 
   # Notifications Service
   notifications-service:
-    image: node:18-alpine
+    image: reiastora/confimax-notifications-service:latest
     container_name: confimax-notifications-service
-    working_dir: /app
-    volumes:
-      - ./services:/app/services
-    command: sh -c "cd /app/services/notifications-service && npm install --omit=dev && node src/index.js"
     environment:
       NODE_ENV: production
       PORT: 3005
@@ -156,12 +136,8 @@ services:
 
   # Fabiana Service
   fabiana-service:
-    image: node:20-alpine
+    image: reiastora/confimax-fabiana-service:latest
     container_name: confimax-fabiana-service
-    working_dir: /app
-    volumes:
-      - ./services:/app/services
-    command: sh -c "cd /app/services/fabiana-service && npm install --omit=dev && node src/index.js"
     environment:
       NODE_ENV: production
       PORT: 3006
@@ -173,12 +149,8 @@ services:
 
   # API Gateway
   api-gateway:
-    image: node:18-alpine
+    image: reiastora/confimax-api-gateway:latest
     container_name: confimax-api-gateway
-    working_dir: /app
-    volumes:
-      - ./services:/app/services
-    command: sh -c "cd /app/services/api-gateway && npm install --omit=dev && node src/index.js"
     environment:
       NODE_ENV: production
       PORT: 8080
