@@ -68,7 +68,7 @@ const SERVICES = {
   },
   backend: {
     target: process.env.BACKEND_SERVICE_URL || 'http://backend:3007',
-    pathRewrite: { '^/api/backend': '/api' },
+    pathRewrite: { '^/api/backend': '/' },
     changeOrigin: true,
   },
 };
@@ -199,7 +199,7 @@ if (MONOLITH_MODE) {
   // Compatibilidad de rutas unificadas (/api/backend/audit -> /api/audit)
   app.use('/api/backend', authenticateGateway, createServiceProxy('backend-monolith-compat', {
     target: backendTarget,
-    pathRewrite: { '^/api/backend': '/api' },
+    pathRewrite: { '^/api/backend': '/' },
     changeOrigin: true,
   }));
 
