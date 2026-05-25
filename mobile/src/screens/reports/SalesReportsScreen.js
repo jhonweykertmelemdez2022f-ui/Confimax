@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, Button, StyleSheet, ActivityIndicator, Alert, ScrollView } from 'react-native';
+import { View, Text, Button, StyleSheet, ActivityIndicator, Alert, ScrollView, TextInput, Platform } from 'react-native';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import { useTheme } from '../../theme';
@@ -36,21 +36,21 @@ function SalesReportsScreen() {
           <tr>
             <td>${sale.id}</td>
             <td>${sale.customerName || 'N/A'}</td>
-            <td>$${(sale.subtotal || 0).toFixed(2)}</td>
-            <td>$${(sale.discountAmount || 0).toFixed(2)}</td>
-            <td>$${(sale.iva || 0).toFixed(2)}</td>
-            <td>$${(sale.total || 0).toFixed(2)}</td>
+            <td>$${Number(sale.subtotal || 0).toFixed(2)}</td>
+            <td>$${Number(sale.discountAmount || 0).toFixed(2)}</td>
+            <td>$${Number(sale.iva || 0).toFixed(2)}</td>
+            <td>$${Number(sale.total || 0).toFixed(2)}</td>
           </tr>
         `).join('');
         summaryHtml = `
           <div class="summary">
             <div class="summary-row">
               <span class="summary-label">Total Recaudado:</span>
-              <span>$${salesData.reduce((sum, sale) => sum + (sale.total || 0), 0).toFixed(2)}</span>
+              <span>$${Number(salesData.reduce((sum, sale) => sum + (sale.total || 0), 0)).toFixed(2)}</span>
             </div>
             <div class="summary-row">
               <span class="summary-label">Total IVA:</span>
-              <span>$${salesData.reduce((sum, sale) => sum + (sale.iva || 0), 0).toFixed(2)}</span>
+              <span>$${Number(salesData.reduce((sum, sale) => sum + (sale.iva || 0), 0)).toFixed(2)}</span>
             </div>
           </div>
         `;
@@ -67,7 +67,7 @@ function SalesReportsScreen() {
           <tr>
             <td>${sale.id}</td>
             <td>${sale.customerName || 'N/A'}</td>
-            <td>$${(sale.total || 0).toFixed(2)}</td>
+            <td>$${Number(sale.total || 0).toFixed(2)}</td>
             <td>${new Date(sale.saleDate).toLocaleDateString()}</td>
           </tr>
         `).join('');
@@ -76,7 +76,7 @@ function SalesReportsScreen() {
           <div class="summary">
             <div class="summary-row">
               <span class="summary-label">Total Ventas para Cliente:</span>
-              <span>$${salesData.reduce((sum, sale) => sum + (sale.total || 0), 0).toFixed(2)}</span>
+              <span>$${Number(salesData.reduce((sum, sale) => sum + (sale.total || 0), 0)).toFixed(2)}</span>
             </div>
           </div>
         `;
@@ -105,7 +105,7 @@ function SalesReportsScreen() {
           <tr>
             <td>${sale.id}</td>
             <td>${sale.userName || 'N/A'}</td>
-            <td>$${(sale.total || 0).toFixed(2)}</td>
+            <td>$${Number(sale.total || 0).toFixed(2)}</td>
             <td>${new Date(sale.saleDate).toLocaleDateString()}</td>
           </tr>
         `).join('');
@@ -114,7 +114,7 @@ function SalesReportsScreen() {
           <div class="summary">
             <div class="summary-row">
               <span class="summary-label">Total Ventas para Usuario:</span>
-              <span>$${salesData.reduce((sum, sale) => sum + (sale.total || 0), 0).toFixed(2)}</span>
+              <span>$${Number(salesData.reduce((sum, sale) => sum + (sale.total || 0), 0)).toFixed(2)}</span>
             </div>
           </div>
         `;

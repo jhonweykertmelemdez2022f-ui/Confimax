@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {View, Text, StyleSheet, ActivityIndicator, ScrollView, TouchableOpacity, Alert} from 'react-native';
+import {View, Text, StyleSheet, ActivityIndicator, ScrollView, TouchableOpacity, Alert, Modal, TextInput} from 'react-native';
 import {customersAPI} from '../../services/api';
 import { useTheme } from '../../theme';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -347,6 +347,81 @@ const createStyles = (colors) => StyleSheet.create({
   actionButtonText: {
     color: '#ffffff',
     fontSize: 15,
+    fontWeight: 'bold',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalContent: {
+    width: '100%',
+    backgroundColor: colors.surface,
+    borderRadius: 12,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: colors.borderMuted,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: colors.primary,
+    marginBottom: 5,
+    textAlign: 'center',
+  },
+  modalSub: {
+    fontSize: 14,
+    color: colors.secondary,
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  modalLabel: {
+    fontSize: 12,
+    color: colors.secondary,
+    fontWeight: 'bold',
+    marginTop: 15,
+    marginBottom: 5,
+  },
+  modalInput: {
+    height: 50,
+    backgroundColor: colors.surfaceDim,
+    borderColor: colors.borderMuted,
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 15,
+    fontSize: 16,
+    color: colors.primary,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 25,
+  },
+  modalBtnCancel: {
+    flex: 1,
+    height: 48,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.surfaceVariant,
+    marginRight: 10,
+  },
+  modalBtnCancelText: {
+    color: colors.primary,
+    fontWeight: 'bold',
+  },
+  modalBtnConfirm: {
+    flex: 2,
+    height: 48,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.dataBlue,
+  },
+  modalBtnConfirmText: {
+    color: '#ffffff',
     fontWeight: 'bold',
   },
 });

@@ -86,7 +86,7 @@ app.get('/api/data/:collection', async (req, res) => {
 });
 
 // --- ENLACE A AUDITORÍA INTEGRADO (PARA PRESERVAR ARQUITECTURA ORIGINAL) ---
-app.get('/api/audit', async (req, res) => {
+app.get(['/api/audit', '/api/backend/audit'], async (req, res) => {
   try {
     const { limit = 100, offset = 0, operation, userId, entity, recordId, start_date, end_date } = req.query;
     const query = {};
@@ -116,7 +116,7 @@ app.get('/api/audit', async (req, res) => {
 });
 
 // Endpoint para que otros microservicios envíen logs de auditoría
-app.post('/api/audit', async (req, res) => {
+app.post(['/api/audit', '/api/backend/audit'], async (req, res) => {
   try {
     const payload = req.body;
     
@@ -145,7 +145,7 @@ app.post('/api/audit', async (req, res) => {
   }
 });
 
-app.get('/api/audit/user/:userId', async (req, res) => {
+app.get(['/api/audit/user/:userId', '/api/backend/audit/user/:userId'], async (req, res) => {
   try {
     const { userId } = req.params;
     const { limit = 50 } = req.query;

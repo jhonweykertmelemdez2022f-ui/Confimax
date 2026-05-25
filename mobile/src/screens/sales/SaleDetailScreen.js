@@ -112,23 +112,23 @@ function SaleDetailScreen({route, navigation}) {
 
         <View style={dynamicStyles.totalRow}>
           <Text style={dynamicStyles.totalLabel}>SUBTOTAL</Text>
-          <Text style={dynamicStyles.totalAmount}>${sale.subtotal?.toFixed(2) || '0.00'}</Text>
+          <Text style={dynamicStyles.totalAmount}>${Number(sale.subtotal || 0).toFixed(2)}</Text>
         </View>
         {sale.discount_amount > 0 && (
           <View style={dynamicStyles.totalRow}>
             <Text style={dynamicStyles.totalLabel}>DESCUENTO</Text>
-            <Text style={dynamicStyles.totalAmount}>-${sale.discount_amount?.toFixed(2) || '0.00'}</Text>
+            <Text style={dynamicStyles.totalAmount}>-${Number(sale.discount_amount || 0).toFixed(2)}</Text>
           </View>
         )}
         <View style={dynamicStyles.totalRow}>
           <Text style={dynamicStyles.totalLabel}>IVA</Text>
-          <Text style={dynamicStyles.totalAmount}>${sale.iva?.toFixed(2) || '0.00'}</Text>
+          <Text style={dynamicStyles.totalAmount}>${Number(sale.iva || 0).toFixed(2)}</Text>
         </View>
         <View style={dynamicStyles.divider} />
 
         <View style={dynamicStyles.totalRow}>
           <Text style={dynamicStyles.totalLabel}>TOTAL TRANSACCIÓN</Text>
-          <Text style={dynamicStyles.totalAmount}>${sale.total?.toFixed(2) || '0.00'}</Text>
+          <Text style={dynamicStyles.totalAmount}>${Number(sale.total || 0).toFixed(2)}</Text>
         </View>
       </View>
 

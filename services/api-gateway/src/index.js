@@ -213,7 +213,12 @@ console.log(`[GATEWAY] 🧩 Running in MICROSERVICES MODE`);
     changeOrigin: true,
   }));
 
-  // Backend unificado (protegido por JWT)
+  // Backend unificado (protegido por JWT) - Compatibilidad con Auditoría
+  app.use('/api/backend', authenticateGateway, createServiceProxy('notifications', {
+    target: SERVICES.notifications.target,
+    pathRewrite: { '^/api/backend': '/api' },
+    changeOrigin: true,
+  }));
 
   // Servicios protegidos por JWT (Rutas con prefijos de Microservicio tradicionales)
   app.use('/api/inventory', authenticateGateway, createServiceProxy('inventory', SERVICES.inventory));

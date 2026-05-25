@@ -61,7 +61,7 @@ function QrScannerScreen({ navigation }) {
             if (response.data) {
               Alert.alert(
                 'Producto encontrado',
-                `${response.data.name}\nSKU: ${response.data.sku}\nPrecio: $${response.data.unitPrice}`,
+                `${response.data.name}\nSKU: ${response.data.sku}\nPrecio: $${response.data.price}`,
                 [
                   { text: 'Ver detalle', onPress: () => navigation.navigate('ProductDetail', { id: response.data.id }) },
                   { text: 'Escanear nuevamente', onPress: () => setScanned(false) }

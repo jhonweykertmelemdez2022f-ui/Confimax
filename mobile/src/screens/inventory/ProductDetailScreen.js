@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -6,17 +6,46 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { useTheme } from '../../theme';
 import { MaterialIcons } from '@expo/vector-icons';
-import { inventoryAPI } from '../../services/api'; // <--- ADD THIS IMPORT
+import { inventoryAPI } from '../../services/api';
 
 function ProductDetailScreen({ route, navigation }) {
-  const { product } = route.params;
+  const { product: initialProduct, id } = route.params;
+  const [product, setProduct] = useState(initialProduct || null);
+  const [loading, setLoading] = useState(!initialProduct);
   const { colors } = useTheme();
 
+  const loadProduct = useCallback(async () => {
+    try {
+      setLoading(true);
+      const productId = initialProduct?.id || id;
+      const response = await inventoryAPI.getProduct(productId);
+      if (response.data) {
+        setProduct(response.data);
+      } else {
+        Alert.alert('Error', 'No se pudo cargar el detalle del producto.');
+        navigation.goBack();
+      }
+    } catch (error) {
+      console.error('Error fetching product:', error);
+      Alert.alert('Error', 'Ocurrió un error al obtener la información del producto.');
+      navigation.goBack();
+    } finally {
+      setLoading(false);
+    }
+  }, [initialProduct, id, navigation]);
+
+  useEffect(() => {
+    if (!product) {
+      loadProduct();
+    }
+  }, [product, loadProduct]);
+
   const isProductExpiringSoon = () => {
-    if (!product.expiry_date) return false;
+    if (!product || !product.expiry_date) return false;
     const today = new Date();
     const expiry = new Date(product.expiry_date);
     const diffTime = expiry - today;
@@ -27,6 +56,7 @@ function ProductDetailScreen({ route, navigation }) {
   const isExpiring = isProductExpiringSoon();
 
   const handleDeleteProduct = useCallback(() => {
+    if (!product) return;
     Alert.alert(
       "Confirmar Eliminación",
       `¿Estás seguro de que quieres eliminar el producto "${product.name}"? Esta acción no se puede deshacer.`,
@@ -54,26 +84,38 @@ function ProductDetailScreen({ route, navigation }) {
   }, [product, navigation]);
 
   useEffect(() => {
-    navigation.setOptions({
-      headerTitle: 'Detalle del Artículo',
-      headerRight: () => (
-        <View style={{ flexDirection: 'row', marginRight: 10 }}>
-          <TouchableOpacity
-            onPress={() => navigation.navigate('NewProduct', { product: product })}
-            style={{ marginLeft: 10 }}
-          >
-            <MaterialIcons name="edit" size={28} color={colors.primary} />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={handleDeleteProduct}
-            style={{ marginLeft: 10 }}
-          >
-            <MaterialIcons name="delete" size={28} color={colors.error} />
-          </TouchableOpacity>
-        </View>
-      ),
-    });
+    if (product) {
+      navigation.setOptions({
+        headerTitle: 'Detalle del Artículo',
+        headerRight: () => (
+          <View style={{ flexDirection: 'row', marginRight: 10 }}>
+            <TouchableOpacity
+              onPress={() => navigation.navigate('NewProduct', { product: product })}
+              style={{ marginLeft: 10 }}
+            >
+              <MaterialIcons name="edit" size={28} color={colors.primary} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={handleDeleteProduct}
+              style={{ marginLeft: 10 }}
+            >
+              <MaterialIcons name="delete" size={28} color={colors.error} />
+            </TouchableOpacity>
+          </View>
+        ),
+      });
+    }
   }, [navigation, product, colors, handleDeleteProduct]);
+
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.surfaceDim }}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
+
+  if (!product) return null;
 
   return (
     <ScrollView style={{ flex: 1, backgroundColor: colors.surfaceDim }}>

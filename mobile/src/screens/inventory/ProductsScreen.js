@@ -82,6 +82,7 @@ function ProductsScreen({navigation}) {
 
   const generateQrData = (product) => {
     return JSON.stringify({
+      type: 'product',
       id: product.id,
       sku: product.sku,
       name: product.name,
