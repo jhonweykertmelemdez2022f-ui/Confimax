@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { useTheme } from '../../theme';
 import { MaterialIcons } from '@expo/vector-icons';
-import { api } from '../../services/api'; // Assuming 'api' is the base axios instance
+import api from '../../services/api'; // Assuming 'api' is the base axios instance
 
 function QrCodeDisplayScreen({ route, navigation }) {
   const { type, id, title } = route.params; // type: 'product', 'sale', 'customer', 'user'
@@ -19,12 +19,20 @@ function QrCodeDisplayScreen({ route, navigation }) {
   const [error, setError] = useState(false);
   const { colors } = useTheme();
 
+  // Set navigation options for the header
+  useEffect(() => {
+    navigation.setOptions({
+      headerTitle: title || `QR de ${type}`, // Use the passed title or a default
+      // headerRight: () => (...) // Add any right-side buttons here if needed
+    });
+  }, [navigation, title, type]); // Depend on navigation, title, and type
+
   useEffect(() => {
     const fetchQrCode = async () => {
       try {
         setLoading(true);
         setError(false);
-        const response = await api.get(`/qr/generate`, { params: { type, id } });
+        const response = await api.get(`/backend/qr/generate`, { params: { type, id } });
         if (response.data && response.data.qrCodeImage) {
           setQrCodeImage(response.data.qrCodeImage);
         } else {
@@ -57,13 +65,7 @@ function QrCodeDisplayScreen({ route, navigation }) {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={[styles.header, { backgroundColor: colors.surfaceDim, borderBottomColor: colors.border }]}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <MaterialIcons name="arrow-back" size={28} color={colors.onSurface} />
-        </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.onSurface }]}>{title || `QR de ${type}`}</Text>
-      </View>
-
+      
       <View style={styles.content}>
         {loading ? (
           <ActivityIndicator size="large" color={colors.primary} />

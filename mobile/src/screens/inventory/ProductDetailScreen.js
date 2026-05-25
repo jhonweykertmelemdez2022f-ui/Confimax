@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { useTheme } from '../../theme';
 import { MaterialIcons } from '@expo/vector-icons';
+import { inventoryAPI } from '../../services/api'; // <--- ADD THIS IMPORT
 
 function ProductDetailScreen({ route, navigation }) {
   const { product } = route.params;
@@ -25,16 +26,57 @@ function ProductDetailScreen({ route, navigation }) {
 
   const isExpiring = isProductExpiringSoon();
 
+  const handleDeleteProduct = useCallback(() => {
+    Alert.alert(
+      "Confirmar Eliminación",
+      `¿Estás seguro de que quieres eliminar el producto "${product.name}"? Esta acción no se puede deshacer.`,
+      [
+        {
+          text: "Cancelar",
+          style: "cancel"
+        },
+        {
+          text: "Eliminar",
+          onPress: async () => {
+            try {
+              await inventoryAPI.deleteProduct(product.id);
+              Alert.alert("Éxito", "Producto eliminado correctamente.");
+              navigation.goBack();
+            } catch (error) {
+              console.error("Error al eliminar producto:", error);
+              Alert.alert("Error", "No se pudo eliminar el producto.");
+            }
+          },
+          style: "destructive"
+        }
+      ]
+    );
+  }, [product, navigation]);
+
+  useEffect(() => {
+    navigation.setOptions({
+      headerTitle: 'Detalle del Artículo',
+      headerRight: () => (
+        <View style={{ flexDirection: 'row', marginRight: 10 }}>
+          <TouchableOpacity
+            onPress={() => navigation.navigate('NewProduct', { product: product })}
+            style={{ marginLeft: 10 }}
+          >
+            <MaterialIcons name="edit" size={28} color={colors.primary} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={handleDeleteProduct}
+            style={{ marginLeft: 10 }}
+          >
+            <MaterialIcons name="delete" size={28} color={colors.error} />
+          </TouchableOpacity>
+        </View>
+      ),
+    });
+  }, [navigation, product, colors, handleDeleteProduct]);
+
   return (
     <ScrollView style={{ flex: 1, backgroundColor: colors.surfaceDim }}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 50, paddingHorizontal: 20, paddingBottom: 20, backgroundColor: colors.surface }}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={{ paddingRight: 15 }}>
-          <MaterialIcons name="arrow-back" size={28} color={colors.onSurface} />
-        </TouchableOpacity>
-        <Text style={{ flex: 1, fontSize: 20, fontWeight: 'bold', color: colors.onSurface, textAlign: 'center' }}>Detalle del Producto</Text>
-        <View style={{ width: 40 }} />
-      </View>
-
       <View style={{ padding: 20 }}>
         <View style={{ backgroundColor: colors.surface, borderRadius: 16, padding: 24, marginBottom: 20 }}>
           {isExpiring && (
