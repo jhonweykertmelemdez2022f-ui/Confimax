@@ -69,7 +69,7 @@ const SERVICES = {
 
   qr: {
     target: process.env.INVENTORY_SERVICE_URL || 'http://inventory-service:3002',
-    pathRewrite: { '^/api/qr': '' },
+    pathRewrite: { '^/api/qr': '/qr' },
     changeOrigin: true,
   },
 };
