@@ -66,11 +66,7 @@ const SERVICES = {
     pathRewrite: { '^/api/webhooks': '' },
     changeOrigin: true,
   },
-  backend: {
-    target: process.env.BACKEND_SERVICE_URL || 'http://backend:3007',
-    pathRewrite: { '^/api/backend': '/' },
-    changeOrigin: true,
-  },
+
   qr: {
     target: process.env.INVENTORY_SERVICE_URL || 'http://inventory-service:3002',
     pathRewrite: { '^/api/qr': '' },
@@ -218,7 +214,6 @@ console.log(`[GATEWAY] 🧩 Running in MICROSERVICES MODE`);
   }));
 
   // Backend unificado (protegido por JWT)
-  app.use('/api/backend', authenticateGateway, createServiceProxy('backend', SERVICES.backend));
 
   // Servicios protegidos por JWT (Rutas con prefijos de Microservicio tradicionales)
   app.use('/api/inventory', authenticateGateway, createServiceProxy('inventory', SERVICES.inventory));

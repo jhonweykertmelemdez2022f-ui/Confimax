@@ -32,7 +32,7 @@ function QrCodeDisplayScreen({ route, navigation }) {
       try {
         setLoading(true);
         setError(false);
-        const response = await api.get(`/backend/qr/generate`, { params: { type, id } });
+        const response = await api.get(`/qr/generate`, { params: { type, id } });
         if (response.data && response.data.qrCodeImage) {
           setQrCodeImage(response.data.qrCodeImage);
         } else {
