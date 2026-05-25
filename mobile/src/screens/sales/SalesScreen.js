@@ -89,10 +89,13 @@ function SalesScreen({navigation}) {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const {colors} = useTheme();
+  const isFocused = useIsFocused();
 
   useEffect(() => {
-    loadSales();
-  }, []);
+    if (isFocused) {
+      loadSales();
+    }
+  }, [isFocused]);
 
   const loadSales = async () => {
     try {
@@ -109,7 +112,7 @@ function SalesScreen({navigation}) {
   const filteredSales = sales.filter(sale => {
     const searchLower = searchQuery.toLowerCase();
     const customerMatch = sale.customer_name?.toLowerCase().includes(searchLower) ?? false;
-    const idMatch = sale.id?.toString().includes(searchLower);
+    const idMatch = sale.id?.toString().includes(searchLower) || sale.order_number?.toLowerCase().includes(searchLower);
     return customerMatch || idMatch;
   });
 
@@ -132,20 +135,40 @@ function SalesScreen({navigation}) {
 
   const dynamicStyles = createStyles(colors);
 
-  const renderSale = ({item, index}) => (
-    <FadeInUpCard delay={index * 60} duration={350}>
-      <TouchableOpacity
-        style={dynamicStyles.saleCard}
-        onPress={() => navigation.navigate('SaleDetail', {id: item.id})}>
-        <View style={dynamicStyles.saleHeader}>
-          <Text style={dynamicStyles.saleId}>Transacción #{item.id}</Text>
-          <Text style={dynamicStyles.saleDate}>{new Date(item.created_at).toLocaleDateString()}</Text>
-        </View>
-        <Text style={dynamicStyles.saleTotal}>${item.total}</Text>
-        <Text style={dynamicStyles.saleCustomer}>Facturado a: {item.customer_name || 'Cliente general'}</Text>
-      </TouchableOpacity>
-    </FadeInUpCard>
-  );
+  const renderSale = ({item, index}) => {
+    const getStatusColor = (status) => {
+      switch (status?.toLowerCase()) {
+        case 'entregado': return '#00FF66';
+        case 'pendiente': return '#FFB800';
+        case 'cancelado': return colors.error;
+        default: return colors.secondary;
+      }
+    };
+
+    return (
+      <FadeInUpCard delay={index * 60} duration={350}>
+        <TouchableOpacity
+          style={dynamicStyles.saleCard}
+          onPress={() => navigation.navigate('SaleDetail', {id: item.id})}>
+          <View style={dynamicStyles.saleHeader}>
+            <View>
+              <Text style={dynamicStyles.saleId}>#{(item.order_number || item.id.toString()).substring(0, 10).toUpperCase()}</Text>
+              <Text style={dynamicStyles.saleDate}>{new Date(item.created_at).toLocaleDateString()} {new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>
+            </View>
+            <View style={[dynamicStyles.statusBadge, { backgroundColor: getStatusColor(item.status) + '20', borderColor: getStatusColor(item.status) }]}>
+              <Text style={[dynamicStyles.statusText, { color: getStatusColor(item.status) }]}>{item.status?.toUpperCase() || 'PND'}</Text>
+            </View>
+          </View>
+          <View style={dynamicStyles.saleBody}>
+            <View style={{ flex: 1 }}>
+              <Text style={dynamicStyles.saleCustomer}>{item.customer_name || 'Cliente general'}</Text>
+            </View>
+            <Text style={dynamicStyles.saleTotal}>${Number(item.total).toFixed(2)}</Text>
+          </View>
+        </TouchableOpacity>
+      </FadeInUpCard>
+    );
+  };
 
   if (loading) {
     return (
@@ -270,42 +293,59 @@ const createStyles = (colors) => StyleSheet.create({
   },
   saleCard: {
     backgroundColor: colors.surface,
-    borderRadius: 12,
-    padding: 18,
-    marginBottom: 12,
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 15,
     borderWidth: 1,
     borderColor: colors.borderMuted,
     shadowColor: '#000',
-    shadowOffset: {width: 0, height: 4},
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: colors.isDark ? 0.3 : 0.05,
-    shadowRadius: 5,
+    shadowRadius: 8,
     elevation: 4,
   },
   saleHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 8,
+    alignItems: 'flex-start',
+    marginBottom: 12,
   },
   saleId: {
     fontSize: 14,
-    fontWeight: 'bold',
+    fontWeight: '800',
     color: colors.primary,
     letterSpacing: 0.5,
   },
   saleDate: {
-    fontSize: 12,
+    fontSize: 11,
     color: colors.secondary,
+    marginTop: 2,
+  },
+  statusBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    borderWidth: 1,
+  },
+  statusText: {
+    fontSize: 10,
+    fontWeight: '900',
+    letterSpacing: 0.5,
+  },
+  saleBody: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
   },
   saleTotal: {
     fontSize: 22,
-    color: colors.dataBlue,
-    fontWeight: 'bold',
-    marginTop: 5,
+    color: colors.onSurface,
+    fontWeight: '900',
   },
   saleCustomer: {
-    fontSize: 14,
-    color: colors.secondary,
-    marginTop: 5,
+    fontSize: 16,
+    color: colors.primary,
+    fontWeight: '600',
   },
   fab: {
     position: 'absolute',

@@ -211,8 +211,17 @@ function ProductsScreen({navigation}) {
                   <Text style={dynamicStyles.expiryText}>Próximo a vencer!</Text>
                 </View>
               )}
-              <Text style={dynamicStyles.productName}>{item.name}</Text>
-              <Text style={dynamicStyles.productPrice}>${item.price}</Text>
+              <View style={dynamicStyles.productCardContent}>
+                <View style={dynamicStyles.productInfo}>
+                  <Text style={dynamicStyles.productName}>{item.name}</Text>
+                  <Text style={dynamicStyles.productSku}>SKU: {item.sku}</Text>
+                </View>
+                <View style={dynamicStyles.productPriceContainer}>
+                  <Text style={dynamicStyles.productPrice}>
+                    ${Number(item.unitPrice || item.unit_price || item.price || 0).toFixed(2)}
+                  </Text>
+                </View>
+              </View>
               {item.expiry_date && (
                 <Text style={[dynamicStyles.expiryDate, isExpiring ? dynamicStyles.expiryDateUrgent : null]}>
                   Vence: {new Date(item.expiry_date).toLocaleDateString('es-ES')}
@@ -297,9 +306,36 @@ const createStyles = (colors) => StyleSheet.create({
   },
   productCard: {
     backgroundColor: colors.surface,
-    borderRadius: 12,
-    padding: 18,
-    marginBottom: 12,
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 15,
+    borderWidth: 1,
+    borderColor: colors.borderMuted,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  productCardContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  productInfo: {
+    flex: 1,
+    marginRight: 10,
+  },
+  productSku: {
+    fontSize: 12,
+    color: colors.muted,
+    marginTop: 2,
+  },
+  productPriceContainer: {
+    backgroundColor: colors.surfaceDim,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
     borderWidth: 1,
     borderColor: colors.borderMuted,
   },
@@ -310,29 +346,29 @@ const createStyles = (colors) => StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 6,
     alignSelf: 'flex-start',
-    marginBottom: 10,
+    marginBottom: 12,
     gap: 6,
   },
   expiryText: {
     color: '#ffffff',
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: 'bold',
   },
   productName: {
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: 'bold',
     color: colors.onSurface,
   },
   productPrice: {
-    fontSize: 20,
+    fontSize: 18,
     color: colors.primary,
-    fontWeight: 'bold',
-    marginTop: 8,
+    fontWeight: '800',
   },
   expiryDate: {
     fontSize: 12,
     color: colors.muted,
-    marginTop: 6,
+    marginTop: 10,
+    fontStyle: 'italic',
   },
   expiryDateUrgent: {
     color: colors.error,

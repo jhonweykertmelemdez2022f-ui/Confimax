@@ -4,11 +4,14 @@ import {salesAPI} from '../../services/api';
 import { useTheme } from '../../theme';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useAuthStore } from '../../stores/authStore';
+import { generateInvoicePDF } from '../../utils/pdfGenerator';
 
 function SaleDetailScreen({route, navigation}) {
   const {id} = route.params;
   const [sale, setSale] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [updating, setUpdating] = useState(false);
+  const [generatingPdf, setGeneratingPdf] = useState(false);
   const {colors} = useTheme();
   const {user} = useAuthStore();
 
@@ -32,6 +35,48 @@ function SaleDetailScreen({route, navigation}) {
     }
   };
 
+  const handleGeneratePDF = async () => {
+    try {
+      setGeneratingPdf(true);
+      await generateInvoicePDF(sale);
+    } catch (error) {
+      Alert.alert('Error', 'No se pudo generar el PDF de la factura.');
+    } finally {
+      setGeneratingPdf(false);
+    }
+  };
+
+  const handleUpdateStatus = async (newStatus) => {
+    const statusLabels = {
+      'entregado': 'entregar',
+      'cancelado': 'cancelar'
+    };
+
+    Alert.alert(
+      'Confirmar Cambio',
+      `¿Estás seguro de que deseas ${statusLabels[newStatus]} esta orden?`,
+      [
+        { text: 'No', style: 'cancel' },
+        { 
+          text: 'Sí, confirmar', 
+          onPress: async () => {
+            try {
+              setUpdating(true);
+              await salesAPI.updateSale(id, { status: newStatus });
+              Alert.alert('Éxito', `La orden ha sido marcada como ${newStatus}.`);
+              loadSale();
+            } catch (error) {
+              const errorMsg = error.response?.data?.message || `No se pudo actualizar a ${newStatus}.`;
+              Alert.alert('Error', errorMsg);
+            } finally {
+              setUpdating(false);
+            }
+          }
+        }
+      ]
+    );
+  };
+
   const handleDeleteSale = () => {
     Alert.alert(
       'Anular Venta',
@@ -53,6 +98,15 @@ function SaleDetailScreen({route, navigation}) {
         }
       ]
     );
+  };
+
+  const getStatusColor = (status) => {
+    switch (status?.toLowerCase()) {
+      case 'entregado': return '#00FF66';
+      case 'pendiente': return '#FFB800';
+      case 'cancelado': return colors.error;
+      default: return colors.secondary;
+    }
   };
 
   const dynamicStyles = createStyles(colors);
@@ -83,12 +137,41 @@ function SaleDetailScreen({route, navigation}) {
   return (
     <ScrollView style={dynamicStyles.container}>
       <View style={dynamicStyles.header}>
-        <MaterialIcons name="receipt-long" size={80} color={colors.dataBlue} />
-        <Text style={dynamicStyles.title}>VENTA #{sale.id}</Text>
+        <View style={[dynamicStyles.statusBadgeDetail, { backgroundColor: getStatusColor(sale.status) + '20', borderColor: getStatusColor(sale.status) }]}>
+          <Text style={[dynamicStyles.statusTextDetail, { color: getStatusColor(sale.status) }]}>{sale.status?.toUpperCase()}</Text>
+        </View>
+        <MaterialIcons name="receipt-long" size={70} color={colors.dataBlue} />
+        <Text style={dynamicStyles.title}>VENTA #{sale.order_number || sale.id.toString().substring(0, 8).toUpperCase()}</Text>
         <Text style={dynamicStyles.date}>
           {sale.created_at ? new Date(sale.created_at).toLocaleString() : 'N/D'}
         </Text>
       </View>
+
+      {/* Controles de Estado */}
+      {user?.role !== 'customer' && sale.status === 'pendiente' && (
+        <View style={dynamicStyles.statusActions}>
+          <Text style={dynamicStyles.label}>GESTIONAR ESTADO</Text>
+          <View style={{ flexDirection: 'row', gap: 10 }}>
+            <TouchableOpacity 
+              disabled={updating}
+              onPress={() => handleUpdateStatus('entregado')}
+              style={[dynamicStyles.statusBtn, { backgroundColor: '#00FF6620', borderColor: '#00FF66' }]}
+            >
+              {updating ? <ActivityIndicator size="small" color="#00FF66" /> : <MaterialIcons name="check-circle" size={18} color="#00FF66" />}
+              <Text style={[dynamicStyles.statusBtnText, { color: '#00FF66' }]}>ENTREGAR</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              disabled={updating}
+              onPress={() => handleUpdateStatus('cancelado')}
+              style={[dynamicStyles.statusBtn, { backgroundColor: colors.error + '20', borderColor: colors.error }]}
+            >
+              {updating ? <ActivityIndicator size="small" color={colors.error} /> : <MaterialIcons name="cancel" size={18} color={colors.error} />}
+              <Text style={[dynamicStyles.statusBtnText, { color: colors.error }]}>CANCELAR</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
 
       <View style={dynamicStyles.section}>
         <Text style={dynamicStyles.label}>CLIENTE FACTURADO</Text>
@@ -103,10 +186,10 @@ function SaleDetailScreen({route, navigation}) {
         {(sale.items || []).map((item, index) => (
           <View key={index} style={dynamicStyles.itemRow}>
             <View style={dynamicStyles.itemLeft}>
-              <Text style={dynamicStyles.itemQty}>{item.qty}x</Text>
-              <Text style={dynamicStyles.itemName}>{item.name}</Text>
+              <Text style={dynamicStyles.itemQty}>{item.quantity || item.qty}x</Text>
+              <Text style={dynamicStyles.itemName}>{item.product_name || item.name}</Text>
             </View>
-            <Text style={dynamicStyles.itemPrice}>${item.price}</Text>
+            <Text style={dynamicStyles.itemPrice}>${item.unit_price || item.price}</Text>
           </View>
         ))}
 
@@ -114,15 +197,15 @@ function SaleDetailScreen({route, navigation}) {
           <Text style={dynamicStyles.totalLabel}>SUBTOTAL</Text>
           <Text style={dynamicStyles.totalAmount}>${Number(sale.subtotal || 0).toFixed(2)}</Text>
         </View>
-        {sale.discount_amount > 0 && (
+        {sale.discount > 0 && (
           <View style={dynamicStyles.totalRow}>
             <Text style={dynamicStyles.totalLabel}>DESCUENTO</Text>
-            <Text style={dynamicStyles.totalAmount}>-${Number(sale.discount_amount || 0).toFixed(2)}</Text>
+            <Text style={dynamicStyles.totalAmount}>-${Number(sale.discount || 0).toFixed(2)}</Text>
           </View>
         )}
         <View style={dynamicStyles.totalRow}>
           <Text style={dynamicStyles.totalLabel}>IVA</Text>
-          <Text style={dynamicStyles.totalAmount}>${Number(sale.iva || 0).toFixed(2)}</Text>
+          <Text style={dynamicStyles.totalAmount}>${Number(sale.tax || sale.iva || 0).toFixed(2)}</Text>
         </View>
         <View style={dynamicStyles.divider} />
 
@@ -133,31 +216,38 @@ function SaleDetailScreen({route, navigation}) {
       </View>
 
       <View style={{ marginTop: 10, marginBottom: 30, marginHorizontal: 15 }}>
+        {/* Botón Principal: Generar Factura PDF */}
         <TouchableOpacity 
-          style={[dynamicStyles.actionButton, { flex: 1, backgroundColor: colors.primary, marginBottom: 10 }]}
+          style={[dynamicStyles.actionButton, { backgroundColor: colors.dataBlue || '#4f46e5', marginBottom: 10, marginHorizontal: 0 }]}
+          onPress={handleGeneratePDF}
+          disabled={generatingPdf}
+        >
+          {generatingPdf ? (
+            <ActivityIndicator size="small" color="#ffffff" />
+          ) : (
+            <>
+              <MaterialIcons name="picture-as-pdf" size={22} color="#ffffff" style={{marginRight: 10}} />
+              <Text style={dynamicStyles.actionButtonText}>MANDAR FACTURA (PDF)</Text>
+            </>
+          )}
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={[dynamicStyles.actionButton, { backgroundColor: colors.primary, marginBottom: 10, marginTop: 0, marginHorizontal: 0 }]}
           onPress={() => navigation.navigate('QrCodeDisplay', { type: 'sale', id: sale.id, title: `QR de Venta #${sale.id}` })}
         >
           <MaterialIcons name="qr-code" size={20} color={colors.onPrimary} style={{marginRight: 8}} />
           <Text style={dynamicStyles.actionButtonText}>VER CÓDIGO QR</Text>
         </TouchableOpacity>
 
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+        {user?.role !== 'customer' && (
           <TouchableOpacity 
-            style={[dynamicStyles.actionButton, { flex: 1, marginRight: 5, backgroundColor: colors.dataBlue, marginTop: 0, marginHorizontal: 0 }]}
-            onPress={() => Alert.alert('Éxito', 'Comprobante enviado')}>
-            <MaterialIcons name="share" size={20} color="#ffffff" style={{marginRight: 8}} />
-            <Text style={dynamicStyles.actionButtonText}>COMPARTIR</Text>
+            style={[dynamicStyles.actionButton, { backgroundColor: colors.error, marginTop: 0, marginHorizontal: 0 }]}
+            onPress={handleDeleteSale}>
+            <MaterialIcons name="delete" size={20} color="#ffffff" style={{marginRight: 8}} />
+            <Text style={dynamicStyles.actionButtonText}>ANULAR VENTA</Text>
           </TouchableOpacity>
-
-          {user?.role !== 'customer' && (
-            <TouchableOpacity 
-              style={[dynamicStyles.actionButton, { flex: 1, marginLeft: 5, backgroundColor: colors.error, marginTop: 0, marginHorizontal: 0 }]}
-              onPress={handleDeleteSale}>
-              <MaterialIcons name="delete" size={20} color="#ffffff" style={{marginRight: 8}} />
-              <Text style={dynamicStyles.actionButtonText}>ANULAR</Text>
-            </TouchableOpacity>
-          )}
-        </View>
+        )}
       </View>
     </ScrollView>
   );
@@ -202,14 +292,54 @@ const createStyles = (colors) => StyleSheet.create({
     fontSize: 13,
   },
   header: {
-    paddingVertical: 40,
+    paddingVertical: 30,
     alignItems: 'center',
     borderBottomWidth: 1,
     borderBottomColor: colors.borderMuted,
     backgroundColor: colors.surface,
   },
+  statusBadgeDetail: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    borderWidth: 1,
+    marginBottom: 15,
+  },
+  statusTextDetail: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    letterSpacing: 1,
+  },
+  statusActions: {
+    padding: 20,
+    backgroundColor: colors.surface,
+    margin: 15,
+    marginBottom: 0,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.borderMuted,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: colors.isDark ? 0.3 : 0.05,
+    shadowRadius: 5,
+    elevation: 4,
+  },
+  statusBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    gap: 6,
+  },
+  statusBtnText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
   title: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: 'bold',
     color: colors.primary,
     marginTop: 15,
