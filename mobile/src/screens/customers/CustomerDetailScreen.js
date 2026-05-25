@@ -151,20 +151,30 @@ function CustomerDetailScreen({route, navigation}) {
       </View>
 
       {user?.role !== 'customer' && (
-        <View style={{ marginTop: 10, marginBottom: 20, marginHorizontal: 15, flexDirection: 'row', justifyContent: 'space-between' }}>
+        <View style={{ marginTop: 10, marginBottom: 20, marginHorizontal: 15 }}>
           <TouchableOpacity 
-            style={[dynamicStyles.actionButton, { flex: 1, marginRight: 5, backgroundColor: colors.dataBlue, marginTop: 0, marginHorizontal: 0 }]}
-            onPress={() => setEditModalVisible(true)}>
-            <MaterialIcons name="edit" size={20} color="#ffffff" style={{marginRight: 8}} />
-            <Text style={dynamicStyles.actionButtonText}>EDITAR</Text>
+            style={[dynamicStyles.actionButton, { flex: 1, backgroundColor: colors.primary, marginBottom: 10 }]}
+            onPress={() => navigation.navigate('QrCodeDisplay', { type: 'customer', id: customer.id, title: `QR de ${customer.name}` })}
+          >
+            <MaterialIcons name="qr-code" size={20} color={colors.onPrimary} style={{marginRight: 8}} />
+            <Text style={dynamicStyles.actionButtonText}>VER CÓDIGO QR</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity 
-            style={[dynamicStyles.actionButton, { flex: 1, marginLeft: 5, backgroundColor: colors.error, marginTop: 0, marginHorizontal: 0 }]}
-            onPress={handleDeleteCustomer}>
-            <MaterialIcons name="delete" size={20} color="#ffffff" style={{marginRight: 8}} />
-            <Text style={dynamicStyles.actionButtonText}>ELIMINAR</Text>
-          </TouchableOpacity>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+            <TouchableOpacity 
+              style={[dynamicStyles.actionButton, { flex: 1, marginRight: 5, backgroundColor: colors.dataBlue, marginTop: 0, marginHorizontal: 0 }]}
+              onPress={() => setEditModalVisible(true)}>
+              <MaterialIcons name="edit" size={20} color="#ffffff" style={{marginRight: 8}} />
+              <Text style={dynamicStyles.actionButtonText}>EDITAR</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={[dynamicStyles.actionButton, { flex: 1, marginLeft: 5, backgroundColor: colors.error, marginTop: 0, marginHorizontal: 0 }]}
+              onPress={handleDeleteCustomer}>
+              <MaterialIcons name="delete" size={20} color="#ffffff" style={{marginRight: 8}} />
+              <Text style={dynamicStyles.actionButtonText}>ELIMINAR</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       )}
 

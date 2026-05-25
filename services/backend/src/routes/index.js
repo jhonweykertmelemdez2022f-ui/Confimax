@@ -10,6 +10,8 @@ const customersRoutes = require('./customers.routes');
 const notificationsRoutes = require('./notifications.routes');
 const testRoutes = require('./test.routes');
 const auditRoutes = require('./audit.routes');
+const reportRoutes = require('./report.routes');
+const qrRoutes = require('./qr.routes');
 
 const router = express.Router();
 
@@ -36,5 +38,7 @@ router.use('/credits', authenticate, require('./credit.routes'));
 router.use('/notifications', authenticate, notificationsRoutes);
 router.use('/audit', authenticate, auditRoutes);
 router.use('/cart', authenticate, require('./cart.routes'));
+router.use('/reports', authenticate, reportRoutes);
+router.use('/qr', authenticate, qrRoutes);
 
 module.exports = router;

@@ -168,6 +168,7 @@ async function runMigration() {
         vendor_id UUID REFERENCES public.users(id),
         subtotal DECIMAL(10, 2) NOT NULL,
         iva DECIMAL(10, 2) NOT NULL,
+        discount DECIMAL(10, 2) NOT NULL DEFAULT 0, -- Nueva columna para descuentos
         total DECIMAL(10, 2) NOT NULL,
         currency VARCHAR(3) NOT NULL DEFAULT 'VES',
         status VARCHAR(20) NOT NULL DEFAULT 'completed',

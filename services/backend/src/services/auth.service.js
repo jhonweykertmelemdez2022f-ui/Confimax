@@ -34,6 +34,22 @@ const AuthService = {
   async updateUser(id, data) {
     return User.update(id, data);
   },
+
+  async getAllUsersForReport() {
+    return User.list(null, null); // No limit or offset for reports
+  },
+
+  async deleteUser(id) {
+    return User.remove(id);
+  },
+
+  async createUser(data) {
+    const { username, email, password, role } = data;
+    const existing = await User.findByUsername(username) || await User.findByEmail(email);
+    if (existing) throw new Error('Username or email already exists');
+    const hash = await bcrypt.hash(password, config.bcrypt.saltRounds);
+    return User.create({ username, email, password: hash, role });
+  },
 };
 
 module.exports = AuthService;

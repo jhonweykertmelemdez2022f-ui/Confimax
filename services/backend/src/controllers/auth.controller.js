@@ -53,6 +53,39 @@ const authController = {
       res.json(user);
     } catch (e) { next(e); }
   },
+
+  async deleteUser(req, res, next) {
+    try {
+      const user = await AuthService.deleteUser(req.params.id);
+      if (!user) return res.status(404).json({ message: 'User not found or already inactive' });
+      await AuditService.log({
+        operation: 'DELETE',
+        userId: req.user?.id,
+        username: req.user?.username,
+        entity: 'user',
+        recordId: req.params.id,
+        ipAddress: req.ip,
+        details: 'User deactivated'
+      });
+      res.json({ message: 'User deactivated successfully', user });
+    } catch (e) { next(e); }
+  },
+
+  async createUser(req, res, next) {
+    try {
+      const user = await AuthService.createUser(req.body);
+      await AuditService.log({
+        operation: 'CREATE',
+        userId: req.user?.id,
+        username: req.user?.username,
+        entity: 'user',
+        recordId: user.id,
+        newData: req.body,
+        ipAddress: req.ip,
+      });
+      res.status(201).json(user);
+    } catch (e) { next(e); }
+  },
 };
 
 module.exports = authController;

@@ -78,28 +78,28 @@ export default function DashboardOverviewPage() {
   ];
 
   return (
-    <div className="space-y-12 pb-12">
-      <div className="pb-6">
-        <h1 className="font-headline-lg text-4xl md:text-5xl uppercase tracking-tighter text-slate-900 dark:text-white mb-2">PANEL DE CONTROL</h1>
-        <p className="font-data-label text-xs tracking-widest uppercase text-slate-500 dark:text-slate-400">
+    <div className="space-y-8 sm:space-y-12 pb-12">
+      <div className="pb-4 sm:pb-6">
+        <h1 className="font-headline-lg-mobile sm:font-headline-lg text-3xl sm:text-5xl uppercase tracking-tighter text-slate-900 dark:text-white mb-2">PANEL DE CONTROL</h1>
+        <p className="font-data-label text-[10px] sm:text-xs tracking-widest uppercase text-slate-500 dark:text-slate-400">
           RESUMEN OPERATIVO CONFIMAX
         </p>
       </div>
 
       {/* Tarjetas de Estadísticas */}
-      <div ref={statsRef} className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+      <div ref={statsRef} className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6">
         {statCards.map((stat, i) => (
-          <div key={i} className={`relative p-6 border-2 border-slate-900 dark:border-white bg-white dark:bg-surface-bright flex flex-col group transition-all duration-300 hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] hover:-translate-y-1 hover:-translate-x-1 ${stat.isAlert ? "border-error shadow-[4px_4px_0px_0px_rgba(255,0,0,1)]" : "shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]"}`}>
-            <span className={`absolute top-4 right-4 font-data-label text-[10px] tracking-widest border border-slate-900/20 dark:border-white/20 px-2 py-0.5 ${stat.isAlert ? "text-error border-error bg-error/10" : "text-slate-500"}`}>
+          <div key={i} className={`relative p-5 sm:p-6 border-2 border-slate-900 dark:border-white bg-white dark:bg-surface-bright flex flex-col group transition-all duration-300 hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] hover:-translate-y-1 hover:-translate-x-1 ${stat.isAlert ? "border-error shadow-[4px_4px_0px_0px_rgba(255,0,0,1)]" : "shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]"}`}>
+            <span className={`absolute top-4 right-4 font-data-label text-[9px] sm:text-[10px] tracking-widest border border-slate-900/20 dark:border-white/20 px-2 py-0.5 ${stat.isAlert ? "text-error border-error bg-error/10" : "text-slate-500"}`}>
               {stat.code}
             </span>
-            <span className={`material-symbols-outlined text-[32px] mb-4 ${stat.isAlert ? "text-error" : "text-data-blue"}`}>
+            <span className={`material-symbols-outlined text-[28px] sm:text-[32px] mb-4 ${stat.isAlert ? "text-error" : "text-data-blue"}`}>
               {stat.icon}
             </span>
-            <h3 className="font-display-xl text-5xl font-black text-slate-900 dark:text-white leading-none tracking-tighter mb-2">
+            <h3 className="font-display-xl text-4xl sm:text-5xl font-black text-slate-900 dark:text-white leading-none tracking-tighter mb-2">
               {stat.value}
             </h3>
-            <p className="font-data-label text-xs uppercase tracking-widest text-slate-600 dark:text-slate-400 mt-auto pt-4 border-t border-slate-900/10 dark:border-white/10">
+            <p className="font-data-label text-[10px] sm:text-xs uppercase tracking-widest text-slate-600 dark:text-slate-400 mt-auto pt-4 border-t border-slate-900/10 dark:border-white/10">
               {stat.title}
             </p>
           </div>
@@ -107,39 +107,39 @@ export default function DashboardOverviewPage() {
       </div>
 
       {/* Panel de Acciones Rápidas */}
-      <div className="border-2 border-slate-900 dark:border-white bg-white dark:bg-surface p-6 md:p-8 relative">
+      <div className="border-2 border-slate-900 dark:border-white bg-white dark:bg-surface p-5 sm:p-8 relative">
         <div className="crosshair-tl" />
         <div className="crosshair-tr" />
         
-        <div className="flex items-center gap-3 mb-8">
+        <div className="flex items-center gap-3 mb-6 sm:mb-8">
           <span className="material-symbols-outlined text-[24px] text-data-blue">bolt</span>
-          <h2 className="font-headline-lg-mobile text-2xl uppercase tracking-tighter text-slate-900 dark:text-white">ACCIONES RÁPIDAS</h2>
+          <h2 className="font-headline-lg-mobile text-xl sm:text-2xl uppercase tracking-tighter text-slate-900 dark:text-white">ACCIONES RÁPIDAS</h2>
         </div>
         
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Link href="/dashboard/sales" className="flex flex-col border border-slate-900 dark:border-white p-6 bg-slate-50 dark:bg-surface-dim hover:bg-data-blue hover:text-white transition-colors group">
-            <span className="material-symbols-outlined text-[32px] mb-4 group-hover:text-white text-slate-900 dark:text-white">shopping_cart</span>
-            <h4 className="font-headline-lg-mobile text-lg uppercase tracking-tight mb-2">REGISTRAR VENTA</h4>
-            <p className="font-data-label text-[10px] tracking-widest uppercase text-slate-500 dark:text-slate-400 group-hover:text-white/70">Nueva transacción</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+          <Link href="/dashboard/sales" className="flex flex-col border border-slate-900 dark:border-white p-5 sm:p-6 bg-slate-50 dark:bg-surface-dim hover:bg-data-blue hover:text-white transition-colors group min-h-[140px]">
+            <span className="material-symbols-outlined text-[28px] sm:text-[32px] mb-4 group-hover:text-white text-slate-900 dark:text-white">shopping_cart</span>
+            <h4 className="font-headline-lg-mobile text-base sm:text-lg uppercase tracking-tight mb-2">REGISTRAR VENTA</h4>
+            <p className="font-data-label text-[9px] sm:text-[10px] tracking-widest uppercase text-slate-500 dark:text-slate-400 group-hover:text-white/70">Nueva transacción</p>
           </Link>
 
-          <Link href="/dashboard/inventory" className="flex flex-col border border-slate-900 dark:border-white p-6 bg-slate-50 dark:bg-surface-dim hover:bg-data-blue hover:text-white transition-colors group">
-            <span className="material-symbols-outlined text-[32px] mb-4 group-hover:text-white text-slate-900 dark:text-white">inventory_2</span>
-            <h4 className="font-headline-lg-mobile text-lg uppercase tracking-tight mb-2">NUEVO PRODUCTO</h4>
-            <p className="font-data-label text-[10px] tracking-widest uppercase text-slate-500 dark:text-slate-400 group-hover:text-white/70">Agregar al inventario</p>
+          <Link href="/dashboard/inventory" className="flex flex-col border border-slate-900 dark:border-white p-5 sm:p-6 bg-slate-50 dark:bg-surface-dim hover:bg-data-blue hover:text-white transition-colors group min-h-[140px]">
+            <span className="material-symbols-outlined text-[28px] sm:text-[32px] mb-4 group-hover:text-white text-slate-900 dark:text-white">inventory_2</span>
+            <h4 className="font-headline-lg-mobile text-base sm:text-lg uppercase tracking-tight mb-2">NUEVO PRODUCTO</h4>
+            <p className="font-data-label text-[9px] sm:text-[10px] tracking-widest uppercase text-slate-500 dark:text-slate-400 group-hover:text-white/70">Agregar al inventario</p>
           </Link>
 
-          <Link href="/dashboard/customers" className="flex flex-col border border-slate-900 dark:border-white p-6 bg-slate-50 dark:bg-surface-dim hover:bg-data-blue hover:text-white transition-colors group">
-            <span className="material-symbols-outlined text-[32px] mb-4 group-hover:text-white text-slate-900 dark:text-white">person_add</span>
-            <h4 className="font-headline-lg-mobile text-lg uppercase tracking-tight mb-2">NUEVO CLIENTE</h4>
-            <p className="font-data-label text-[10px] tracking-widest uppercase text-slate-500 dark:text-slate-400 group-hover:text-white/70">Registro en directorio</p>
+          <Link href="/dashboard/customers" className="flex flex-col border border-slate-900 dark:border-white p-5 sm:p-6 bg-slate-50 dark:bg-surface-dim hover:bg-data-blue hover:text-white transition-colors group min-h-[140px]">
+            <span className="material-symbols-outlined text-[28px] sm:text-[32px] mb-4 group-hover:text-white text-slate-900 dark:text-white">person_add</span>
+            <h4 className="font-headline-lg-mobile text-base sm:text-lg uppercase tracking-tight mb-2">NUEVO CLIENTE</h4>
+            <p className="font-data-label text-[9px] sm:text-[10px] tracking-widest uppercase text-slate-500 dark:text-slate-400 group-hover:text-white/70">Registro en directorio</p>
           </Link>
 
           {user?.role === "admin" && (
-            <Link href="/dashboard/users" className="flex flex-col border border-slate-900 dark:border-white p-6 bg-slate-50 dark:bg-surface-dim hover:bg-data-blue hover:text-white transition-colors group">
-              <span className="material-symbols-outlined text-[32px] mb-4 group-hover:text-white text-slate-900 dark:text-white">admin_panel_settings</span>
-              <h4 className="font-headline-lg-mobile text-lg uppercase tracking-tight mb-2">AÑADIR USUARIO</h4>
-              <p className="font-data-label text-[10px] tracking-widest uppercase text-slate-500 dark:text-slate-400 group-hover:text-white/70">Control de acceso</p>
+            <Link href="/dashboard/users" className="flex flex-col border border-slate-900 dark:border-white p-5 sm:p-6 bg-slate-50 dark:bg-surface-dim hover:bg-data-blue hover:text-white transition-colors group min-h-[140px]">
+              <span className="material-symbols-outlined text-[28px] sm:text-[32px] mb-4 group-hover:text-white text-slate-900 dark:text-white">admin_panel_settings</span>
+              <h4 className="font-headline-lg-mobile text-base sm:text-lg uppercase tracking-tight mb-2">AÑADIR USUARIO</h4>
+              <p className="font-data-label text-[9px] sm:text-[10px] tracking-widest uppercase text-slate-500 dark:text-slate-400 group-hover:text-white/70">Control de acceso</p>
             </Link>
           )}
         </div>

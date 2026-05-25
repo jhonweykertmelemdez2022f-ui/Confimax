@@ -134,6 +134,11 @@ const Product = {
     const { rows } = await query(sql, vals);
     return rows;
   },
+
+  async getAll() {
+    const { rows } = await query('SELECT p.*, c.name as category_name FROM products p LEFT JOIN categories c ON p.category_id = c.id');
+    return rows;
+  },
 };
 
 const Category = {
@@ -142,9 +147,38 @@ const Category = {
     return rows;
   },
 
+  async findById(id) {
+    const { rows } = await query('SELECT * FROM categories WHERE id = $1', [id]);
+    return rows[0];
+  },
+
   async create(data) {
     const { name, description, parent_id } = data;
     const { rows } = await query('INSERT INTO categories (name, description, parent_id) VALUES ($1,$2,$3) RETURNING *', [name, description, parent_id]);
+    return rows[0];
+  },
+
+  async update(id, data) {
+    const fields = [];
+    const values = [];
+    let idx = 1;
+    ['name', 'description', 'parent_id', 'active'].forEach((f) => {
+      if (data[f] !== undefined) { fields.push(`${f} = $${idx++}`); values.push(data[f]); }
+    });
+    if (!fields.length) return null;
+    values.push(id);
+    const { rows } = await query(
+      `UPDATE categories SET ${fields.join(', ')}, updated_at = NOW() WHERE id = $${idx} RETURNING id, name, description, active, updated_at`,
+      values
+    );
+    return rows[0];
+  },
+
+  async remove(id) {
+    const { rows } = await query(
+      'UPDATE categories SET active = false, updated_at = NOW() WHERE id = $1 RETURNING id, name, active',
+      [id]
+    );
     return rows[0];
   },
 };

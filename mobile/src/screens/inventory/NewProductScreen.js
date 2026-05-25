@@ -256,8 +256,8 @@ const createStyles = (colors) => StyleSheet.create({
     backgroundColor: colors.surfaceDim,
   },
   activeCategoryChip: {
-    borderColor: colors.dataBlue,
-    backgroundColor: `${colors.dataBlue}15`,
+    borderColor: colors.primary,
+    backgroundColor: `${colors.primary}15`,
   },
   categoryText: {
     color: colors.secondary,
@@ -266,17 +266,17 @@ const createStyles = (colors) => StyleSheet.create({
     textTransform: 'uppercase',
   },
   activeCategoryText: {
-    color: colors.dataBlue,
+    color: colors.primary,
   },
   saveButton: {
     flexDirection: 'row',
-    backgroundColor: colors.dataBlue,
+    backgroundColor: colors.primary,
     height: 52,
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 15,
-    shadowColor: colors.dataBlue,
+    shadowColor: colors.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 5,

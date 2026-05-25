@@ -18,6 +18,7 @@ import { validateUsername, validatePassword } from '../../utils/validation';
 import * as SecureStore from 'expo-secure-store';
 import * as LocalAuthentication from 'expo-local-authentication';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useTheme } from '../../theme';
 
 // Componente animado elástico nativo para efectos en cascada cinemática
 function FadeInUpCard({ children, delay = 0, duration = 400 }) {
@@ -50,6 +51,7 @@ function FadeInUpCard({ children, delay = 0, duration = 400 }) {
 }
 
 function LoginScreen({ navigation }) {
+  const { colors } = useTheme();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({});
@@ -195,52 +197,54 @@ function LoginScreen({ navigation }) {
     }
   };
 
+  const dynamicStyles = createStyles(colors);
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={styles.container}>
+      style={dynamicStyles.container}>
 
       {/* Barra de Estado de Conexión Flotante y Estética */}
       <View style={[
-        styles.connectionBanner,
-        connectionStatus === 'connected' && styles.bannerConnected,
-        connectionStatus === 'disconnected' && styles.bannerDisconnected,
-        connectionStatus === 'checking' && styles.bannerChecking,
+        dynamicStyles.connectionBanner,
+        connectionStatus === 'connected' && dynamicStyles.bannerConnected,
+        connectionStatus === 'disconnected' && dynamicStyles.bannerDisconnected,
+        connectionStatus === 'checking' && dynamicStyles.bannerChecking,
       ]}>
         {connectionStatus === 'checking' && (
           <>
-            <ActivityIndicator size="small" color="#fff" style={{ marginRight: 8 }} />
-            <Text style={styles.bannerText}>Comprobando conexión con servidores Confimax...</Text>
+            <ActivityIndicator size="small" color={colors.onPrimary} style={{ marginRight: 8 }} />
+            <Text style={dynamicStyles.bannerText}>Comprobando conexión con servidores Confimax...</Text>
           </>
         )}
         {connectionStatus === 'connected' && (
-          <Text style={styles.bannerText}>🟢 Conectado con éxito a los servicios de Confimax</Text>
+          <Text style={dynamicStyles.bannerText}>🟢 Conectado con éxito a los servicios de Confimax</Text>
         )}
         {connectionStatus === 'disconnected' && (
           <View style={{ alignItems: 'center' }}>
-            <Text style={styles.bannerText}> SIN CONEXIÓN a Confimax (IP 192.168.101.4)</Text>
-            {detailedError ? <Text style={styles.bannerErrorSubtext}>{detailedError}</Text> : null}
-            <Button title="Reintentar Conexión" color="#fff" onPress={checkConnection} />
+            <Text style={dynamicStyles.bannerText}> SIN CONEXIÓN a Confimax (IP 192.168.101.4)</Text>
+            {detailedError ? <Text style={dynamicStyles.bannerErrorSubtext}>{detailedError}</Text> : null}
+            <Button title="Reintentar Conexión" color={colors.onPrimary} onPress={checkConnection} />
           </View>
         )}
       </View>
 
-      <View style={styles.content}>
+      <View style={dynamicStyles.content}>
         {/* Cabecera Animada */}
         <FadeInUpCard delay={0} duration={400}>
-          <Text style={styles.title}>Confimax</Text>
+          <Text style={dynamicStyles.title}>Confimax</Text>
         </FadeInUpCard>
 
         <FadeInUpCard delay={100} duration={400}>
-          <Text style={styles.subtitle}>Iniciar Sesión</Text>
+          <Text style={dynamicStyles.subtitle}>Iniciar Sesión</Text>
         </FadeInUpCard>
 
         {/* Inputs Animados */}
         <FadeInUpCard delay={200} duration={400}>
           <TextInput
-            style={[styles.input, errors.username && styles.inputError]}
+            style={[dynamicStyles.input, errors.username && dynamicStyles.inputError]}
             placeholder="Usuario"
-            placeholderTextColor="#7a7a7a"
+            placeholderTextColor={colors.muted}
             value={username}
             onChangeText={(text) => {
               setUsername(text);
@@ -248,14 +252,14 @@ function LoginScreen({ navigation }) {
             }}
             autoCapitalize="none"
           />
-          {errors.username && <Text style={styles.errorText}>{errors.username}</Text>}
+          {errors.username && <Text style={dynamicStyles.errorText}>{errors.username}</Text>}
         </FadeInUpCard>
 
         <FadeInUpCard delay={300} duration={400}>
           <TextInput
-            style={[styles.input, errors.password && styles.inputError]}
+            style={[dynamicStyles.input, errors.password && dynamicStyles.inputError]}
             placeholder="Contraseña"
-            placeholderTextColor="#7a7a7a"
+            placeholderTextColor={colors.muted}
             value={password}
             onChangeText={(text) => {
               setPassword(text);
@@ -263,31 +267,31 @@ function LoginScreen({ navigation }) {
             }}
             secureTextEntry
           />
-          {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
+          {errors.password && <Text style={dynamicStyles.errorText}>{errors.password}</Text>}
         </FadeInUpCard>
 
         {/* Botonera de Acción Animada */}
         <FadeInUpCard delay={400} duration={400}>
-          <View style={styles.actionContainer}>
+          <View style={dynamicStyles.actionContainer}>
             <TouchableOpacity
-              style={[styles.loginButton, isLoading && styles.disabledButton]}
+              style={[dynamicStyles.loginButton, isLoading && dynamicStyles.disabledButton]}
               onPress={handleLogin}
               disabled={isLoading}
             >
               {isLoading ? (
-                <ActivityIndicator color="#fff" />
+                <ActivityIndicator color={colors.onPrimary} />
               ) : (
-                <Text style={styles.loginButtonText}>Iniciar Sesión</Text>
+                <Text style={dynamicStyles.loginButtonText}>Iniciar Sesión</Text>
               )}
             </TouchableOpacity>
 
             {isBiometricSupported && hasSavedCredentials ? (
               <TouchableOpacity
-                style={styles.biometricButton}
+                style={dynamicStyles.biometricButton}
                 onPress={handleBiometricAuth}
                 activeOpacity={0.7}
               >
-                <MaterialIcons name="fingerprint" size={32} color="#0066FF" />
+                <MaterialIcons name="fingerprint" size={32} color={colors.primary} />
               </TouchableOpacity>
             ) : null}
           </View>
@@ -297,10 +301,10 @@ function LoginScreen({ navigation }) {
         {isBiometricSupported && hasSavedCredentials ? (
           <FadeInUpCard delay={500} duration={400}>
             <TouchableOpacity
-              style={styles.biometricQuickLink}
+              style={dynamicStyles.biometricQuickLink}
               onPress={handleBiometricAuth}
             >
-              <Text style={styles.biometricQuickLinkText}>
+              <Text style={dynamicStyles.biometricQuickLinkText}>
                 Iniciar sesión rápidamente con huella dactilar
               </Text>
             </TouchableOpacity>
@@ -309,10 +313,10 @@ function LoginScreen({ navigation }) {
 
         {/* Enlace de Registro al final de la Cascada */}
         <FadeInUpCard delay={600} duration={400}>
-          <Text style={styles.registerText}>
+          <Text style={dynamicStyles.registerText}>
             ¿No tienes cuenta?{' '}
             <Text
-              style={styles.registerLink}
+              style={dynamicStyles.registerLink}
               onPress={() => navigation.navigate('Register')}>
               Regístrate
             </Text>
@@ -323,10 +327,10 @@ function LoginScreen({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0A0A0A',
+    backgroundColor: colors.surfaceDim,
   },
   content: {
     flex: 1,
@@ -336,33 +340,33 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#0066FF',
+    color: colors.primary,
     textAlign: 'center',
     marginBottom: 10,
     letterSpacing: -0.5,
   },
   subtitle: {
     fontSize: 18,
-    color: '#c4c7c8',
+    color: colors.muted,
     textAlign: 'center',
     marginBottom: 30,
   },
   input: {
     height: 50,
-    backgroundColor: '#141313',
-    borderColor: '#262626',
+    backgroundColor: colors.surface,
+    borderColor: colors.borderMuted,
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 15,
     marginBottom: 10,
     fontSize: 16,
-    color: '#e5e2e1',
+    color: colors.onSurface,
   },
   inputError: {
-    borderColor: '#EF4444',
+    borderColor: colors.error,
   },
   errorText: {
-    color: '#EF4444',
+    color: colors.error,
     fontSize: 12,
     marginBottom: 10,
     marginLeft: 5,
@@ -370,10 +374,10 @@ const styles = StyleSheet.create({
   registerText: {
     textAlign: 'center',
     marginTop: 20,
-    color: '#c4c7c8',
+    color: colors.muted,
   },
   registerLink: {
-    color: '#0066FF',
+    color: colors.primary,
     fontWeight: 'bold',
   },
   connectionBanner: {
@@ -392,17 +396,17 @@ const styles = StyleSheet.create({
     backgroundColor: '#10B981',
   },
   bannerDisconnected: {
-    backgroundColor: '#EF4444',
+    backgroundColor: colors.error,
     paddingBottom: 15,
   },
   bannerText: {
-    color: '#FFFFFF',
+    color: colors.onPrimary,
     fontWeight: 'bold',
     fontSize: 14,
     textAlign: 'center',
   },
   bannerErrorSubtext: {
-    color: '#FEE2E2',
+    color: colors.error + '33',
     fontSize: 11,
     marginTop: 3,
     marginBottom: 8,
@@ -418,36 +422,36 @@ const styles = StyleSheet.create({
   loginButton: {
     flex: 1,
     height: 52,
-    backgroundColor: '#0066FF',
+    backgroundColor: colors.primary,
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#0066FF',
+    shadowColor: colors.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 5,
     elevation: 4,
   },
   loginButtonText: {
-    color: '#FFFFFF',
+    color: colors.onPrimary,
     fontSize: 16,
     fontWeight: 'bold',
     textTransform: 'uppercase',
     letterSpacing: 1,
   },
   disabledButton: {
-    backgroundColor: '#1c1b1b',
+    backgroundColor: colors.borderMuted,
   },
   biometricButton: {
     width: 52,
     height: 52,
-    borderColor: '#0066FF',
+    borderColor: colors.primary,
     borderWidth: 1.5,
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
     marginLeft: 15,
-    backgroundColor: '#141313',
+    backgroundColor: colors.surface,
   },
   biometricQuickLink: {
     paddingVertical: 10,
@@ -455,7 +459,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   biometricQuickLinkText: {
-    color: '#0066FF',
+    color: colors.primary,
     fontSize: 14,
     fontWeight: '500',
     textDecorationLine: 'underline',

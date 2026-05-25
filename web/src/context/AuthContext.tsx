@@ -157,7 +157,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       setUser(null);
       localStorage.removeItem("confimax_user");
+      localStorage.removeItem("confimax_token");
       api.clearToken();
+      window.location.href = "/login";
     }
   };
 

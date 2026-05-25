@@ -37,12 +37,17 @@ const Customer = {
     await query('UPDATE customers SET is_active = false WHERE id = $1', [id]);
   },
 
-  async list(limit = 50, offset = 0, q) {
+  async list(limit = null, offset = null, q) {
     let sql = 'SELECT * FROM customers WHERE is_active = true';
     const vals = [];
     if (q) { sql += ` AND (name ILIKE $${vals.length + 1} OR tax_id ILIKE $${vals.length + 1} OR email ILIKE $${vals.length + 1})`; vals.push(`%${q}%`); }
-    sql += ` ORDER BY name LIMIT $${vals.length + 1} OFFSET $${vals.length + 2}`;
-    vals.push(limit, offset);
+    sql += ` ORDER BY name`;
+
+    if (limit !== null && offset !== null) {
+      sql += ` LIMIT $${vals.length + 1} OFFSET $${vals.length + 2}`;
+      vals.push(limit, offset);
+    }
+
     const { rows } = await query(sql, vals);
     return rows;
   },

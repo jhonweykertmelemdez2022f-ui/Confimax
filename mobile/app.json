@@ -27,6 +27,7 @@
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
-    }
+    },
+    "plugins": []
   }
 }

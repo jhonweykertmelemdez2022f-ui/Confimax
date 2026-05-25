@@ -18,6 +18,7 @@ import ProfileScreen from '../screens/profile/ProfileScreen';
 
 // Detail & Creation Screens
 import ProductDetailScreen from '../screens/inventory/ProductDetailScreen';
+import QrScannerScreen from '../screens/inventory/QrScannerScreen';
 import SaleDetailScreen from '../screens/sales/SaleDetailScreen';
 import CustomerDetailScreen from '../screens/customers/CustomerDetailScreen';
 import NewCustomerScreen from '../screens/customers/NewCustomerScreen';
@@ -26,7 +27,8 @@ import NewProductScreen from '../screens/inventory/NewProductScreen';
 import UsersScreen from '../screens/users/UsersScreen';
 import NewUserScreen from '../screens/users/NewUserScreen';
 import AuditLogsScreen from '../screens/users/AuditLogsScreen';
-
+import QrCodeDisplayScreen from '../screens/common/QrCodeDisplayScreen';
+import SalesReportsScreen from '../screens/reports/SalesReportsScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -104,7 +106,7 @@ function MainTabs() {
           // Renderizar nuestro icono interactivo y elástico
           return <AnimatedTabIcon name={iconName} focused={focused} size={size} color={color} />;
         },
-        tabBarActiveTintColor: colors.dataBlue,
+        tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.secondary,
         tabBarStyle: {
           backgroundColor: colors.surface,
@@ -119,6 +121,15 @@ function MainTabs() {
         <>
           <Tab.Screen name="Inicio" component={HomeScreen} />
           <Tab.Screen name="Productos" component={ProductsScreen} />
+          <Tab.Screen name="Perfil" component={ProfileScreen} />
+        </>
+      ) : user?.role === 'admin' ? (
+        <>
+          <Tab.Screen name="Inicio" component={HomeScreen} />
+          <Tab.Screen name="Productos" component={ProductsScreen} />
+          <Tab.Screen name="Ventas" component={SalesScreen} />
+          <Tab.Screen name="Clientes" component={CustomersScreen} />
+          <Tab.Screen name="Usuarios" component={UsersScreen} />
           <Tab.Screen name="Perfil" component={ProfileScreen} />
         </>
       ) : (
@@ -175,6 +186,11 @@ function AppNavigator() {
         options={{title: 'Detalle del Artículo'}}
       />
       <Stack.Screen
+        name="QrScanner"
+        component={QrScannerScreen}
+        options={{title: 'Escaneador QR', headerShown: false}}
+      />
+      <Stack.Screen
         name="SaleDetail"
         component={SaleDetailScreen}
         options={{title: 'Comprobante de Venta'}}
@@ -213,6 +229,16 @@ function AppNavigator() {
         name="AuditLogs"
         component={AuditLogsScreen}
         options={{title: 'Auditoría MongoDB'}}
+      />
+      <Stack.Screen
+        name="QrCodeDisplay"
+        component={QrCodeDisplayScreen}
+        options={({ route }) => ({ title: route.params?.title || 'Código QR' })}
+      />
+      <Stack.Screen
+        name="SalesReports"
+        component={SalesReportsScreen}
+        options={{title: 'Reportes de Ventas'}}
       />
     </Stack.Navigator>
   );

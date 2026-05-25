@@ -6,78 +6,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
 import { useTheme } from "@/context/ThemeContext";
 import Link from "next/link";
-import { gsap } from "gsap";
-import { Menu, Minus, Moon, Plus, ShoppingCart, Sun, Trash2, User, X } from "lucide-react";
-
-function UserMenu() {
-  const { user, logout, isLoading } = useAuth();
-  const [open, setOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setOpen(false);
-      }
-    }
-
-    if (open) document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [open]);
-
-  const menuItemClass = "block w-full border-l-2 border-transparent px-4 py-3 text-left font-data-label text-data-label uppercase text-slate-900 transition-colors hover:border-data-blue hover:bg-data-blue hover:text-white focus-visible:border-data-blue focus-visible:bg-data-blue focus-visible:text-white focus-visible:outline-none dark:text-white";
-
-  useEffect(() => {
-    if (dropdownRef.current && open) {
-      gsap.fromTo(dropdownRef.current, { opacity: 0, y: -10 }, { opacity: 1, y: 0, duration: 0.15, ease: "power2.out" });
-    }
-  }, [open]);
-
-  return (
-    <div className="relative" ref={menuRef}>
-      <button
-        className="text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors duration-200 p-2 border border-transparent hover:border-slate-900 dark:hover:border-white focus:outline-none"
-        onClick={() => setOpen((value) => !value)}
-        aria-label="Menú de usuario"
-      >
-        <User className="w-5 h-5" />
-      </button>
-      {open && (
-        <div
-          ref={dropdownRef}
-          className="absolute right-0 mt-2 w-56 bg-white/95 dark:bg-surface/95 backdrop-blur-sm border border-slate-900 dark:border-white z-50 overflow-hidden"
-        >
-          {isLoading ? (
-            <div className="p-4 text-center text-slate-500 dark:text-secondary">Cargando...</div>
-          ) : user ? (
-            <div>
-              <div className="px-4 py-3 border-b border-slate-200 dark:border-white/20">
-                <div className="font-semibold text-slate-900 dark:text-white">{user.name}</div>
-                <div className="text-xs text-slate-500 dark:text-secondary">{user.email}</div>
-              </div>
-              {user && (user.role === "admin" || user.role === "vendedor") && (
-                <Link href="/dashboard" className={menuItemClass} onClick={() => setOpen(false)}>Dashboard</Link>
-              )}
-              <Link href="/ajustes" className={menuItemClass} onClick={() => setOpen(false)}>Ajustes</Link>
-              <button
-                className="block w-full border-l-2 border-transparent px-4 py-3 text-left font-data-label text-data-label uppercase text-red-600 transition-colors hover:border-error hover:bg-error hover:text-white focus-visible:border-error focus-visible:bg-error focus-visible:text-white focus-visible:outline-none dark:text-error"
-                onClick={() => { logout(); setOpen(false); }}
-              >
-                Cerrar sesión
-              </button>
-            </div>
-          ) : (
-            <div>
-              <Link href="/login" className={menuItemClass}>Iniciar sesión</Link>
-              <Link href="/registro" className={menuItemClass}>Registrarse</Link>
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
+import { Menu, Minus, Moon, Plus, ShoppingCart, Sun, Trash2, X } from "lucide-react";
 
 function CartDrawer() {
   const { clearCart, isOpen, items, removeItem, setIsOpen, totalItems, totalPrice, updateQuantity } = useCart();
@@ -193,9 +122,8 @@ export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
   const { setIsOpen, totalItems } = useCart();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const pathname = usePathname();
-  const navRef = useRef(null);
 
   const navLinks = [
     { name: "Inicio", href: "/" },
@@ -218,23 +146,20 @@ export default function Navbar() {
 
   return (
     <>
-      <nav
-        ref={navRef}
-        className="fixed top-0 left-0 right-0 z-50 border-b border-slate-900 dark:border-white bg-white/90 dark:bg-background/90 backdrop-blur-sm"
-      >
-        <div className="flex items-center justify-between w-full px-margin-page py-4 max-w-full">
-          <div className="flex items-center gap-4">
+      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-slate-900 dark:border-white bg-white/95 dark:bg-background/95 backdrop-blur-md">
+        <div className="flex items-center justify-between w-full px-4 py-3 max-w-full">
+          <div className="flex items-center gap-3">
             <button
-              className="md:hidden text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors duration-200 p-2 border border-transparent hover:border-slate-900 dark:hover:border-white focus:outline-none"
+              className="md:hidden text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors duration-200 p-2 border-2 border-slate-900 dark:border-white bg-white dark:bg-surface"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               aria-label="Abrir menú"
             >
-              {isMobileMenuOpen ? <X /> : <Menu />}
+              {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
             <Link href="/" className="font-headline-lg text-headline-lg text-slate-900 dark:text-white uppercase tracking-tighter hidden md:block">
               CONFIMAX
             </Link>
-            <Link href="/" className="font-headline-lg-mobile text-2xl text-slate-900 dark:text-white uppercase tracking-tighter md:hidden">
+            <Link href="/" className="font-headline-lg-mobile text-headline-lg-mobile text-slate-900 dark:text-white uppercase tracking-tighter md:hidden">
               CONFIMAX
             </Link>
           </div>
@@ -247,86 +172,174 @@ export default function Navbar() {
             ))}
           </nav>
 
-          <div className="flex items-center gap-2 sm:gap-4">
+          <div className="hidden md:flex items-center gap-4">
             <button
-              className="theme-toggle text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors duration-200 border border-slate-900 dark:border-white p-1.5 sm:px-4 sm:py-2 uppercase flex items-center gap-2"
+              className="theme-toggle text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors duration-200 font-data-label text-data-label border-2 border-slate-900 dark:border-white bg-white dark:bg-surface px-4 py-2 uppercase flex items-center gap-2"
               onClick={(event) => toggleTheme({ x: event.clientX, y: event.clientY })}
             >
-              {theme === "dark" ? <Sun className="w-4 h-4 sm:w-5 sm:h-5" /> : <Moon className="w-4 h-4 sm:w-5 sm:h-5" />}
-              <span className="hidden sm:inline font-data-label text-[10px] sm:text-data-label">{theme === "dark" ? "CLARO" : "OSCURO"}</span>
+              {theme === "dark" ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+              <span>{theme === "dark" ? "CLARO" : "OSCURO"}</span>
             </button>
 
             <button
-              className="text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors duration-200 p-1.5 sm:p-2 border border-slate-900 dark:border-white hover:border-slate-900 dark:hover:border-white focus:outline-none relative bg-white dark:bg-surface sm:bg-transparent"
+              className="text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors duration-200 p-2 border-2 border-slate-900 dark:border-white bg-white dark:bg-surface focus:outline-none relative"
               onClick={() => setIsOpen(true)}
               aria-label="Abrir carrito"
             >
-              <ShoppingCart className="w-5 h-5 sm:w-6 sm:h-6" />
+              <ShoppingCart className="w-6 h-6" />
               {totalItems > 0 && (
-                <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 bg-accent-pink text-white text-[10px] leading-5 text-center font-data-label rounded-full shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                <span className="absolute -top-2 -right-2 min-w-6 h-6 px-1 bg-accent-pink text-white text-[10px] leading-6 text-center font-data-label rounded-full border-2 border-white dark:border-background">
                   {totalItems}
                 </span>
               )}
             </button>
 
-            <UserMenu />
+            {user ? (
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-slate-600 dark:text-slate-400">{user.name}</span>
+                <button
+                  className="text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors duration-200 p-2 border border-transparent hover:border-slate-900 dark:hover:border-white focus:outline-none text-red-600 dark:text-error"
+                  onClick={logout}
+                >
+                  Cerrar sesión
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Link href="/login" className="text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors duration-200 font-data-label text-data-label uppercase">
+                  Iniciar sesión
+                </Link>
+                <Link href="/registro" className="text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors duration-200 font-data-label text-data-label uppercase">
+                  Registrarse
+                </Link>
+              </div>
+            )}
           </div>
         </div>
+      </nav>
 
-        {/* Sidebar Overlay */}
-        {isMobileMenuOpen && (
-          <div 
-            className="fixed inset-0 z-40 bg-black/50 md:hidden" 
-            onClick={() => setIsMobileMenuOpen(false)} 
-          />
-        )}
+      {/* Overlay */}
+      {isMobileMenuOpen && (
+        <div 
+          className="fixed inset-0 z-[55] bg-black/60 backdrop-blur-sm md:hidden" 
+          onClick={() => setIsMobileMenuOpen(false)} 
+        />
+      )}
 
-        {/* Sidebar Drawer */}
-        {isMobileMenuOpen && (
-          <div
-            className="fixed top-0 left-0 bottom-0 z-50 w-3/4 max-w-sm bg-white dark:bg-surface shadow-2xl border-r border-slate-900 dark:border-white flex flex-col"
-          >
-          <div className="flex items-center justify-between p-4 border-b border-slate-900 dark:border-white">
-            <span className="font-headline-lg-mobile text-headline-lg-mobile text-slate-900 dark:text-white uppercase tracking-tighter">
+      {/* Sidebar */}
+      {isMobileMenuOpen && (
+        <div className="fixed top-0 left-0 bottom-0 z-[60] w-[85%] max-w-sm bg-white dark:bg-surface shadow-2xl border-r-4 border-slate-900 dark:border-white flex flex-col">
+          {/* Header */}
+          <div className="flex items-center justify-between p-4 border-b-4 border-slate-900 dark:border-white bg-slate-100 dark:bg-surface-dim">
+            <span className="font-headline-lg text-2xl text-slate-900 dark:text-white uppercase tracking-tighter">
               CONFIMAX
             </span>
             <button
               onClick={() => setIsMobileMenuOpen(false)}
-              className="p-2 border border-slate-900 dark:border-white hover:bg-slate-900 hover:text-white dark:hover:bg-white dark:hover:text-background transition-colors"
+              className="p-2 border-2 border-slate-900 dark:border-white bg-white dark:bg-surface hover:bg-slate-900 hover:text-white dark:hover:bg-white dark:hover:text-background transition-colors"
               aria-label="Cerrar menú"
             >
-              <X className="w-5 h-5" />
+              <X className="w-6 h-6" />
             </button>
           </div>
           
-          <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-2 mt-2">
-            {[...navLinks, { name: "Contacto", href: "/contacto" }].map((link) => (
-              <Link
-                key={link.name}
-                href={link.href}
-                className={`${isActive(link.href) ? "text-data-blue border-l-4 border-data-blue bg-blue-50/50 dark:bg-blue-900/10 pl-3 font-bold" : "text-slate-900 dark:text-slate-100 pl-4 border-l-4 border-transparent"} hover:bg-slate-100 dark:hover:bg-surface-bright font-data-label text-sm uppercase py-4 transition-colors border-b border-slate-100 dark:border-white/5`}
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                {link.name}
-              </Link>
-            ))}
+          {/* Enlaces de navegación */}
+          <div className="flex-1 overflow-y-auto p-4">
+            <div className="space-y-2 mb-6">
+              {[...navLinks, { name: "Contacto", href: "/contacto" }].map((link) => (
+                <Link
+                  key={link.name}
+                  href={link.href}
+                  className={`
+                    block px-4 py-4 border-2 transition-all duration-200
+                    ${isActive(link.href) 
+                      ? "border-slate-900 dark:border-white bg-data-blue text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]" 
+                      : "border-transparent text-slate-700 dark:text-slate-300 hover:border-slate-900 dark:hover:border-white hover:bg-slate-100 dark:hover:bg-surface-bright"}
+                    font-data-label text-base uppercase tracking-wide
+                  `}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  {link.name}
+                </Link>
+              ))}
+            </div>
+
+            {/* Enlaces de sesión */}
+            <div className="border-t-2 border-slate-200 dark:border-white/20 pt-6">
+              {user ? (
+                <div className="space-y-2">
+                  <div className="px-4 py-3 text-slate-600 dark:text-slate-400">
+                    <p className="font-data-label uppercase text-xs">Bienvenido</p>
+                    <p className="font-headline-lg-mobile">{user.name}</p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      logout();
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="block w-full px-4 py-4 border-2 border-error bg-error/10 text-error hover:bg-error hover:text-white transition-colors font-data-label text-base uppercase tracking-wide"
+                  >
+                    Cerrar sesión
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <Link
+                    href="/login"
+                    className="block w-full px-4 py-4 border-2 border-slate-900 dark:border-white bg-white dark:bg-surface hover:bg-slate-900 hover:text-white dark:hover:bg-white dark:hover:text-background transition-colors font-data-label text-base uppercase tracking-wide"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Iniciar sesión
+                  </Link>
+                  <Link
+                    href="/registro"
+                    className="block w-full px-4 py-4 border-2 border-slate-900 dark:border-white bg-data-blue text-white hover:bg-data-blue/90 transition-colors font-data-label text-base uppercase tracking-wide shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Registrarse
+                  </Link>
+                </div>
+              )}
+            </div>
           </div>
 
-          <div className="p-6 border-t border-slate-900 dark:border-white bg-slate-50 dark:bg-surface-dim flex items-center justify-between">
-            <div className="flex flex-col">
-              <p className="text-[10px] text-slate-500 dark:text-secondary uppercase font-data-label tracking-widest">Confimax System</p>
-              <p className="text-[10px] text-slate-400 dark:text-slate-500 uppercase font-data-label">v1.0.2 - 2026</p>
+          {/* Botones de acción */}
+          <div className="p-4 border-t-4 border-slate-900 dark:border-white bg-slate-100 dark:bg-surface-dim">
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                className="flex flex-col items-center justify-center p-4 border-2 border-slate-900 dark:border-white bg-white dark:bg-surface hover:bg-slate-900 hover:text-white dark:hover:bg-white dark:hover:text-background transition-colors"
+                onClick={(event) => {
+                  toggleTheme({ x: event.clientX, y: event.clientY });
+                }}
+              >
+                {theme === "dark" ? <Sun className="w-7 h-7 mb-1" /> : <Moon className="w-7 h-7 mb-1" />}
+                <span className="text-[10px] font-data-label uppercase font-bold">Tema</span>
+              </button>
+
+              <button
+                className="flex flex-col items-center justify-center p-4 border-2 border-slate-900 dark:border-white bg-white dark:bg-surface hover:bg-slate-900 hover:text-white dark:hover:bg-white dark:hover:text-background transition-colors relative"
+                onClick={() => {
+                  setIsOpen(true);
+                  setIsMobileMenuOpen(false);
+                }}
+              >
+                <ShoppingCart className="w-7 h-7 mb-1" />
+                {totalItems > 0 && (
+                  <span className="absolute top-2 right-2 min-w-5 h-5 bg-accent-pink text-white text-[10px] leading-5 text-center font-data-label rounded-full border-2 border-white dark:border-background">
+                    {totalItems}
+                  </span>
+                )}
+                <span className="text-[10px] font-data-label uppercase font-bold">Carrito</span>
+              </button>
             </div>
-            <button
-              className="theme-toggle text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors duration-200 p-3 border border-slate-900 dark:border-white bg-white dark:bg-surface"
-              onClick={(event) => toggleTheme({ x: event.clientX, y: event.clientY })}
-            >
-              {theme === "dark" ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-            </button>
+
+            <div className="mt-4 text-center">
+              <p className="text-xs text-slate-500 dark:text-slate-400 uppercase font-data-label tracking-widest">Confimax v1.0</p>
+            </div>
           </div>
         </div>
-        )}
-      </nav>
+      )}
+
       <CartDrawer />
     </>
   );

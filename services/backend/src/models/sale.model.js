@@ -42,7 +42,7 @@ const englishToSpanish = (status) => {
 const Sale = {
   async findById(id) {
     const { rows } = await query(
-      'SELECT s.*, c.name as customer_name FROM sales s LEFT JOIN customers c ON s.customer_id = c.id WHERE s.id = $1',
+      'SELECT s.*, c.name as customer_name, s.discount_amount FROM sales s LEFT JOIN customers c ON s.customer_id = c.id WHERE s.id = $1',
       [id]
     );
     if (!rows[0]) return null;
@@ -57,13 +57,13 @@ const Sale = {
 
   async create(data, items) {
     return transaction(async (client) => {
-      const { customer_id, vendor_id, subtotal, iva, total, currency = 'VES', notes } = data;
-      const status = spanishToEnglish('pendiente');
-      const { rows } = await query(
-        'INSERT INTO sales (customer_id, vendor_id, subtotal, iva, total, currency, status, notes) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *',
-        [customer_id, vendor_id, subtotal, iva, total, currency, status, notes],
-        client
-      );
+        const { customer_id, vendor_id, subtotal, iva, total, currency = 'VES', status = 'pendiente', notes, discount_amount = 0 } = data; // Usamos 'discount_amount'
+      const statusEnglish = spanishToEnglish(status);
+  const { rows } = await query(
+    'INSERT INTO sales (customer_id, vendor_id, subtotal, iva, total, discount_amount, currency, status, notes) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *', // Usamos 'discount_amount' en la consulta
+    [customer_id, vendor_id, subtotal, iva, total, discount_amount, currency, statusEnglish, notes], // Usamos 'discount_amount' en los valores
+    client
+  );
       const sale = rows[0];
       sale.status = englishToSpanish(sale.status);
       if (items && items.length) {
@@ -146,7 +146,7 @@ const Sale = {
     });
   },
 
-  async list(limit = 50, offset = 0, filters = {}) {
+  async list(limit = null, offset = null, filters = {}) {
     let sql = 'SELECT s.*, c.name as customer_name FROM sales s LEFT JOIN customers c ON s.customer_id = c.id WHERE 1=1';
     const vals = [];
     if (filters.customer_id) { sql += ` AND s.customer_id = $${vals.length + 1}`; vals.push(filters.customer_id); }
@@ -156,8 +156,13 @@ const Sale = {
     }
     if (filters.start_date) { sql += ` AND s.created_at >= $${vals.length + 1}`; vals.push(filters.start_date); }
     if (filters.end_date) { sql += ` AND s.created_at <= $${vals.length + 1}`; vals.push(filters.end_date); }
-    sql += ` ORDER BY s.created_at DESC LIMIT $${vals.length + 1} OFFSET $${vals.length + 2}`;
-    vals.push(limit, offset);
+    sql += ` ORDER BY s.created_at DESC`;
+    
+    if (limit !== null && offset !== null) {
+      sql += ` LIMIT $${vals.length + 1} OFFSET $${vals.length + 2}`;
+      vals.push(limit, offset);
+    }
+
     const { rows } = await query(sql, vals);
     return rows.map(row => ({ ...row, status: englishToSpanish(row.status) }));
   },

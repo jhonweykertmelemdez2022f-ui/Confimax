@@ -1,5 +1,11 @@
 const config = require('../config');
-const { pool } = require(config.sharedPath + '/database');
+const { Pool } = require('pg');
+
+const pool = new Pool({
+  connectionString: config.db.url,
+  ssl: config.db.ssl,
+});
+
 const { connectUpstash, getUpstashClient } = require(config.sharedPath + '/upstash-redis');
 const { connectAtlas, getMongoose } = require(config.sharedPath + '/mongo-atlas');
 

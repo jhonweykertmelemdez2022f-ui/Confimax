@@ -1,602 +1,72 @@
-import React, {useState, useEffect} from 'react';
+import React from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  ActivityIndicator,
   ScrollView,
   TouchableOpacity,
   Alert,
-  Platform,
-  Modal,
-  TextInput
 } from 'react-native';
-import {inventoryAPI} from '../../services/api';
 import { useTheme } from '../../theme';
 import { MaterialIcons } from '@expo/vector-icons';
-import { useAuthStore } from '../../stores/authStore';
 
-function ProductDetailScreen({route, navigation}) {
-  const {id} = route.params;
-  const [product, setProduct] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const {colors} = useTheme();
-  const {user} = useAuthStore();
+function ProductDetailScreen({ route, navigation }) {
+  const { product } = route.params;
+  const { colors } = useTheme();
 
-  // Estados para Ajuste de Inventario Real
-  const [stockModalVisible, setStockModalVisible] = useState(false);
-  const [newStock, setNewStock] = useState('');
-  const [stockItem, setStockItem] = useState(null);
-  const [updatingStock, setUpdatingStock] = useState(false);
-
-  // Estados para Edición de Producto
-  const [editModalVisible, setEditModalVisible] = useState(false);
-  const [editForm, setEditForm] = useState({ name: '', price: '', description: '' });
-  const [updatingProduct, setUpdatingProduct] = useState(false);
-
-  useEffect(() => {
-    loadProduct();
-  }, [id]);
-
-  const loadProduct = async () => {
-    try {
-      const response = await inventoryAPI.getProduct(id);
-      if (response.data) {
-        setProduct(response.data);
-        setEditForm({
-          name: response.data.name || '',
-          price: (response.data.price || '').toString(),
-          description: response.data.description || '',
-        });
-        
-        // Cargar registro de stock asociado
-        const stockRes = await inventoryAPI.getProductStockItems(id);
-        const items = stockRes.data || [];
-        if (items.length > 0) {
-          setStockItem(items[0]);
-          setNewStock(items[0].quantity.toString());
-        } else {
-          setStockItem(null);
-          setNewStock('0');
-        }
-      } else {
-        setProduct(null);
-      }
-    } catch (error) {
-      console.log('Error fetching product and stock details:', error);
-      setProduct(null);
-    } finally {
-      setLoading(false);
-    }
+  const isProductExpiringSoon = () => {
+    if (!product.expiry_date) return false;
+    const today = new Date();
+    const expiry = new Date(product.expiry_date);
+    const diffTime = expiry - today;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays >= 0 && diffDays <= 7;
   };
 
-  const handleUpdateProduct = async () => {
-    if (!editForm.name || !editForm.price) {
-      Alert.alert('Error', 'El nombre y el precio son obligatorios.');
-      return;
-    }
-    setUpdatingProduct(true);
-    try {
-      await inventoryAPI.updateProduct(id, {
-        name: editForm.name,
-        price: parseFloat(editForm.price),
-        description: editForm.description
-      });
-      setEditModalVisible(false);
-      loadProduct(); // Recargar datos actualizados
-    } catch (error) {
-      Alert.alert('Error', 'No se pudo actualizar el producto.');
-    } finally {
-      setUpdatingProduct(false);
-    }
-  };
-
-  const handleDeleteProduct = () => {
-    Alert.alert(
-      'Confirmar Eliminación',
-      '¿Estás seguro de que deseas eliminar este producto? Esta acción no se puede deshacer.',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        { 
-          text: 'Eliminar', 
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await inventoryAPI.deleteProduct(id);
-              navigation.goBack();
-            } catch (error) {
-              Alert.alert('Error', 'No se pudo eliminar el producto.');
-            }
-          }
-        }
-      ]
-    );
-  };
-
-  const handleAdjustStock = async () => {
-    const qtyInt = parseInt(newStock);
-    if (isNaN(qtyInt) || qtyInt < 0) {
-      Alert.alert('Valor Inválido', 'Por favor ingresa una cantidad entera válida mayor o igual a 0.');
-      return;
-    }
-
-    setUpdatingStock(true);
-    try {
-      if (stockItem) {
-        // Actualizar registro de stock existente
-        await inventoryAPI.updateStockItem(stockItem.id, { quantity: qtyInt });
-      } else {
-        // Crear un nuevo registro de stock en almacén Principal
-        await inventoryAPI.createStockItem({
-          product_id: id,
-          location: 'Principal',
-          quantity: qtyInt,
-        });
-      }
-      
-      Alert.alert('Éxito', 'El stock de inventario ha sido actualizado correctamente.', [
-        {
-          text: 'Entendido',
-          onPress: () => {
-            setStockModalVisible(false);
-            loadProduct(); // Recargar los detalles para ver el nuevo stock
-          }
-        }
-      ]);
-    } catch (error) {
-      console.log('Error adjusting stock:', error);
-      Alert.alert('Error', 'No se pudo guardar la modificación del inventario. Inténtalo de nuevo.');
-    } finally {
-      setUpdatingStock(false);
-    }
-  };
-
-  const dynamicStyles = createStyles(colors);
-
-  if (loading) {
-    return (
-      <View style={dynamicStyles.center}>
-        <ActivityIndicator size="large" color={colors.dataBlue} />
-      </View>
-    );
-  }
-
-  if (!product) {
-    return (
-      <View style={dynamicStyles.center}>
-        <MaterialIcons name="error-outline" size={60} color={colors.secondary} />
-        <Text style={dynamicStyles.notFoundText}>Artículo no encontrado</Text>
-        <Text style={dynamicStyles.notFoundSub}>El artículo seleccionado no existe en la base de datos.</Text>
-        <TouchableOpacity 
-          style={dynamicStyles.backButton}
-          onPress={() => navigation.goBack()}>
-          <Text style={dynamicStyles.backButtonText}>VOLVER AL INVENTARIO</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
+  const isExpiring = isProductExpiringSoon();
 
   return (
-    <ScrollView style={dynamicStyles.container}>
-      <View style={dynamicStyles.header}>
-        <MaterialIcons name="inventory-2" size={80} color={colors.dataBlue} />
-        <Text style={dynamicStyles.name}>{product.name}</Text>
-        <Text style={dynamicStyles.sku}>SKU: {product.sku || 'N/D'}</Text>
+    <ScrollView style={{ flex: 1, backgroundColor: colors.surfaceDim }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 50, paddingHorizontal: 20, paddingBottom: 20, backgroundColor: colors.surface }}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={{ paddingRight: 15 }}>
+          <MaterialIcons name="arrow-back" size={28} color={colors.onSurface} />
+        </TouchableOpacity>
+        <Text style={{ flex: 1, fontSize: 20, fontWeight: 'bold', color: colors.onSurface, textAlign: 'center' }}>Detalle del Producto</Text>
+        <View style={{ width: 40 }} />
       </View>
 
-      <View style={dynamicStyles.infoSection}>
-        <View style={dynamicStyles.gridRow}>
-          <View style={dynamicStyles.gridCol}>
-            <Text style={dynamicStyles.label}>PRECIO UNITARIO</Text>
-            <Text style={dynamicStyles.price}>${product.price}</Text>
-          </View>
-          <View style={dynamicStyles.gridCol}>
-            <Text style={dynamicStyles.label}>DISPONIBILIDAD</Text>
-            <Text style={[dynamicStyles.stock, (product.stock || 0) < 10 ? dynamicStyles.lowStock : dynamicStyles.inStock]}>
-              {product.stock || 0} UNIDADES
+      <View style={{ padding: 20 }}>
+        <View style={{ backgroundColor: colors.surface, borderRadius: 16, padding: 24, marginBottom: 20 }}>
+          {isExpiring && (
+            <View style={{ flexDirection: 'row', backgroundColor: colors.error, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8, alignSelf: 'flex-start', marginBottom: 15, gap: 8 }}>
+              <MaterialIcons name="warning" size={18} color="#ffffff" />
+              <Text style={{ color: '#ffffff', fontSize: 14, fontWeight: 'bold' }}>Próximo a vencer!</Text>
+            </View>
+          )}
+          <Text style={{ fontSize: 24, fontWeight: 'bold', color: colors.onSurface, marginBottom: 8 }}>{product.name}</Text>
+          <Text style={{ fontSize: 14, color: colors.muted, marginBottom: 12 }}>SKU: {product.sku}</Text>
+          {product.expiry_date && (
+            <Text style={{ fontSize: 14, color: isExpiring ? colors.error : colors.muted, marginBottom: 20, fontWeight: isExpiring ? 'bold' : 'normal' }}>
+              Fecha de vencimiento: {new Date(product.expiry_date).toLocaleDateString('es-ES')}
             </Text>
-          </View>
+          )}
+          <Text style={{ fontSize: 20, fontWeight: 'bold', color: colors.primary }}>Precio: ${product.price}</Text>
         </View>
 
-        {product.expiration_date && (
-          <>
-            <View style={dynamicStyles.divider} />
-            <Text style={dynamicStyles.label}>FECHA DE VENCIMIENTO</Text>
-            <View style={{flexDirection: 'row', alignItems: 'center', marginTop: 4}}>
-              <MaterialIcons name="calendar-today" size={18} color={colors.secondary} style={{marginRight: 6}} />
-              <Text style={{fontSize: 16, fontWeight: 'bold', color: colors.primary}}>
-                {new Date(product.expiration_date).toLocaleDateString()}
-              </Text>
-            </View>
-          </>
-        )}
-
-        <View style={dynamicStyles.divider} />
-
-        <Text style={dynamicStyles.label}>DESCRIPCIÓN DEL ARTÍCULO</Text>
-        <Text style={dynamicStyles.description}>
-          {product.description || 'Este artículo está completamente registrado en tu base de datos y disponible para ser añadido a transacciones, facturas y reportes Confimax.'}
-        </Text>
-      </View>
-
-      {user?.role !== 'customer' && (
-        <View style={{ marginTop: 20 }}>
-          <TouchableOpacity 
-            style={dynamicStyles.actionButton}
-            onPress={() => setStockModalVisible(true)}>
-            <MaterialIcons name="inventory" size={20} color="#ffffff" style={{marginRight: 8}} />
-            <Text style={dynamicStyles.actionButtonText}>AJUSTAR STOCK</Text>
-          </TouchableOpacity>
+        <View style={{ backgroundColor: colors.surface, borderRadius: 16, padding: 24, alignItems: 'center', marginBottom: 20 }}>
+          <Text style={{ fontSize: 18, fontWeight: 'bold', color: colors.onSurface, marginBottom: 20 }}>Código QR del Producto</Text>
           
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 10 }}>
-            <TouchableOpacity 
-              style={[dynamicStyles.actionButton, { flex: 1, marginRight: 5, backgroundColor: colors.dataBlue }]}
-              onPress={() => setEditModalVisible(true)}>
-              <MaterialIcons name="edit" size={20} color="#ffffff" style={{marginRight: 8}} />
-              <Text style={dynamicStyles.actionButtonText}>EDITAR</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity 
-              style={[dynamicStyles.actionButton, { flex: 1, marginLeft: 5, backgroundColor: colors.error }]}
-              onPress={handleDeleteProduct}>
-              <MaterialIcons name="delete" size={20} color="#ffffff" style={{marginRight: 8}} />
-              <Text style={dynamicStyles.actionButtonText}>ELIMINAR</Text>
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity 
+            style={{ flexDirection: 'row', backgroundColor: colors.primary, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 8, gap: 8, alignItems: 'center' }}
+            onPress={() => navigation.navigate('QrCodeDisplay', { type: 'product', id: product.id, title: `QR de ${product.name}` })}
+          >
+            <MaterialIcons name="qr-code" size={20} color={colors.onPrimary} />
+            <Text style={{ color: colors.onPrimary, fontSize: 16, fontWeight: 'bold' }}>Ver Código QR</Text>
+          </TouchableOpacity>
         </View>
-      )}
-
-      {/* Modal de Ajuste de Stock */}
-      <Modal
-        visible={stockModalVisible}
-        animationType="fade"
-        transparent={true}
-        onRequestClose={() => setStockModalVisible(false)}
-      >
-        <View style={dynamicStyles.modalOverlay}>
-          <View style={dynamicStyles.modalContent}>
-            <Text style={dynamicStyles.modalTitle}>AJUSTAR STOCK</Text>
-            <Text style={dynamicStyles.modalSub}>
-              Establece la cantidad física disponible de "{product?.name}" en el almacén principal.
-            </Text>
-
-            <Text style={dynamicStyles.modalLabel}>UNIDADES EN STOCK</Text>
-            <TextInput
-              style={dynamicStyles.modalInput}
-              value={newStock}
-              onChangeText={setNewStock}
-              keyboardType="numeric"
-              placeholder="Ej: 150"
-              placeholderTextColor={colors.secondary}
-            />
-
-            <View style={dynamicStyles.modalButtons}>
-              <TouchableOpacity 
-                style={dynamicStyles.modalCancelButton}
-                onPress={() => setStockModalVisible(false)}
-                disabled={updatingStock}
-              >
-                <Text style={dynamicStyles.modalCancelText}>CANCELAR</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity 
-                style={[dynamicStyles.modalSaveButton, updatingStock && dynamicStyles.disabledButton]}
-                onPress={handleAdjustStock}
-                disabled={updatingStock}
-              >
-                {updatingStock ? (
-                  <ActivityIndicator color="#ffffff" />
-                ) : (
-                  <Text style={dynamicStyles.modalSaveText}>CONFIRMAR</Text>
-                )}
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
-
-      {/* Modal de Edición de Producto */}
-      <Modal
-        visible={editModalVisible}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setEditModalVisible(false)}
-      >
-        <View style={dynamicStyles.modalOverlay}>
-          <View style={dynamicStyles.modalContent}>
-            <Text style={dynamicStyles.modalTitle}>EDITAR PRODUCTO</Text>
-            <Text style={dynamicStyles.modalSub}>
-              Actualiza la información general de este artículo.
-            </Text>
-
-            <Text style={dynamicStyles.modalLabel}>NOMBRE DEL PRODUCTO</Text>
-            <TextInput
-              style={dynamicStyles.modalInput}
-              value={editForm.name}
-              onChangeText={(t) => setEditForm({...editForm, name: t})}
-              placeholder="Ej: Lata de Atún"
-              placeholderTextColor={colors.secondary}
-            />
-
-            <Text style={dynamicStyles.modalLabel}>PRECIO UNITARIO ($)</Text>
-            <TextInput
-              style={dynamicStyles.modalInput}
-              value={editForm.price}
-              onChangeText={(t) => setEditForm({...editForm, price: t})}
-              keyboardType="numeric"
-              placeholder="Ej: 50.00"
-              placeholderTextColor={colors.secondary}
-            />
-
-            <Text style={dynamicStyles.modalLabel}>DESCRIPCIÓN</Text>
-            <TextInput
-              style={[dynamicStyles.modalInput, { height: 80, textAlignVertical: 'top' }]}
-              value={editForm.description}
-              onChangeText={(t) => setEditForm({...editForm, description: t})}
-              multiline
-              placeholder="Detalles del producto..."
-              placeholderTextColor={colors.secondary}
-            />
-
-            <View style={dynamicStyles.modalButtons}>
-              <TouchableOpacity 
-                style={dynamicStyles.modalBtnCancel}
-                onPress={() => setEditModalVisible(false)}
-              >
-                <Text style={dynamicStyles.modalBtnCancelText}>CANCELAR</Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity 
-                style={dynamicStyles.modalBtnConfirm}
-                onPress={handleUpdateProduct}
-                disabled={updatingProduct}
-              >
-                {updatingProduct ? (
-                  <ActivityIndicator size="small" color="#ffffff" />
-                ) : (
-                  <Text style={dynamicStyles.modalBtnConfirmText}>GUARDAR</Text>
-                )}
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
+      </View>
     </ScrollView>
   );
 }
-
-const createStyles = (colors) => StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.surfaceDim,
-  },
-  center: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: colors.surfaceDim,
-    padding: 30,
-  },
-  notFoundText: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: colors.primary,
-    marginTop: 15,
-  },
-  notFoundSub: {
-    fontSize: 14,
-    color: colors.secondary,
-    textAlign: 'center',
-    marginTop: 8,
-    marginBottom: 25,
-  },
-  backButton: {
-    backgroundColor: colors.borderMuted,
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.borderMuted,
-  },
-  backButtonText: {
-    color: colors.primary,
-    fontWeight: 'bold',
-    fontSize: 13,
-  },
-  header: {
-    paddingVertical: 40,
-    alignItems: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: colors.borderMuted,
-    backgroundColor: colors.surface,
-  },
-  name: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: colors.primary,
-    textAlign: 'center',
-    marginTop: 15,
-    paddingHorizontal: 20,
-    letterSpacing: -0.5,
-  },
-  sku: {
-    fontSize: 14,
-    color: colors.secondary,
-    marginTop: 6,
-    fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
-  },
-  infoSection: {
-    backgroundColor: colors.surface,
-    padding: 24,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: colors.borderMuted,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 4},
-    shadowOpacity: colors.isDark ? 0.3 : 0.08,
-    shadowRadius: 10,
-    elevation: 5,
-    marginHorizontal: 15,
-    marginTop: -20,
-    marginBottom: 20,
-  },
-  gridRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 20,
-  },
-  gridCol: {
-    flex: 1,
-  },
-  label: {
-    fontSize: 11,
-    color: colors.secondary,
-    fontWeight: 'bold',
-    letterSpacing: 1.2,
-    marginBottom: 6,
-  },
-  price: {
-    fontSize: 26,
-    color: colors.dataBlue,
-    fontWeight: 'bold',
-  },
-  stock: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  inStock: {
-    color: '#10B981',
-  },
-  lowStock: {
-    color: '#EF4444',
-  },
-  divider: {
-    height: 1,
-    backgroundColor: colors.borderMuted,
-    marginVertical: 20,
-  },
-  description: {
-    fontSize: 15,
-    color: colors.onSurface,
-    lineHeight: 22,
-  },
-  actionButton: {
-    flexDirection: 'row',
-    backgroundColor: colors.dataBlue,
-    marginHorizontal: 15,
-    marginBottom: 30,
-    height: 52,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: colors.dataBlue,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
-    elevation: 4,
-  },
-  actionButtonText: {
-    color: '#ffffff',
-    fontSize: 15,
-    fontWeight: 'bold',
-    letterSpacing: 0.5,
-  },
-  // Modal de Ajuste de Stock
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.75)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  modalContent: {
-    width: '100%',
-    maxWidth: 340,
-    backgroundColor: colors.surface,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: colors.borderMuted,
-    padding: 24,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
-    elevation: 5,
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: colors.primary,
-    marginBottom: 10,
-    letterSpacing: 0.5,
-  },
-  modalSub: {
-    fontSize: 13,
-    color: colors.secondary,
-    textAlign: 'center',
-    lineHeight: 18,
-    marginBottom: 20,
-  },
-  modalLabel: {
-    fontSize: 11,
-    color: colors.secondary,
-    fontWeight: 'bold',
-    letterSpacing: 1,
-    alignSelf: 'flex-start',
-    marginBottom: 8,
-  },
-  modalInput: {
-    width: '100%',
-    height: 50,
-    backgroundColor: colors.surfaceDim,
-    borderColor: colors.borderMuted,
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 15,
-    fontSize: 18,
-    color: colors.primary,
-    textAlign: 'center',
-    fontWeight: 'bold',
-    marginBottom: 20,
-  },
-  modalButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
-  },
-  modalCancelButton: {
-    flex: 1,
-    height: 46,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 10,
-    borderRadius: 8,
-    backgroundColor: colors.surfaceDim,
-    borderWidth: 1,
-    borderColor: colors.borderMuted,
-  },
-  modalCancelText: {
-    color: colors.secondary,
-    fontWeight: 'bold',
-    fontSize: 13,
-  },
-  modalSaveButton: {
-    flex: 1,
-    height: 46,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 8,
-    backgroundColor: colors.dataBlue,
-  },
-  modalSaveText: {
-    color: '#ffffff',
-    fontWeight: 'bold',
-    fontSize: 13,
-  },
-  disabledButton: {
-    backgroundColor: colors.borderMuted,
-  },
-});
 
 export default ProductDetailScreen;

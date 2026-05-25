@@ -110,30 +110,54 @@ function SaleDetailScreen({route, navigation}) {
           </View>
         ))}
 
+        <View style={dynamicStyles.totalRow}>
+          <Text style={dynamicStyles.totalLabel}>SUBTOTAL</Text>
+          <Text style={dynamicStyles.totalAmount}>${sale.subtotal?.toFixed(2) || '0.00'}</Text>
+        </View>
+        {sale.discount_amount > 0 && (
+          <View style={dynamicStyles.totalRow}>
+            <Text style={dynamicStyles.totalLabel}>DESCUENTO</Text>
+            <Text style={dynamicStyles.totalAmount}>-${sale.discount_amount?.toFixed(2) || '0.00'}</Text>
+          </View>
+        )}
+        <View style={dynamicStyles.totalRow}>
+          <Text style={dynamicStyles.totalLabel}>IVA</Text>
+          <Text style={dynamicStyles.totalAmount}>${sale.iva?.toFixed(2) || '0.00'}</Text>
+        </View>
         <View style={dynamicStyles.divider} />
 
         <View style={dynamicStyles.totalRow}>
           <Text style={dynamicStyles.totalLabel}>TOTAL TRANSACCIÓN</Text>
-          <Text style={dynamicStyles.totalAmount}>${sale.total}</Text>
+          <Text style={dynamicStyles.totalAmount}>${sale.total?.toFixed(2) || '0.00'}</Text>
         </View>
       </View>
 
-      <View style={{ marginTop: 10, marginBottom: 30, marginHorizontal: 15, flexDirection: 'row', justifyContent: 'space-between' }}>
+      <View style={{ marginTop: 10, marginBottom: 30, marginHorizontal: 15 }}>
         <TouchableOpacity 
-          style={[dynamicStyles.actionButton, { flex: 1, marginRight: 5, backgroundColor: colors.dataBlue, marginTop: 0, marginHorizontal: 0 }]}
-          onPress={() => Alert.alert('Éxito', 'Comprobante enviado')}>
-          <MaterialIcons name="share" size={20} color="#ffffff" style={{marginRight: 8}} />
-          <Text style={dynamicStyles.actionButtonText}>COMPARTIR</Text>
+          style={[dynamicStyles.actionButton, { flex: 1, backgroundColor: colors.primary, marginBottom: 10 }]}
+          onPress={() => navigation.navigate('QrCodeDisplay', { type: 'sale', id: sale.id, title: `QR de Venta #${sale.id}` })}
+        >
+          <MaterialIcons name="qr-code" size={20} color={colors.onPrimary} style={{marginRight: 8}} />
+          <Text style={dynamicStyles.actionButtonText}>VER CÓDIGO QR</Text>
         </TouchableOpacity>
 
-        {user?.role !== 'customer' && (
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
           <TouchableOpacity 
-            style={[dynamicStyles.actionButton, { flex: 1, marginLeft: 5, backgroundColor: colors.error, marginTop: 0, marginHorizontal: 0 }]}
-            onPress={handleDeleteSale}>
-            <MaterialIcons name="delete" size={20} color="#ffffff" style={{marginRight: 8}} />
-            <Text style={dynamicStyles.actionButtonText}>ANULAR</Text>
+            style={[dynamicStyles.actionButton, { flex: 1, marginRight: 5, backgroundColor: colors.dataBlue, marginTop: 0, marginHorizontal: 0 }]}
+            onPress={() => Alert.alert('Éxito', 'Comprobante enviado')}>
+            <MaterialIcons name="share" size={20} color="#ffffff" style={{marginRight: 8}} />
+            <Text style={dynamicStyles.actionButtonText}>COMPARTIR</Text>
           </TouchableOpacity>
-        )}
+
+          {user?.role !== 'customer' && (
+            <TouchableOpacity 
+              style={[dynamicStyles.actionButton, { flex: 1, marginLeft: 5, backgroundColor: colors.error, marginTop: 0, marginHorizontal: 0 }]}
+              onPress={handleDeleteSale}>
+              <MaterialIcons name="delete" size={20} color="#ffffff" style={{marginRight: 8}} />
+              <Text style={dynamicStyles.actionButtonText}>ANULAR</Text>
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
     </ScrollView>
   );

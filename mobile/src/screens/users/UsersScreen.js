@@ -197,6 +197,14 @@ function UsersScreen({navigation}) {
         <View style={dynamicStyles.cardActions}>
           <TouchableOpacity 
             style={dynamicStyles.editButton}
+            onPress={() => navigation.navigate('QrCodeDisplay', { type: 'user', id: item.id, title: `QR de ${item.username}` })}
+          >
+            <MaterialIcons name="qr-code" size={18} color="#3B82F6" />
+            <Text style={dynamicStyles.editButtonText}>Ver QR</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={dynamicStyles.editButton}
             onPress={() => navigation.navigate('NewUser', { user: item })}
           >
             <MaterialIcons name="edit" size={18} color="#3B82F6" />
@@ -220,7 +228,7 @@ function UsersScreen({navigation}) {
   if (loading && users.length === 0) {
     return (
       <View style={dynamicStyles.center}>
-        <ActivityIndicator size="large" color={colors.dataBlue} />
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
@@ -274,7 +282,7 @@ function UsersScreen({navigation}) {
         onPress={() => navigation.navigate('NewUser')}
         activeOpacity={0.8}
       >
-        <MaterialIcons name="add" size={28} color="#ffffff" />
+        <MaterialIcons name="add" size={28} color={colors.onPrimary} />
       </TouchableOpacity>
     </View>
   );
@@ -325,7 +333,7 @@ const createStyles = (colors) => StyleSheet.create({
     borderWidth: 1,
     borderRadius: 12,
     marginHorizontal: 15,
-    marginTop: Platform.OS === 'ios' ? 60 : 35,
+    marginTop: 15,
     marginBottom: 10,
     paddingHorizontal: 15,
     height: 52,
@@ -422,17 +430,18 @@ const createStyles = (colors) => StyleSheet.create({
     position: 'absolute',
     right: 20,
     bottom: 20,
-    backgroundColor: colors.dataBlue,
+    backgroundColor: colors.primary,
     width: 60,
     height: 60,
     borderRadius: 30,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: colors.dataBlue,
+    shadowColor: colors.primary,
     shadowOffset: {width: 0, height: 4},
     shadowOpacity: 0.4,
     shadowRadius: 6,
     elevation: 6,
+    zIndex: 999,
   },
 });
 

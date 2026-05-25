@@ -197,12 +197,12 @@ export default function ProductCard({ product, viewMode }: ProductCardProps) {
         <div className="mt-4 flex gap-2">
           <Link
             href={`/catalogo/${product.id}`}
-            className="flex-1 py-2.5 text-center text-sm font-data-label font-data-label uppercase border border-slate-900 dark:border-white hover:bg-slate-900 dark:hover:bg-white hover:text-white dark:hover:text-background transition-colors text-slate-900 dark:text-white"
+            className="flex-1 py-3 text-center text-sm font-data-label uppercase border border-slate-900 dark:border-white hover:bg-slate-900 dark:hover:bg-white hover:text-white dark:hover:text-background transition-colors text-slate-900 dark:text-white min-h-[44px] flex items-center justify-center"
           >
             Ver
           </Link>
           <button
-            className="flex-1 py-2.5 text-sm font-data-label font-data-label uppercase border border-slate-900 dark:border-white bg-slate-900 dark:bg-white text-white dark:text-background hover:bg-slate-800 dark:hover:bg-slate-100 transition-all flex items-center justify-center gap-1"
+            className="flex-1 py-3 text-sm font-data-label uppercase border border-slate-900 dark:border-white bg-slate-900 dark:bg-white text-white dark:text-background hover:bg-slate-800 dark:hover:bg-slate-100 transition-all flex items-center justify-center gap-2 min-h-[44px]"
             onClick={() => addItem({
               id: product.id,
               name: product.name,
@@ -211,7 +211,7 @@ export default function ProductCard({ product, viewMode }: ProductCardProps) {
               category: product.category
             })}
           >
-            <ShoppingCart size={14} /> Añadir
+            <ShoppingCart size={16} /> Añadir
           </button>
         </div>
       </div>

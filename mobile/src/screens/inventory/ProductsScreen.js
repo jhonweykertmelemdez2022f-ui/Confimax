@@ -9,101 +9,67 @@ import {
   ActivityIndicator,
   Platform,
   Animated,
+  Alert,
+  AsyncStorage,
 } from 'react-native';
 import {inventoryAPI} from '../../services/api';
 import { useTheme } from '../../theme';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useIsFocused } from '@react-navigation/native';
 import { useAuthStore } from '../../stores/authStore';
-
-
-// Componente animado elástico nativo para las tarjetas en cascada
-function FadeInUpCard({ children, delay = 0, duration = 400 }) {
-  const isFocused = useIsFocused();
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const translateYAnim = useRef(new Animated.Value(30)).current;
-
-  useEffect(() => {
-    if (isFocused) {
-      fadeAnim.setValue(0);
-      translateYAnim.setValue(30);
-      Animated.parallel([
-        Animated.timing(fadeAnim, {
-          toValue: 1,
-          duration: duration,
-          delay: delay,
-          useNativeDriver: true,
-        }),
-        Animated.spring(translateYAnim, {
-          toValue: 0,
-          tension: 50,
-          friction: 7,
-          delay: delay,
-          useNativeDriver: true,
-        }),
-      ]).start();
-    } else {
-      fadeAnim.setValue(0);
-      translateYAnim.setValue(30);
-    }
-  }, [isFocused]);
-
-  return (
-    <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: translateYAnim }] }}>
-      {children}
-    </Animated.View>
-  );
-}
-
-// Componente animado para Estados Vacíos
-function AnimatedEmptyState({ icon, title, subtitle, colors }) {
-  const scaleAnim = useRef(new Animated.Value(0.85)).current;
-  const opacityAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    Animated.parallel([
-      Animated.spring(scaleAnim, {
-        toValue: 1,
-        tension: 30,
-        friction: 6,
-        useNativeDriver: true,
-      }),
-      Animated.timing(opacityAnim, {
-        toValue: 1,
-        duration: 450,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  }, []);
-
-  return (
-    <Animated.View style={[styles.emptyContainer, { opacity: opacityAnim, transform: [{ scale: scaleAnim }] }]}>
-      <MaterialIcons name={icon} size={75} color={colors.secondary} style={styles.emptyIcon} />
-      <Text style={[styles.emptyTitle, { color: colors.primary }]}>{title}</Text>
-      <Text style={[styles.emptySubtitle, { color: colors.secondary }]}>{subtitle}</Text>
-    </Animated.View>
-  );
-}
+import * as Print from 'expo-print';
+import * as Sharing from 'expo-sharing';
+import * as notificationService from '../../services/notificationService';
 
 function ProductsScreen({navigation}) {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [page, setPage] = useState(1);
   const {colors} = useTheme();
   const {user} = useAuthStore();
+  const isFocused = useIsFocused();
+  const notifiedProductsRef = useRef(new Set());
 
   useEffect(() => {
-    loadProducts();
-  }, [useIsFocused()]); // Recargar al enfocar para traer nuevos productos
+    notificationService.registerForPushNotificationsAsync();
+  }, []);
 
+  useEffect(() => {
+    if (isFocused) {
+      loadProducts();
+    }
+  }, [isFocused]);
+
+  const isProductExpiringSoon = (product) => {
+    if (!product.expiry_date) return false;
+    const today = new Date();
+    const expiry = new Date(product.expiry_date);
+    const diffTime = expiry - today;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays >= 0 && diffDays <= 7;
+  };
+
+  const checkExpiringProducts = (productsList) => {
+    productsList.forEach(product => {
+      if (isProductExpiringSoon(product) && !notifiedProductsRef.current.has(product.id)) {
+        const expiryDate = new Date(product.expiry_date).toLocaleDateString('es-ES');
+        notificationService.sendImmediateNotification(
+          '⚠️ Producto próximo a vencer',
+          `${product.name} vence el ${expiryDate}`,
+        );
+        notifiedProductsRef.current.add(product.id);
+      }
+    });
+  };
 
   const loadProducts = async () => {
     try {
       const response = await inventoryAPI.getProducts();
-      setProducts(response.data || []);
+      const productsList = response.data || [];
+      setProducts(productsList);
+      checkExpiringProducts(productsList);
     } catch (error) {
-      console.error('Error loading products from database:', error);
+      console.error('Error loading products:', error);
       setProducts([]);
     } finally {
       setLoading(false);
@@ -114,128 +80,161 @@ function ProductsScreen({navigation}) {
     product.name?.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
-  const displayedProducts = filteredProducts.slice(0, page * 10);
-
-  const handleLoadMore = () => {
-    if (page * 10 < filteredProducts.length) {
-      setPage(prev => prev + 1);
-    }
+  const generateQrData = (product) => {
+    return JSON.stringify({
+      id: product.id,
+      sku: product.sku,
+      name: product.name,
+      price: product.price,
+    });
   };
 
-  const renderFooter = () => {
-    if (page * 10 >= filteredProducts.length) return null;
-    return (
-      <View style={{ paddingVertical: 15, alignItems: 'center' }}>
-        <ActivityIndicator size="small" color={colors.dataBlue} />
-      </View>
-    );
+  const generateAllQRsPdf = async () => {
+    if (products.length === 0) {
+      Alert.alert('Aviso', 'No hay productos para generar QR');
+      return;
+    }
+
+    try {
+      const productsHtml = products.map(product => `
+        <div style="display: inline-block; width: 280px; margin: 15px; padding: 20px; border: 1px solid #ddd; border-radius: 10px; text-align: center;">
+          <h2 style="font-size: 18px; margin-bottom: 5px;">${product.name}</h2>
+          <p style="font-size: 14px; color: #666; margin-bottom: 10px;">SKU: ${product.sku}</p>
+          <p style="font-size: 16px; font-weight: bold; margin-bottom: 15px;">$${product.price}</p>
+          <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(generateQrData(product))}" alt="QR" />
+        </div>
+      `).join('');
+
+      const htmlContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <title>QRs de Todos los Productos</title>
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              padding: 20px;
+            }
+            h1 {
+              text-align: center;
+              margin-bottom: 30px;
+            }
+            .container {
+              display: flex;
+              flex-wrap: wrap;
+              justify-content: center;
+            }
+          </style>
+        </head>
+        <body>
+          <h1>QRs de Todos los Productos</h1>
+          <div class="container">
+            ${productsHtml}
+          </div>
+        </body>
+        </html>
+      `;
+
+      const { uri } = await Print.printToFileAsync({
+        html: htmlContent,
+      });
+
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(uri, {
+          mimeType: 'application/pdf',
+          dialogTitle: 'Compartir QRs de todos los productos',
+        });
+      } else {
+        Alert.alert('Éxito', 'PDF generado en: ' + uri);
+      }
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      Alert.alert('Error', 'No se pudo generar el PDF');
+    }
   };
 
   const dynamicStyles = createStyles(colors);
 
-  const renderProduct = ({item, index}) => (
-    <FadeInUpCard delay={index * 60} duration={350}>
-      <TouchableOpacity
-        style={dynamicStyles.productCard}
-        onPress={() => navigation.navigate('ProductDetail', {id: item.id})}>
-        <Text style={dynamicStyles.productName}>{item.name}</Text>
-        <Text style={dynamicStyles.productPrice}>${item.price}</Text>
-        <Text style={dynamicStyles.productStock}>Inventario: {item.stock} uds.</Text>
-      </TouchableOpacity>
-    </FadeInUpCard>
-  );
-
   if (loading) {
     return (
       <View style={dynamicStyles.center}>
-        <ActivityIndicator size="large" color={colors.dataBlue} />
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
 
   return (
     <View style={dynamicStyles.container}>
-      <FadeInUpCard delay={0} duration={300}>
-        <View style={dynamicStyles.searchBarContainer}>
-          <MaterialIcons name="search" size={20} color={colors.secondary} style={dynamicStyles.searchIcon} />
-          <TextInput
-            style={dynamicStyles.searchInput}
-            placeholder="Buscar artículos en stock..."
-            placeholderTextColor={colors.secondary}
-            value={searchQuery}
-            onChangeText={(text) => {
-              setSearchQuery(text);
-              setPage(1); // Reset page on new search
-            }}
-          />
-        </View>
-      </FadeInUpCard>
+      <View style={dynamicStyles.searchBarContainer}>
+        <MaterialIcons name="search" size={20} color={colors.muted} style={dynamicStyles.searchIcon} />
+        <TextInput
+          style={dynamicStyles.searchInput}
+          placeholder="Buscar artículos..."
+          placeholderTextColor={colors.muted}
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+        />
+      </View>
 
-      {products.length === 0 ? (
-        <AnimatedEmptyState
-          icon="inventory-2"
-          title="Inventario vacío"
-          subtitle="No hay productos registrados en el sistema. Registra tus artículos en el panel administrativo o espera la sincronización de la base de datos."
-          colors={colors}
-        />
-      ) : filteredProducts.length === 0 ? (
-        <AnimatedEmptyState
-          icon="search-off"
-          title="Sin resultados"
-          subtitle={`No se encontraron coincidencias para "${searchQuery}". Revisa la ortografía o intenta con otro término.`}
-          colors={colors}
-        />
-      ) : (
-        <FlatList
-          data={displayedProducts}
-          renderItem={({item, index}) => renderProduct({item, index})}
-          keyExtractor={item => item.id.toString()}
-          contentContainerStyle={dynamicStyles.list}
-          onEndReached={handleLoadMore}
-          onEndReachedThreshold={0.2}
-          ListFooterComponent={renderFooter}
-        />
-      )}
+      <View style={dynamicStyles.buttonsRow}>
+        <TouchableOpacity 
+          style={dynamicStyles.actionButton}
+          onPress={() => navigation.navigate('QrScanner')}
+        >
+          <MaterialIcons name="qr-code-scanner" size={22} color={colors.onPrimary} />
+          <Text style={dynamicStyles.actionButtonText}>Escanear QR</Text>
+        </TouchableOpacity>
 
-      {/* Botón Flotante para Registrar Producto (Solo para Admin/Vendedor) */}
+        <TouchableOpacity 
+          style={dynamicStyles.actionButton}
+          onPress={generateAllQRsPdf}
+        >
+          <MaterialIcons name="picture-as-pdf" size={22} color={colors.onPrimary} />
+          <Text style={dynamicStyles.actionButtonText}>Todos los QRs</Text>
+        </TouchableOpacity>
+      </View>
+
+      <FlatList
+        data={filteredProducts}
+        renderItem={({item}) => {
+          const isExpiring = isProductExpiringSoon(item);
+          return (
+            <TouchableOpacity
+              style={dynamicStyles.productCard}
+              onPress={() => navigation.navigate('ProductDetail', { product: item })}
+            >
+              {isExpiring && (
+                <View style={dynamicStyles.expiryBadge}>
+                  <MaterialIcons name="warning" size={16} color={colors.onError} />
+                  <Text style={dynamicStyles.expiryText}>Próximo a vencer!</Text>
+                </View>
+              )}
+              <Text style={dynamicStyles.productName}>{item.name}</Text>
+              <Text style={dynamicStyles.productPrice}>${item.price}</Text>
+              {item.expiry_date && (
+                <Text style={[dynamicStyles.expiryDate, isExpiring ? dynamicStyles.expiryDateUrgent : null]}>
+                  Vence: {new Date(item.expiry_date).toLocaleDateString('es-ES')}
+                </Text>
+              )}
+            </TouchableOpacity>
+          );
+        }}
+        keyExtractor={item => item.id ? item.id.toString() : item.sku}
+        contentContainerStyle={dynamicStyles.list}
+      />
+
       {user?.role !== 'customer' && (
         <TouchableOpacity 
           style={dynamicStyles.fab}
           onPress={() => navigation.navigate('NewProduct')}
-          activeOpacity={0.8}
         >
-          <MaterialIcons name="add" size={28} color="#ffffff" />
+          <MaterialIcons name="add" size={28} color={colors.onPrimary} />
         </TouchableOpacity>
       )}
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 40,
-    marginTop: 60,
-  },
-  emptyIcon: {
-    marginBottom: 20,
-    opacity: 0.8,
-  },
-  emptyTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    letterSpacing: 0.5,
-  },
-  emptySubtitle: {
-    fontSize: 14,
-    textAlign: 'center',
-    marginTop: 10,
-    lineHeight: 22,
-  },
-});
 
 const createStyles = (colors) => StyleSheet.create({
   container: {
@@ -256,15 +255,10 @@ const createStyles = (colors) => StyleSheet.create({
     borderWidth: 1,
     borderRadius: 12,
     marginHorizontal: 15,
-    marginTop: Platform.OS === 'ios' ? 60 : 35,
+    marginTop: 15,
     marginBottom: 10,
     paddingHorizontal: 15,
     height: 52,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: colors.isDark ? 0.2 : 0.03,
-    shadowRadius: 3,
-    elevation: 2,
   },
   searchIcon: {
     marginRight: 10,
@@ -272,8 +266,30 @@ const createStyles = (colors) => StyleSheet.create({
   searchInput: {
     flex: 1,
     height: '100%',
-    color: colors.primary,
+    color: colors.onSurface,
     fontSize: 16,
+  },
+  buttonsRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginHorizontal: 15,
+    marginBottom: 10,
+  },
+  actionButton: {
+    flex: 1,
+    flexDirection: 'row',
+    backgroundColor: colors.primary,
+    paddingHorizontal: 15,
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  actionButtonText: {
+    color: colors.onPrimary,
+    fontSize: 14,
+    fontWeight: 'bold',
   },
   list: {
     padding: 15,
@@ -285,46 +301,52 @@ const createStyles = (colors) => StyleSheet.create({
     marginBottom: 12,
     borderWidth: 1,
     borderColor: colors.borderMuted,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 4},
-    shadowOpacity: colors.isDark ? 0.3 : 0.05,
-    shadowRadius: 5,
-    elevation: 4,
+  },
+  expiryBadge: {
+    flexDirection: 'row',
+    backgroundColor: colors.error,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 6,
+    alignSelf: 'flex-start',
+    marginBottom: 10,
+    gap: 6,
+  },
+  expiryText: {
+    color: '#ffffff',
+    fontSize: 12,
+    fontWeight: 'bold',
   },
   productName: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: colors.primary,
-    letterSpacing: 0.5,
+    color: colors.onSurface,
   },
   productPrice: {
     fontSize: 20,
-    color: colors.dataBlue,
+    color: colors.primary,
     fontWeight: 'bold',
     marginTop: 8,
   },
-  productStock: {
-    fontSize: 14,
-    color: colors.secondary,
-    marginTop: 5,
-    fontWeight: '500',
+  expiryDate: {
+    fontSize: 12,
+    color: colors.muted,
+    marginTop: 6,
+  },
+  expiryDateUrgent: {
+    color: colors.error,
+    fontWeight: 'bold',
   },
   fab: {
     position: 'absolute',
     right: 20,
     bottom: 20,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: colors.dataBlue,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: colors.dataBlue,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 6,
-    elevation: 6,
-    zIndex: 999,
   },
 });
 

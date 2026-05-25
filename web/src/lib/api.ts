@@ -16,7 +16,7 @@
  */
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 
-  (typeof window !== 'undefined' ? '/api' : 'http://api-gateway:8080/api');
+  (typeof window !== 'undefined' ? 'https://confimax-api-gateway-tfxa.onrender.com' : 'http://api-gateway:8080/api');
 
 interface ApiResponse<T> {
   data?: T;
@@ -157,8 +157,14 @@ class ApiClient {
   }
 
   async logout() {
-    this.clearToken();
-    return this.request('/auth/logout', { method: 'POST' });
+    try {
+      return await this.request('/auth/logout', { method: 'POST' }, true);
+    } catch (error) {
+      console.warn('Error en logout del servidor, continuando con logout local:', error);
+      return { success: true };
+    } finally {
+      this.clearToken();
+    }
   }
 
   async refreshToken() {

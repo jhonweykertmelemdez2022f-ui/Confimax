@@ -11,7 +11,7 @@ const USE_PRODUCTION = true;
 const LOCAL_IP = '192.168.101.4'; 
 
 const API_BASE_URL = USE_PRODUCTION 
-  ? 'https://confimax-api-gateway.onrender.com/api'
+  ? 'https://confimax-api-gateway-tfxa.onrender.com/api'
   : `http://${LOCAL_IP}:8080/api`;
 
 const api = axios.create({
@@ -22,6 +22,15 @@ const api = axios.create({
     'Cache-Control': 'no-cache, no-store, must-revalidate',
     'Pragma': 'no-cache',
     'Expires': '0',
+  },
+});
+
+// Instancia separada para Fabiana (sin autenticación)
+const fabianaApi = axios.create({
+  baseURL: API_BASE_URL,
+  timeout: 30000, // Aumentado para Fabiana que puede tardar más
+  headers: {
+    'Content-Type': 'application/json',
   },
 });
 
@@ -124,6 +133,10 @@ export const notificationsAPI = {
 
 export const auditAPI = {
   getAuditLogs: (params) => api.get('/backend/audit', { params }),
+};
+
+export const fabianaAPI = {
+  chat: (messages, role) => fabianaApi.post('/fabiana/chat', { messages, role }),
 };
 
 export default api;

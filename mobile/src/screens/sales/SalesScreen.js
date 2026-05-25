@@ -192,8 +192,10 @@ function SalesScreen({navigation}) {
 
       <TouchableOpacity
         style={dynamicStyles.fab}
-        onPress={() => navigation.navigate('NewSale')}>
-        <Text style={dynamicStyles.fabText}>+</Text>
+        onPress={() => navigation.navigate('NewSale')}
+        activeOpacity={0.8}
+      >
+        <MaterialIcons name="add" size={28} color={colors.onPrimary} />
       </TouchableOpacity>
     </View>
   );
@@ -244,7 +246,7 @@ const createStyles = (colors) => StyleSheet.create({
     borderWidth: 1,
     borderRadius: 12,
     marginHorizontal: 15,
-    marginTop: Platform.OS === 'ios' ? 60 : 35,
+    marginTop: 15,
     marginBottom: 10,
     paddingHorizontal: 15,
     height: 52,
@@ -309,22 +311,18 @@ const createStyles = (colors) => StyleSheet.create({
     position: 'absolute',
     right: 20,
     bottom: 20,
-    backgroundColor: colors.dataBlue,
+    backgroundColor: colors.primary,
     width: 60,
     height: 60,
     borderRadius: 30,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: colors.dataBlue,
+    shadowColor: colors.primary,
     shadowOffset: {width: 0, height: 4},
     shadowOpacity: 0.4,
     shadowRadius: 6,
     elevation: 6,
-  },
-  fabText: {
-    fontSize: 30,
-    color: '#ffffff',
-    fontWeight: 'bold',
+    zIndex: 999,
   },
 });
 

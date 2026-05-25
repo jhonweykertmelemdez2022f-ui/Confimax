@@ -131,26 +131,26 @@ export default function CatalogoPage() {
 
   return (
     <main className="min-h-screen pt-8 pb-20 bg-transparent flex-grow flex flex-col">
-      <div className="w-full px-6 md:px-margin-page">
+      <div className="w-full px-4 sm:px-6 md:px-margin-page">
         {/* Header Block - Brutalist Design */}
-        <section ref={headerRef} className="relative w-full border-b border-slate-900 dark:border-white py-12 mb-12">
+        <section ref={headerRef} className="relative w-full border-b border-slate-900 dark:border-white py-8 sm:py-12 mb-8 sm:mb-12">
           {/* Crosshairs */}
           <div className="crosshair-tl" />
           <div className="crosshair-tr" />
           
           <div className="flex flex-col gap-4 relative z-10">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="font-data-label text-[10px] bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-3 py-1 uppercase tracking-widest">
+            <div className="flex flex-wrap items-center gap-2 mb-2">
+              <span className="font-data-label text-[9px] sm:text-[10px] bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-3 py-1 uppercase tracking-widest">
                 ACTIVO: {user.role}
               </span>
-              <span className="font-data-label text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-widest">
+              <span className="font-data-label text-[9px] sm:text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-widest truncate max-w-[200px]">
                 {user.email}
               </span>
             </div>
-            <h1 className="font-headline-lg text-headline-lg text-slate-900 dark:text-white uppercase tracking-tighter leading-none mb-2">
-              CATÁLOGO<br/>CONFIMAX
+            <h1 className="font-headline-lg-mobile sm:font-headline-lg text-3xl sm:text-headline-lg text-slate-900 dark:text-white uppercase tracking-tighter leading-none mb-2">
+              CATÁLOGO<br className="sm:hidden" /> CONFIMAX
             </h1>
-            <p className="font-body-md text-body-md text-slate-600 dark:text-slate-400 max-w-2xl border-l-2 border-data-blue pl-4 bg-slate-100/50 dark:bg-surface-variant/30 p-4">
+            <p className="font-body-md text-sm sm:text-body-md text-slate-600 dark:text-slate-400 max-w-2xl border-l-2 border-data-blue pl-4 bg-slate-100/50 dark:bg-surface-variant/30 p-4">
               Encuentra todo lo que necesitas para tu despensa y hogar. Productos garantizados y con precios justos.
             </p>
           </div>
@@ -158,22 +158,22 @@ export default function CatalogoPage() {
 
         {/* Error Block */}
         {errorMsg && (
-          <div className="bg-error/10 border border-error p-6 mb-12 flex items-start gap-4">
+          <div className="bg-error/10 border border-error p-4 sm:p-6 mb-8 sm:mb-12 flex items-start gap-4">
             <span className="material-symbols-outlined text-[24px] text-error mt-1">warning</span>
             <div>
               <h4 className="font-data-label text-sm uppercase text-error mb-2 tracking-widest">Error de sincronización</h4>
-              <p className="font-body-md text-slate-700 dark:text-red-200">{errorMsg}</p>
+              <p className="font-body-md text-xs sm:text-sm text-slate-700 dark:text-red-200">{errorMsg}</p>
             </div>
           </div>
         )}
 
         {/* Controls Block - Brutalist */}
-        <div ref={controlsRef} className="border border-slate-900 dark:border-white bg-slate-50 dark:bg-surface-dim p-6 md:p-8 mb-12 relative group transition-colors">
+        <div ref={controlsRef} className="border border-slate-900 dark:border-white bg-slate-50 dark:bg-surface-dim p-4 sm:p-6 md:p-8 mb-8 sm:mb-12 relative group transition-colors">
           <div className="absolute top-0 left-0 w-full h-1 bg-slate-900/20 dark:bg-white/20">
              <div className="h-full w-1/3 bg-data-blue" />
           </div>
           
-          <div className="flex flex-col xl:flex-row gap-6 items-start xl:items-center justify-between mt-2">
+          <div className="flex flex-col xl:flex-row gap-4 sm:gap-6 items-start xl:items-center justify-between mt-2">
             
             {/* Search */}
             <div className="relative flex-1 w-full xl:max-w-md">
@@ -183,55 +183,55 @@ export default function CatalogoPage() {
                 placeholder="Buscar productos..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-white dark:bg-surface-bright border border-slate-900 dark:border-white py-3 pl-12 pr-4 text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-500 focus:outline-none focus:border-data-blue focus:ring-1 focus:ring-data-blue transition-all font-body-md min-h-[44px]"
+                className="w-full bg-white dark:bg-surface-bright border border-slate-900 dark:border-white py-3 pl-12 pr-4 text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-500 focus:outline-none focus:border-data-blue focus:ring-1 focus:ring-data-blue transition-all font-body-md min-h-[48px]"
               />
             </div>
 
             {/* Filters */}
-            <div className="flex flex-wrap items-center gap-4 w-full xl:w-auto">
+            <div className="flex flex-wrap items-center gap-3 sm:gap-4 w-full xl:w-auto">
               <div className="relative w-full sm:w-auto flex-1 sm:flex-none">
                 <select
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="appearance-none w-full bg-white dark:bg-surface-bright border border-slate-900 dark:border-white py-3 pl-12 pr-10 text-slate-900 dark:text-white focus:outline-none focus:border-data-blue focus:ring-1 focus:ring-data-blue transition-all font-data-label uppercase tracking-widest cursor-pointer min-h-[44px]"
+                  className="appearance-none w-full bg-white dark:bg-surface-bright border border-slate-900 dark:border-white py-3 pl-10 pr-10 text-slate-900 dark:text-white focus:outline-none focus:border-data-blue focus:ring-1 focus:ring-data-blue transition-all font-data-label text-[11px] uppercase tracking-widest cursor-pointer min-h-[48px]"
                 >
                   {categories.map(cat => (
                     <option key={cat} value={cat}>{cat.toUpperCase()}</option>
                   ))}
                 </select>
-                <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[20px] text-slate-500 pointer-events-none">filter_list</span>
-                <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-[20px] text-slate-500 pointer-events-none">expand_more</span>
+                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-slate-500 pointer-events-none">filter_list</span>
+                <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-[18px] text-slate-500 pointer-events-none">expand_more</span>
               </div>
 
               <div className="relative w-full sm:w-auto flex-1 sm:flex-none">
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="appearance-none w-full bg-white dark:bg-surface-bright border border-slate-900 dark:border-white py-3 pl-6 pr-10 text-slate-900 dark:text-white focus:outline-none focus:border-data-blue focus:ring-1 focus:ring-data-blue transition-all font-data-label uppercase tracking-widest cursor-pointer min-h-[44px]"
+                  className="appearance-none w-full bg-white dark:bg-surface-bright border border-slate-900 dark:border-white py-3 pl-4 pr-10 text-slate-900 dark:text-white focus:outline-none focus:border-data-blue focus:ring-1 focus:ring-data-blue transition-all font-data-label text-[11px] uppercase tracking-widest cursor-pointer min-h-[48px]"
                 >
                   <option value="destacados">DESTACADOS</option>
                   <option value="precio-asc">PRECIO ASC</option>
                   <option value="precio-desc">PRECIO DESC</option>
                   <option value="rating">VALORADOS</option>
                 </select>
-                <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-[20px] text-slate-500 pointer-events-none">expand_more</span>
+                <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-[18px] text-slate-500 pointer-events-none">expand_more</span>
               </div>
 
               {/* View Toggle */}
               <div className="flex bg-white dark:bg-surface-bright border border-slate-900 dark:border-white p-1 ml-auto sm:ml-0">
                 <button
                   onClick={() => setViewMode("grid")}
-                  className={`p-2 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center ${viewMode === "grid" ? "bg-slate-900 dark:bg-white text-white dark:text-slate-900" : "text-slate-500 hover:text-slate-900 dark:hover:text-white"}`}
+                  className={`p-2 transition-colors min-h-[40px] min-w-[40px] flex items-center justify-center ${viewMode === "grid" ? "bg-slate-900 dark:bg-white text-white dark:text-slate-900" : "text-slate-500 hover:text-slate-900 dark:hover:text-white"}`}
                   aria-label="Vista de cuadrícula"
                 >
-                  <span className="material-symbols-outlined text-[20px]">grid_view</span>
+                  <span className="material-symbols-outlined text-[18px]">grid_view</span>
                 </button>
                 <button
                   onClick={() => setViewMode("list")}
-                  className={`p-2 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center ${viewMode === "list" ? "bg-slate-900 dark:bg-white text-white dark:text-slate-900" : "text-slate-500 hover:text-slate-900 dark:hover:text-white"}`}
+                  className={`p-2 transition-colors min-h-[40px] min-w-[40px] flex items-center justify-center ${viewMode === "list" ? "bg-slate-900 dark:bg-white text-white dark:text-slate-900" : "text-slate-500 hover:text-slate-900 dark:hover:text-white"}`}
                   aria-label="Vista de lista"
                 >
-                  <span className="material-symbols-outlined text-[20px]">view_list</span>
+                  <span className="material-symbols-outlined text-[18px]">view_list</span>
                 </button>
               </div>
             </div>

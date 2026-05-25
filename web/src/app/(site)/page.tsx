@@ -51,29 +51,29 @@ export default function Home() {
   return (
     <main className="flex-grow">
       {/* Hero Section */}
-      <section ref={heroRef} className="relative w-full border-b border-slate-900 dark:border-white min-h-[80vh] flex flex-col justify-center items-center px-6 md:px-margin-page py-20 overflow-hidden bg-transparent">
+      <section ref={heroRef} className="relative w-full border-b border-slate-900 dark:border-white min-h-[70dvh] sm:min-h-[80vh] flex flex-col justify-center items-center px-4 sm:px-6 md:px-margin-page py-12 sm:py-20 overflow-hidden bg-transparent">
         {/* Crosshairs */}
         <div className="crosshair-tl" />
         <div className="crosshair-tr" />
         <div className="crosshair-bl" />
         <div className="crosshair-br" />
 
-        <div className="text-center z-10 flex flex-col items-center gap-6">
-          <span className="font-data-label text-data-label text-slate-500 dark:text-secondary tracking-widest uppercase border border-slate-900/20 dark:border-white/20 px-3 py-1 bg-slate-100 dark:bg-surface-dim">
+        <div className="text-center z-10 flex flex-col items-center gap-4 sm:gap-6">
+          <span className="font-data-label text-[10px] sm:text-data-label text-slate-500 dark:text-secondary tracking-widest uppercase border border-slate-900/20 dark:border-white/20 px-3 py-1 bg-slate-100 dark:bg-surface-dim">
             CONFIMAX // PRECIOS QUE RINDEN
           </span>
-          <h1 className="font-display-xl text-display-xl text-slate-900 dark:text-white uppercase text-center max-w-4xl tracking-tighter leading-none hidden md:block">
+          <h1 className="font-display-xl text-4xl sm:text-display-xl text-slate-900 dark:text-white uppercase text-center max-w-4xl tracking-tighter leading-none hidden md:block">
             MERCADO Y<br/>DESPENSA
           </h1>
-          <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-slate-900 dark:text-white uppercase text-center max-w-full tracking-tighter leading-none md:hidden mt-4">
+          <h1 className="font-headline-lg-mobile text-3xl sm:text-headline-lg-mobile text-slate-900 dark:text-white uppercase text-center max-w-full tracking-tighter leading-none md:hidden mt-4">
             MERCADO Y<br/>DESPENSA
           </h1>
-          <p className="font-body-md text-body-md text-slate-600 dark:text-slate-400 max-w-2xl text-center mt-4 border-l-2 border-data-blue pl-4 bg-slate-100/50 dark:bg-surface-variant/30 p-4">
+          <p className="font-body-md text-sm sm:text-body-md text-slate-600 dark:text-slate-400 max-w-2xl text-center mt-4 border-l-2 border-data-blue pl-4 bg-slate-100/50 dark:bg-surface-variant/30 p-4">
             Productos frescos, básicos de la semana y antojos de siempre con precios justos y atención cercana.
           </p>
           <Link 
             href="/catalogo" 
-            className="btn-precision mt-8 relative group overflow-hidden"
+            className="btn-precision mt-6 sm:mt-8 relative group overflow-hidden min-h-[48px] px-8"
           >
             <span className="absolute top-1 right-1 text-[8px] text-slate-500 dark:text-secondary group-hover:text-white transition-colors btn-serial">HOY</span>
             VER OFERTAS

@@ -63,6 +63,7 @@ export class Sale extends Model {
   @field('currency') currency;
   @field('status') status;
   @field('notes') notes;
+  @field('discount_amount') discountAmount;
   @field('version') version;
   @field('synced') synced;
   @readonly @date('created_at') createdAt;

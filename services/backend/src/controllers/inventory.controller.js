@@ -51,6 +51,29 @@ const inventoryController = {
     try { res.status(201).json(await InventoryService.createCategory(req.body)); }
     catch (e) { next(e); }
   },
+
+  async getCategory(req, res, next) {
+    try {
+      const category = await InventoryService.getCategory(req.params.id);
+      if (!category) return res.status(404).json({ message: 'Category not found' });
+      res.json(category);
+    } catch (e) { next(e); }
+  },
+
+  async updateCategory(req, res, next) {
+    try {
+      const category = await InventoryService.updateCategory(req.params.id, req.body);
+      if (!category) return res.status(404).json({ message: 'Category not found' });
+      res.json(category);
+    } catch (e) { next(e); }
+  },
+
+  async deleteCategory(req, res, next) {
+    try {
+      await InventoryService.deleteCategory(req.params.id);
+      res.status(204).send();
+    } catch (e) { next(e); }
+  },
 };
 
 module.exports = inventoryController;

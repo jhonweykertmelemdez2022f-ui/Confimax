@@ -12,6 +12,8 @@ router.post('/register', authController.register);
 router.post('/login', authController.login);
 router.get('/me', authenticate, authController.me);
 router.get('/users', authenticate, authController.listUsers);
+router.post('/users', authenticate, authController.createUser); // Assuming admin can create users
 router.patch('/users/:id', authenticate, authController.updateUser);
+router.delete('/users/:id', authenticate, authController.deleteUser);
 
 module.exports = router;

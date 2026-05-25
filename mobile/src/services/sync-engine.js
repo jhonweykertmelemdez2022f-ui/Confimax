@@ -13,7 +13,7 @@ import axios from 'axios';
 
 // Instancia configurada de cliente HTTP
 const api = axios.create({
-  baseURL: 'https://api-confimax.bitforges.com/api',
+  baseURL: 'https://confimax-api-gateway-tfxa.onrender.com/api',
   timeout: 15000,
   headers: {
     'Content-Type': 'application/json',

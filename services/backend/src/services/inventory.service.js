@@ -62,9 +62,41 @@ const InventoryService = {
     return category;
   },
 
+  async getCategory(id) {
+    return getOrSet(
+      `category:${id}`,
+      () => Category.findById(id),
+      CACHE_TTL.CATEGORIES
+    );
+  },
+
+  async updateCategory(id, data) {
+    const category = await Category.update(id, data);
+    if (category) {
+      await invalidate(`category:${id}`);
+      await invalidate('categories:list');
+    }
+    return category;
+  },
+
+  async deleteCategory(id) {
+    const result = await Category.remove(id);
+    await invalidate(`category:${id}`);
+    await invalidate('categories:list');
+    return result;
+  },
+
   async invalidateProductCache(id) {
     await invalidate(`product:${id}`);
     await invalidatePattern('products:list:*');
+  },
+
+  async getAllProducts() {
+    return getOrSet(
+      'products:all',
+      () => Product.getAll(),
+      CACHE_TTL.PRODUCTS_LIST // Use a relevant TTL, or define a new one if needed
+    );
   },
 };
 

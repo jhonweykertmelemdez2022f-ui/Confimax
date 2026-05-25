@@ -48,12 +48,25 @@ const User = {
     await query('UPDATE users SET last_login = NOW() WHERE id = $1', [id]);
   },
 
-  async list(limit = 50, offset = 0) {
-    const { rows } = await query(
-      'SELECT id, username, email, role, active, last_login, created_at FROM users ORDER BY created_at DESC LIMIT $1 OFFSET $2',
-      [limit, offset]
-    );
+  async list(limit = null, offset = null) {
+    let sql = 'SELECT id, username, email, role, active, last_login, created_at, updated_at FROM users ORDER BY created_at DESC';
+    const vals = [];
+
+    if (limit !== null && offset !== null) {
+      sql += ` LIMIT $${vals.length + 1} OFFSET $${vals.length + 2}`;
+      vals.push(limit, offset);
+    }
+
+    const { rows } = await query(sql, vals);
     return rows;
+  },
+
+  async remove(id) {
+    const { rows } = await query(
+      'UPDATE users SET active = false, updated_at = NOW() WHERE id = $1 RETURNING id, username, active',
+      [id]
+    );
+    return rows[0];
   },
 };
 

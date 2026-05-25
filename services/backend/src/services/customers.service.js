@@ -52,6 +52,10 @@ const CustomersService = {
   async createCredit(data) {
     return Credit.create(data);
   },
+
+  async getAllCustomersForReport(q) {
+    return Customer.list(null, null, q);
+  },
 };
 
 module.exports = CustomersService;

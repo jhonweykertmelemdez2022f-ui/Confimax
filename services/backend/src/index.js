@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
-require('dotenv').config();
+require('dotenv').config({ path: './.env.e2e' });
 
 const config = require('./config');
 const { initConnections } = require('./models');

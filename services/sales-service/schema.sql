@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS sales (
     currency VARCHAR(3) NOT NULL DEFAULT 'VES',
     status VARCHAR(20) NOT NULL DEFAULT 'completed',
     notes TEXT,
+    discount_amount DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 );

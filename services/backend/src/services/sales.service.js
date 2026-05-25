@@ -57,6 +57,16 @@ const SalesService = {
     await invalidate(`sale:${id}`);
     await invalidatePattern('sales:list:*');
   },
+
+  async getAllSalesForReport(filters) {
+    const filterKey = JSON.stringify(filters || {});
+    const cacheKey = `sales:report:${filterKey}`;
+    return getOrSet(
+      cacheKey,
+      () => Sale.list(null, null, filters),
+      CACHE_TTL.SALES_LIST // Use a relevant TTL, or define a new one if needed
+    );
+  },
 };
 
 module.exports = SalesService;
