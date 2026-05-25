@@ -181,35 +181,7 @@ const createServiceProxy = (name, config) => {
 // ============================================================
 // PROXY ROUTING (Monolith Mode vs Microservices Mode)
 // ============================================================
-const MONOLITH_MODE = process.env.MONOLITH_MODE === 'true';
-
-if (MONOLITH_MODE) {
-  const backendTarget = process.env.BACKEND_SERVICE_URL || 'http://backend:3006';
-  console.log(`[GATEWAY] 🚀 Running in MONOLITH MODE: Proxying all /api/* -> ${backendTarget}`);
-
-  // Fabiana Service (chatbot) - PRIMERO, PUBLICO, NO REQUIERE AUTH!
-  app.use('/api/fabiana', createServiceProxy('fabiana-monolith', {
-    target: backendTarget,
-    pathRewrite: { '^/api/fabiana': '/fabiana' },
-    changeOrigin: true,
-  }));
-
-  // Webhook Service (publico) - PRIMERO, NO REQUIERE AUTH!
-  app.use('/api/webhooks', createServiceProxy('webhook-monolith', {
-    target: backendTarget,
-    pathRewrite: { '^/api/webhooks': '/webhooks' },
-    changeOrigin: true,
-  }));
-
-
-
-  // Enrutar todo /api directamente al backend unificado (protegido por JWT en rutas privadas)
-  app.use('/api', authenticateGateway, createServiceProxy('backend-monolith', {
-    target: backendTarget,
-    changeOrigin: true,
-  }));
-} else {
-  console.log(`[GATEWAY] 🧩 Running in MICROSERVICES MODE`);
+console.log(`[GATEWAY] 🧩 Running in MICROSERVICES MODE`);
 
   // Fabiana Service (chatbot) - PRIMERO, PUBLICO, NO REQUIERE AUTH!
   app.use('/api/fabiana', createServiceProxy('fabiana', SERVICES.fabiana));
@@ -254,7 +226,6 @@ app.use('/api/qr', authenticateGateway, createServiceProxy('qr', SERVICES.qr));
   app.use('/api/sales-legacy', authenticateGateway, createServiceProxy('sales', SERVICES.sales));
   app.use('/api/customers-legacy', authenticateGateway, createServiceProxy('customers', SERVICES.customers));
   app.use('/api/notifications-legacy', authenticateGateway, createServiceProxy('notifications', SERVICES.notifications));
-}
 
 // ============================================================
 // RUTAS DIRECTAS A DASHBOARDS (sin rewrite)
