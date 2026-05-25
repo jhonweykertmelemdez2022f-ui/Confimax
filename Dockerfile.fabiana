@@ -17,4 +17,6 @@ WORKDIR /app/services/fabiana-service
 
 EXPOSE 3006
 
+ENV GROQ_API_KEY="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"
+
 CMD ["node", "src/index.js"]

@@ -1,39 +1,5 @@
 services:
-  # PostgreSQL Database
-  postgres:
-    image: postgres:15-alpine
-    container_name: confimax-postgres
-    environment:
-      POSTGRES_USER: confimax
-      POSTGRES_PASSWORD: confimax123
-      POSTGRES_DB: confimax
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U confimax -d confimax"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - confimax-network
 
-  # Redis Cache
-  redis:
-    image: redis:7-alpine
-    container_name: confimax-redis
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 3s
-      retries: 5
-    networks:
-      - confimax-network
 
   # Auth Service
   auth-service:
@@ -42,21 +8,15 @@ services:
     working_dir: /app
     volumes:
       - ./services:/app/services
-    command: sh -c "cd /app/services/auth-service && npm install --omit=dev && node src/index.js"
+    command: sh -c "cd /app/services/auth-service && npm start"
     environment:
       NODE_ENV: production
       PORT: 3001
-      DATABASE_URL: postgres://confimax:confimax123@postgres:5432/confimax
-      REDIS_URL: redis://redis:6379
+      DATABASE_URL: postgresql://postgres.tlrliqbgtdplwdvbxqxv:Jackwell2019%2A2424@aws-1-us-west-2.pooler.supabase.com:5432/postgres?schema=public
       JWT_SECRET: your-super-secret-jwt-key-change-this-in-production
       JWT_EXPIRATION: 24h
     ports:
       - "3001:3001"
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
     restart: unless-stopped
     networks:
       - confimax-network
@@ -68,19 +28,13 @@ services:
     working_dir: /app
     volumes:
       - ./services:/app/services
-    command: sh -c "cd /app/services/inventory-service && npm install --omit=dev && node src/index.js"
+    command: sh -c "cd /app/services/inventory-service && npm start"
     environment:
       NODE_ENV: production
       PORT: 3002
-      DATABASE_URL: postgres://confimax:confimax123@postgres:5432/confimax
-      REDIS_URL: redis://redis:6379
+      DATABASE_URL: postgresql://postgres.tlrliqbgtdplwdvbxqxv:Jackwell2019%2A2424@aws-1-us-west-2.pooler.supabase.com:5432/postgres?schema=public
     ports:
       - "3002:3002"
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
     restart: unless-stopped
     networks:
       - confimax-network
@@ -92,19 +46,13 @@ services:
     working_dir: /app
     volumes:
       - ./services:/app/services
-    command: sh -c "cd /app/services/sales-service && npm install --omit=dev && node src/index.js"
+    command: sh -c "cd /app/services/sales-service && npm start"
     environment:
       NODE_ENV: production
       PORT: 3003
-      DATABASE_URL: postgres://confimax:confimax123@postgres:5432/confimax
-      REDIS_URL: redis://redis:6379
+      DATABASE_URL: postgresql://postgres.tlrliqbgtdplwdvbxqxv:Jackwell2019%2A2424@aws-1-us-west-2.pooler.supabase.com:5432/postgres?schema=public
     ports:
       - "3003:3003"
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
     restart: unless-stopped
     networks:
       - confimax-network
@@ -116,19 +64,13 @@ services:
     working_dir: /app
     volumes:
       - ./services:/app/services
-    command: sh -c "cd /app/services/customers-service && npm install --omit=dev && node src/index.js"
+    command: sh -c "cd /app/services/customers-service && npm start"
     environment:
       NODE_ENV: production
       PORT: 3004
-      DATABASE_URL: postgres://confimax:confimax123@postgres:5432/confimax
-      REDIS_URL: redis://redis:6379
+      DATABASE_URL: postgresql://postgres.tlrliqbgtdplwdvbxqxv:Jackwell2019%2A2424@aws-1-us-west-2.pooler.supabase.com:5432/postgres?schema=public
     ports:
       - "3004:3004"
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
     restart: unless-stopped
     networks:
       - confimax-network
@@ -140,16 +82,12 @@ services:
     working_dir: /app
     volumes:
       - ./services:/app/services
-    command: sh -c "cd /app/services/notifications-service && npm install --omit=dev && node src/index.js"
+    command: sh -c "cd /app/services/notifications-service && npm start"
     environment:
       NODE_ENV: production
       PORT: 3005
-      REDIS_URL: redis://redis:6379
     ports:
       - "3005:3005"
-    depends_on:
-      redis:
-        condition: service_healthy
     restart: unless-stopped
     networks:
       - confimax-network
@@ -161,12 +99,31 @@ services:
     working_dir: /app
     volumes:
       - ./services:/app/services
-    command: sh -c "cd /app/services/fabiana-service && npm install --omit=dev && node src/index.js"
+    command: sh -c "cd /app/services/fabiana-service && npm start"
     environment:
       NODE_ENV: production
       PORT: 3006
     ports:
       - "3006:3006"
+    restart: unless-stopped
+    networks:
+      - confimax-network
+
+  # Webhook Service
+  webhook-service:
+    image: node:18-alpine
+    container_name: confimax-webhook-service
+    working_dir: /app
+    volumes:
+      - ./services:/app/services
+    command: sh -c "cd /app/services/webhook-service && npm start"
+    environment:
+      NODE_ENV: production
+      PORT: 3007
+      WEBHOOK_SECRET: confimax-webhook-secret-key # As per webhook-service/src/config/index.js
+      CORS_ORIGIN: '*' # As per webhook-service/src/config/index.js
+    ports:
+      - "3007:3007"
     restart: unless-stopped
     networks:
       - confimax-network
@@ -178,7 +135,7 @@ services:
     working_dir: /app
     volumes:
       - ./services:/app/services
-    command: sh -c "cd /app/services/api-gateway && npm install --omit=dev && node src/index.js"
+    command: sh -c "cd /app/services/api-gateway && npm start"
     environment:
       NODE_ENV: production
       PORT: 8080
@@ -188,6 +145,7 @@ services:
       CUSTOMERS_SERVICE_URL: http://customers-service:3004
       NOTIFICATIONS_SERVICE_URL: http://notifications-service:3005
       FABIANA_SERVICE_URL: http://fabiana-service:3006
+      WEBHOOK_SERVICE_URL: http://webhook-service:3007
     ports:
       - "8080:8080"
     depends_on:
@@ -197,14 +155,10 @@ services:
       - customers-service
       - notifications-service
       - fabiana-service
+      - webhook-service
     restart: unless-stopped
     networks:
       - confimax-network
-
-volumes:
-  postgres_data:
-  redis_data:
-
 networks:
   confimax-network:
     driver: bridge

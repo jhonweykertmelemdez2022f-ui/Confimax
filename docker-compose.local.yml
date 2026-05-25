@@ -8,78 +8,219 @@ version: '3.8'
 
 services:
   # ==========================================================================
-  # FRONTEND (Nginx + React)
+  # APPLICATION SERVICES
   # ==========================================================================
-  frontend:
-    image: reiastora/confimax-nginx:latest
-    container_name: confimax-frontend
+
+  api-gateway:
+    build:
+      context: ./services/api-gateway
+      dockerfile: Dockerfile
+    container_name: confimax-api-gateway
     ports:
-      - "3000:80"  # http://localhost:3000
+      - "8080:8080" # Default gateway port
     environment:
       - NODE_ENV=development
-      - REACT_APP_API_URL=http://localhost:3001  # Conexión al backend local
+      - GATEWAY_PORT=8080
+      - AUTH_SERVICE_URL=http://auth-service:3001
+      - INVENTORY_SERVICE_URL=http://inventory-service:3002
+      - SALES_SERVICE_URL=http://sales-service:3003
+      - CUSTOMERS_SERVICE_URL=http://customers-service:3004
+      - NOTIFICATIONS_SERVICE_URL=http://notifications-service:3005
+      - FABIANA_SERVICE_URL=http://fabiana-service:3006
+      - WEBHOOK_SERVICE_URL=http://webhook-service:3007
+      - JWT_SECRET=${JWT_SECRET:-dev-secret-key-change-in-prod}
+      - CORS_ORIGIN=http://localhost:3000,http://localhost:5173
+      - RATE_LIMIT_WINDOW_MS=15000
+      - RATE_LIMIT_MAX=1000
     networks:
       - confimax-local
+    depends_on:
+      - auth-service
+      - inventory-service
+      - sales-service
+      - customers-service
+      - notifications-service
+      - fabiana-service
+      - webhook-service
     restart: unless-stopped
 
-  # ==========================================================================
-  # BACKEND API (Auth Service como ejemplo principal)
-  # ==========================================================================
-  backend:
-    image: reiastora/confimax-auth:latest
-    container_name: confimax-backend
+  auth-service:
+    build:
+      context: ./services/auth-service
+      dockerfile: Dockerfile
+    container_name: confimax-auth-service
     ports:
-      - "3001:3001"  # http://localhost:3001
+      - "3001:3001"
     environment:
-      # === Configuración del Servidor ===
       - NODE_ENV=development
       - PORT=3001
       - JWT_SECRET=${JWT_SECRET:-dev-secret-key-change-in-prod}
-      
-      # === Conexión PostgreSQL Local ===
-      # Opción A: Por nombre de contenedor (dentro de Docker network)
       - POSTGRES_HOST=postgres
       - POSTGRES_PORT=5432
       - POSTGRES_USER=confimax
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-Jackson1}
       - POSTGRES_DB=confimax
       - POSTGRES_SCHEMA=auth
-      
-      # Opción B: URL completa (para apps externas)
-      # DATABASE_URL=postgresql://confimax:Jackson1@localhost:5433/confimax?schema=auth
-      
-      # === Conexión Redis Local ===
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - REDIS_PASSWORD=${REDIS_PASSWORD:-Jackson1}
-      
-      # === Conexión MongoDB Local ===
+    networks:
+      - confimax-local
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+
+  inventory-service:
+    build:
+      context: ./services/inventory-service
+      dockerfile: Dockerfile
+    container_name: confimax-inventory-service
+    ports:
+      - "3002:3002"
+    environment:
+      - NODE_ENV=development
+      - PORT=3002
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=confimax
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-Jackson1}
+      - POSTGRES_DB=confimax
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-Jackson1}
+    networks:
+      - confimax-local
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+
+  sales-service:
+    build:
+      context: ./services/sales-service
+      dockerfile: Dockerfile
+    container_name: confimax-sales-service
+    ports:
+      - "3003:3003"
+    environment:
+      - NODE_ENV=development
+      - PORT=3003
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=confimax
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-Jackson1}
+      - POSTGRES_DB=confimax
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-Jackson1}
+    networks:
+      - confimax-local
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+
+  customers-service:
+    build:
+      context: ./services/customers-service
+      dockerfile: Dockerfile
+    container_name: confimax-customers-service
+    ports:
+      - "3004:3004"
+    environment:
+      - NODE_ENV=development
+      - PORT=3004
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=confimax
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-Jackson1}
+      - POSTGRES_DB=confimax
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-Jackson1}
+    networks:
+      - confimax-local
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+
+  notifications-service:
+    build:
+      context: ./services/notifications-service
+      dockerfile: Dockerfile
+    container_name: confimax-notifications-service
+    ports:
+      - "3005:3005"
+    environment:
+      - NODE_ENV=development
+      - PORT=3005
       - MONGO_HOST=mongo
       - MONGO_PORT=27017
       - MONGO_USER=confimax
       - MONGO_PASSWORD=${MONGO_PASSWORD:-Jackson1}
       - MONGO_DB=confimax_notifications
       - MONGO_URI=mongodb://confimax:Jackson1@mongo:27017/confimax_notifications?authSource=admin
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-Jackson1}
+    networks:
+      - confimax-local
+    depends_on:
+      - mongo
+      - redis
+    restart: unless-stopped
+
+  fabiana-service:
+    build:
+      context: ./services/fabiana-service
+      dockerfile: Dockerfile
+    container_name: confimax-fabiana-service
+    ports:
+      - "3006:3006"
+    environment:
+      - NODE_ENV=development
+      - PORT=3006
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=confimax
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-Jackson1}
+      - POSTGRES_DB=confimax
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
     networks:
       - confimax-local
     depends_on:
       - postgres
-      - redis
-      - mongo
+    restart: unless-stopped
+
+  webhook-service:
+    build:
+      context: ./services/webhook-service
+      dockerfile: Dockerfile
+    container_name: confimax-webhook-service
+    ports:
+      - "3007:3007"
+    environment:
+      - NODE_ENV=development
+      - PORT=3007
+    networks:
+      - confimax-local
     restart: unless-stopped
 
   # ==========================================================================
-  # POSTGRESQL - Base de datos principal
+  # DATABASES AND INFRASTRUCTURE
+  # (Keeping these as they were, with postgres image fixed)
   # ==========================================================================
   postgres:
-    image: reiastora/confimax-postgres:latest
+    image: postgres:16 # Fixed from reiastora/confimax-postgres:latest
     container_name: confimax-postgres
     environment:
       - POSTGRES_USER=confimax
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-Jackson1}
       - POSTGRES_DB=confimax
     ports:
-      - "5433:5432"  # Externo:5433 → Interno:5432
+      - "5433:5432"
     volumes:
       - postgres-local-data:/var/lib/postgresql/data
     networks:
@@ -91,9 +232,6 @@ services:
       timeout: 5s
       retries: 5
 
-  # ==========================================================================
-  # REDIS - Cache y sesiones
-  # ==========================================================================
   redis:
     image: redis:7-alpine
     container_name: confimax-redis
@@ -104,16 +242,13 @@ services:
       --maxmemory 256mb
       --maxmemory-policy allkeys-lru
     ports:
-      - "6380:6379"  # Externo:6380 → Interno:6379
+      - "6380:6379"
     volumes:
       - redis-local-data:/data
     networks:
       - confimax-local
     restart: unless-stopped
 
-  # ==========================================================================
-  # MONGODB - Logs y notificaciones
-  # ==========================================================================
   mongo:
     image: mongo:7
     container_name: confimax-mongo
@@ -121,7 +256,7 @@ services:
       - MONGO_INITDB_ROOT_USERNAME=confimax
       - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD:-Jackson1}
     ports:
-      - "27018:27017"  # Externo:27018 → Interno:27017
+      - "27018:27017"
     volumes:
       - mongo-local-data:/data/db
     networks:
@@ -129,7 +264,7 @@ services:
     restart: unless-stopped
 
   # ==========================================================================
-  # HERRAMIENTAS DE DESARROLLO
+  # DEVELOPMENT TOOLS
   # ==========================================================================
   pgadmin:
     image: dpage/pgadmin4:latest
@@ -139,7 +274,7 @@ services:
       - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_PASSWORD:-Jackson1}
       - PGADMIN_CONFIG_SERVER_MODE=False
     ports:
-      - "5050:80"  # http://localhost:5050
+      - "5050:80"
     networks:
       - confimax-local
     depends_on:
@@ -152,7 +287,7 @@ services:
     environment:
       - REDIS_HOSTS=local:redis:6379:0:${REDIS_PASSWORD:-Jackson1}
     ports:
-      - "8082:8081"  # http://localhost:8082
+      - "8082:8081"
     networks:
       - confimax-local
     depends_on:
@@ -167,7 +302,7 @@ services:
       - ME_CONFIG_MONGODB_ADMINPASSWORD=${MONGO_PASSWORD:-Jackson1}
       - ME_CONFIG_MONGODB_URL=mongodb://confimax:Jackson1@mongo:27017/?authSource=admin
     ports:
-      - "8081:8081"  # http://localhost:8081
+      - "8081:8081"
     networks:
       - confimax-local
     depends_on:

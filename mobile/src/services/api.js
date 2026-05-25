@@ -8,7 +8,7 @@ import * as SecureStore from 'expo-secure-store';
 const USE_PRODUCTION = true; 
 
 // Para conexión local: cambia esta IP por la IP local de tu PC en tu red WiFi
-const LOCAL_IP = '192.168.101.4'; 
+const LOCAL_IP = '100.101.30.4'; 
 
 const API_BASE_URL = USE_PRODUCTION 
   ? 'https://confimax-api-gateway-tfxa.onrender.com/api'
