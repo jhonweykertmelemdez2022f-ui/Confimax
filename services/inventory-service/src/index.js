@@ -8,6 +8,7 @@ const categoryRoutes = require('./routes/category.routes');
 const stockRoutes = require('./routes/stock.routes');
 const stockMovementRoutes = require('./routes/stock-movement.routes');
 const qrRoutes = require('./routes/qr.routes');
+console.log('Loaded qrRoutes:', qrRoutes.stack.map(s => s.route));
 const { errorHandler } = require('./middleware/error.middleware');
 const { rateLimiter } = require('./middleware/rateLimiter.middleware');
 
