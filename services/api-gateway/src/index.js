@@ -71,6 +71,11 @@ const SERVICES = {
     pathRewrite: { '^/api/backend': '/' },
     changeOrigin: true,
   },
+  qr: {
+    target: process.env.INVENTORY_SERVICE_URL || 'http://inventory-service:3002',
+    pathRewrite: { '^/api/qr': '' },
+    changeOrigin: true,
+  },
 };
 
 // ============================================================
@@ -196,12 +201,7 @@ if (MONOLITH_MODE) {
     changeOrigin: true,
   }));
 
-  // Compatibilidad de rutas unificadas (/api/backend/audit -> /api/audit)
-  app.use('/api/backend', authenticateGateway, createServiceProxy('backend-monolith-compat', {
-    target: backendTarget,
-    pathRewrite: { '^/api/backend': '/' },
-    changeOrigin: true,
-  }));
+
 
   // Enrutar todo /api directamente al backend unificado (protegido por JWT en rutas privadas)
   app.use('/api', authenticateGateway, createServiceProxy('backend-monolith', {
@@ -250,6 +250,7 @@ if (MONOLITH_MODE) {
 
   // Servicios protegidos por JWT (Rutas con prefijos de Microservicio tradicionales)
   app.use('/api/inventory', authenticateGateway, createServiceProxy('inventory', SERVICES.inventory));
+app.use('/api/qr', authenticateGateway, createServiceProxy('qr', SERVICES.qr));
   app.use('/api/sales-legacy', authenticateGateway, createServiceProxy('sales', SERVICES.sales));
   app.use('/api/customers-legacy', authenticateGateway, createServiceProxy('customers', SERVICES.customers));
   app.use('/api/notifications-legacy', authenticateGateway, createServiceProxy('notifications', SERVICES.notifications));

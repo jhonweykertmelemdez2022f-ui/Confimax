@@ -7,6 +7,7 @@ const productRoutes = require('./routes/product.routes');
 const categoryRoutes = require('./routes/category.routes');
 const stockRoutes = require('./routes/stock.routes');
 const stockMovementRoutes = require('./routes/stock-movement.routes');
+const qrRoutes = require('./routes/qr.routes');
 const { errorHandler } = require('./middleware/error.middleware');
 const { rateLimiter } = require('./middleware/rateLimiter.middleware');
 
@@ -56,6 +57,7 @@ app.use('/products', productRoutes);
 app.use('/categories', categoryRoutes);
 app.use('/stock', stockRoutes);
 app.use('/stock-movements', stockMovementRoutes);
+app.use('/qr', qrRoutes);
 
 app.use(errorHandler);
 
