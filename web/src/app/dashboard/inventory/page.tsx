@@ -57,7 +57,7 @@ export default function InventoryPage() {
   }, [user]);
 
   useEffect(() => {
-    if (!isLoading && user && user.role !== "admin" && user.role !== "vendor") {
+    if (!isLoading && user && user.role !== "admin" && user.role !== "vendedor") {
       router.replace("/dashboard");
     }
   }, [user, isLoading, router]);
