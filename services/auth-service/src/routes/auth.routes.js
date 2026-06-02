@@ -70,6 +70,7 @@ const { authenticate, authorize } = require('../middleware/auth.middleware');
 
 router.get(
   '/me',
+  authenticate,
   authController.getCurrentUser
 );
 

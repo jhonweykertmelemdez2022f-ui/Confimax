@@ -27,7 +27,7 @@ const AuthService = {
     const profile = await Profile.create({
       username: cleanUsername,
       email: cleanEmail,
-      password: hashedPassword || password,
+      password: hashedPassword,
       role: normalizedRole,
       active: userData.active !== undefined ? userData.active : true,
     });

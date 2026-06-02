@@ -1,6 +1,6 @@
 const express = require('express');
 const authController = require('../controllers/auth.controller');
-const { authenticate } = require('../middleware/auth.middleware');
+const { authenticate, authorize } = require('../middleware/auth.middleware');
 
 const router = express.Router();
 
@@ -11,9 +11,9 @@ router.get('/health', (req, res) => {
 router.post('/register', authController.register);
 router.post('/login', authController.login);
 router.get('/me', authenticate, authController.me);
-router.get('/users', authenticate, authController.listUsers);
-router.post('/users', authenticate, authController.createUser); // Assuming admin can create users
-router.patch('/users/:id', authenticate, authController.updateUser);
-router.delete('/users/:id', authenticate, authController.deleteUser);
+router.get('/users', authenticate, authorize('admin'), authController.listUsers);
+router.post('/users', authenticate, authorize('admin'), authController.createUser); // Assuming admin can create users
+router.patch('/users/:id', authenticate, authorize('admin'), authController.updateUser);
+router.delete('/users/:id', authenticate, authorize('admin'), authController.deleteUser);
 
 module.exports = router;

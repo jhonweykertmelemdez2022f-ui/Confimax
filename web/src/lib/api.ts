@@ -152,7 +152,7 @@ class ApiClient {
     const username = name.trim().toLowerCase().replace(/[^a-z0-9]/g, '') || `user${Date.now()}`;
     return this.request('/auth/register', {
       method: 'POST',
-      body: JSON.stringify({ name, username, email, password }),
+      body: JSON.stringify({ name, username, email, password, role: 'customer' }),
     });
   }
 

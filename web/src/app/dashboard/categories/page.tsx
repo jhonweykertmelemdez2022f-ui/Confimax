@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
 import { useCategoriesData } from "@/hooks/useCategoriesData";
@@ -8,7 +9,8 @@ import { Category } from "@/types/categories";
 import { gsap } from "gsap";
 
 export default function CategoriesPage() {
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
+  const router = useRouter();
   const { 
     categories, 
     loading, 
@@ -28,6 +30,12 @@ export default function CategoriesPage() {
       loadCategories();
     }
   }, [user]);
+
+  useEffect(() => {
+    if (!isLoading && user && user.role !== "admin" && user.role !== "vendor") {
+      router.replace("/dashboard");
+    }
+  }, [user, isLoading, router]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();

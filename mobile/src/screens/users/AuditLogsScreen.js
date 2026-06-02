@@ -15,6 +15,7 @@ import {auditAPI} from '../../services/api';
 import { useTheme } from '../../theme';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useIsFocused } from '@react-navigation/native';
+import { useAuthStore } from '../../stores/authStore';
 
 // Animated Component for cards
 function FadeInUpCard({ children, delay = 0, duration = 400 }) {
@@ -61,6 +62,7 @@ function AuditLogsScreen({navigation}) {
   const [selectedOperation, setSelectedOperation] = useState('ALL');
   const {colors, typography, spacing} = useTheme();
   const isFocused = useIsFocused();
+  const { user, isLoading: authLoading } = useAuthStore();
 
   const operations = ['ALL', 'CREATE', 'UPDATE', 'DELETE', 'LOGIN'];
 
@@ -69,6 +71,13 @@ function AuditLogsScreen({navigation}) {
       loadLogs();
     }
   }, [isFocused, selectedOperation]);
+
+  useEffect(() => {
+    if (!authLoading && (!user || user.role !== 'admin')) {
+      // Redirect to home screen if not an admin or not authenticated
+      navigation.replace('Main'); // Use replace to prevent going back to AuditLogsScreen
+    }
+  }, [user, authLoading, navigation]);
 
   const loadLogs = async () => {
     setLoading(true);

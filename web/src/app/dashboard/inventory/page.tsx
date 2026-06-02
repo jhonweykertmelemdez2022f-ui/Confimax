@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
 import Pagination from "@/components/Pagination";
@@ -22,7 +23,8 @@ interface Product {
 }
 
 export default function InventoryPage() {
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
+  const router = useRouter();
   const { 
     products, 
     setProducts, 
@@ -53,6 +55,12 @@ export default function InventoryPage() {
       loadAllData();
     }
   }, [user]);
+
+  useEffect(() => {
+    if (!isLoading && user && user.role !== "admin" && user.role !== "vendor") {
+      router.replace("/dashboard");
+    }
+  }, [user, isLoading, router]);
 
   useEffect(() => {
     if (!loading && tableRef.current && !hasAnimated.current) {

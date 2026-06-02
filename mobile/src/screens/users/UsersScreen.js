@@ -90,6 +90,7 @@ function UsersScreen({navigation}) {
   const [searchQuery, setSearchQuery] = useState('');
   const [page, setPage] = useState(1);
   const {colors} = useTheme();
+  const { user, isLoading: authLoading } = useAuthStore();
   const isFocused = useIsFocused();
 
   useEffect(() => {
@@ -97,6 +98,13 @@ function UsersScreen({navigation}) {
       loadUsers();
     }
   }, [isFocused]);
+
+  useEffect(() => {
+    if (!authLoading && (!user || user.role !== 'admin')) {
+      // Redirect to home screen if not an admin or not authenticated
+      navigation.replace('Main'); // Use replace to prevent going back to UsersScreen
+    }
+  }, [user, authLoading, navigation]);
 
   const loadUsers = async () => {
     try {
