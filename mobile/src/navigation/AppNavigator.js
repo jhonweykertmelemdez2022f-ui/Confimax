@@ -213,7 +213,7 @@ function AppNavigator() {
       <Stack.Screen
         name="NewProduct"
         component={NewProductScreen}
-        options={{title: 'Registrar Producto'}}
+        options={({ route }) => ({ title: route.params?.product ? 'Editar Producto' : 'Registrar Producto' })}
       />
       <Stack.Screen
         name="Users"
