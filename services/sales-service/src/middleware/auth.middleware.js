@@ -27,10 +27,19 @@ const authorize = (...roles) => {
     if (!req.user) {
       return res.status(401).json({ message: 'Not authenticated' });
     }
-    console.log('User role:', req.user.role);
-    console.log('Allowed roles:', roles);
 
-    if (!roles.includes(req.user.role)) {
+    let userRoles = [];
+    if (typeof req.user.role === 'string') {
+      userRoles = [req.user.role];
+    } else if (Array.isArray(req.user.role)) {
+      userRoles = req.user.role;
+    } else {
+      return res.status(403).json({ message: 'Insufficient permissions: Invalid role format' });
+    }
+
+    const hasPermission = userRoles.some(userRole => roles.includes(userRole));
+
+    if (!hasPermission) {
       return res.status(403).json({ message: 'Insufficient permissions' });
     }
 
