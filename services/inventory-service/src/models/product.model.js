@@ -235,6 +235,7 @@ const Product = {
 
       values.push(id);
 
+      console.log("[PRODUCT MODEL] Updating product ID:", id);
       console.log("[PRODUCT MODEL] Fields to update:", fields);
       console.log("[PRODUCT MODEL] Values:", values);
 

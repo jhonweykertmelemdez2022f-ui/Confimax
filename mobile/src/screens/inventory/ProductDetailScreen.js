@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useIsFocused } from '@react-navigation/native';
 import {
   View,
   Text,
@@ -44,11 +45,13 @@ function ProductDetailScreen({ route, navigation }) {
     }
   }, [initialProduct, id, navigation]);
 
+  const isFocused = useIsFocused();
+
   useEffect(() => {
-    if (!product) {
+    if (isFocused) {
       loadProduct();
     }
-  }, [product, loadProduct]);
+  }, [isFocused, loadProduct]);
 
   const isProductExpiringSoon = () => {
     if (!product || !product.expiry_date) return false;

@@ -1,10 +1,10 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {View, Text, StyleSheet, TextInput, TouchableOpacity, Alert, ActivityIndicator, ScrollView} from 'react-native';
 import {inventoryAPI} from '../../services/api';
 import { useTheme } from '../../theme';
 import { MaterialIcons } from '@expo/vector-icons';
 
-function NewProductScreen({navigation}) {
+function NewProductScreen({navigation, route}) {
   const [name, setName] = useState('');
   const [sku, setSku] = useState('');
   const [price, setPrice] = useState('');
@@ -15,6 +15,22 @@ function NewProductScreen({navigation}) {
   const [expirationDate, setExpirationDate] = useState('');
   const {colors} = useTheme();
   const [loading, setLoading] = useState(false);
+  const [editingProduct, setEditingProduct] = useState(null);
+
+  useEffect(() => {
+    if (route.params?.product) {
+      const product = route.params.product;
+      setEditingProduct(product);
+      setName(product.name);
+      setSku(product.sku);
+      setPrice(product.unitPrice?.toString() || product.unit_price?.toString() || product.price?.toString() || '');
+      setStock(product.stock_quantity?.toString() || '0');
+      setCategory(product.category_id || 'despensa');
+      setDescription(product.description || '');
+      setImage(product.image_url || '');
+      setExpirationDate(product.expiration_date ? product.expiration_date.split('T')[0] : '');
+    }
+  }, [route.params?.product]);
 
   const categories = ['despensa', 'frescos', 'lácteos', 'limpieza'];
 
@@ -38,7 +54,7 @@ function NewProductScreen({navigation}) {
 
     setLoading(true);
     try {
-      await inventoryAPI.createProduct({
+      const productData = {
         name,
         sku,
         price: priceFloat,
@@ -46,13 +62,22 @@ function NewProductScreen({navigation}) {
         description: description.trim(),
         image_url: image.trim() || undefined,
         expiration_date: expirationDate.trim() ? expirationDate.trim() : null,
-      });
-      Alert.alert('Éxito', 'Producto registrado correctamente en el inventario cloud.', [
-        { text: 'OK', onPress: () => navigation.goBack() }
-      ]);
+      };
+
+      if (editingProduct) {
+        await inventoryAPI.updateProduct(editingProduct.id, productData);
+        Alert.alert('Éxito', 'Producto actualizado correctamente en el inventario cloud.', [
+          { text: 'OK', onPress: () => navigation.goBack() }
+        ]);
+      } else {
+        await inventoryAPI.createProduct(productData);
+        Alert.alert('Éxito', 'Producto registrado correctamente en el inventario cloud.', [
+          { text: 'OK', onPress: () => navigation.goBack() }
+        ]);
+      }
     } catch (error) {
-      console.log('Error creating product:', error);
-      Alert.alert('Error', 'No se pudo crear el producto. Valida que el código SKU no esté duplicado.');
+      console.log(editingProduct ? 'Error updating product:' : 'Error creating product:', error);
+      Alert.alert('Error', error.response?.data?.message || 'Ocurrió un error. Valida que el código SKU no esté duplicado.');
     } finally {
       setLoading(false);
     }
@@ -63,7 +88,7 @@ function NewProductScreen({navigation}) {
   return (
     <ScrollView style={dynamicStyles.container} contentContainerStyle={dynamicStyles.contentContainer}>
       <View style={dynamicStyles.form}>
-        <Text style={dynamicStyles.title}>REGISTRO DE PRODUCTO</Text>
+        <Text style={dynamicStyles.title}>{editingProduct ? 'EDITAR PRODUCTO' : 'REGISTRO DE PRODUCTO'}</Text>
         
         <Text style={dynamicStyles.label}>NOMBRE DEL PRODUCTO *</Text>
         <TextInput
@@ -171,7 +196,7 @@ function NewProductScreen({navigation}) {
           ) : (
             <>
               <MaterialIcons name="add-shopping-cart" size={20} color="#ffffff" style={{marginRight: 8}} />
-              <Text style={dynamicStyles.saveButtonText}>REGISTRAR NUEVO PRODUCTO</Text>
+              <Text style={dynamicStyles.saveButtonText}>{editingProduct ? 'GUARDAR CAMBIOS' : 'REGISTRAR NUEVO PRODUCTO'}</Text>
             </>
           )}
         </TouchableOpacity>
