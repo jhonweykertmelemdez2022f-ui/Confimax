@@ -26,6 +26,9 @@ import NewSaleScreen from '../screens/sales/NewSaleScreen';
 import NewProductScreen from '../screens/inventory/NewProductScreen';
 import UsersScreen from '../screens/users/UsersScreen';
 import NewUserScreen from '../screens/users/NewUserScreen';
+import CatalogScreen from '../screens/customer/CatalogScreen';
+import CartScreen from '../screens/customer/CartScreen';
+import CustomerProductDetailScreen from '../screens/customer/CustomerProductDetailScreen';
 import AuditLogsScreen from '../screens/users/AuditLogsScreen';
 import QrCodeDisplayScreen from '../screens/common/QrCodeDisplayScreen';
 import SalesReportsScreen from '../screens/reports/SalesReportsScreen';
@@ -91,6 +94,10 @@ function MainTabs() {
             iconName = 'home';
           } else if (route.name === 'Productos') {
             iconName = 'inventory-2';
+          } else if (route.name === 'Catálogo') {
+            iconName = 'storefront';
+          } else if (route.name === 'Carrito') {
+            iconName = 'shopping-cart';
           } else if (route.name === 'Ventas') {
             iconName = 'point-of-sale';
           } else if (route.name === 'Clientes') {
@@ -120,7 +127,8 @@ function MainTabs() {
       {user?.role === 'customer' ? (
         <>
           <Tab.Screen name="Inicio" component={HomeScreen} />
-          <Tab.Screen name="Productos" component={ProductsScreen} />
+          <Tab.Screen name="Catálogo" component={CatalogScreen} />
+          <Tab.Screen name="Carrito" component={CartScreen} />
           <Tab.Screen name="Perfil" component={ProfileScreen} />
         </>
       ) : user?.role === 'admin' ? (
@@ -239,6 +247,21 @@ function AppNavigator() {
         name="SalesReports"
         component={SalesReportsScreen}
         options={{title: 'Reportes de Ventas'}}
+      />
+      <Stack.Screen
+        name="CatalogScreen"
+        component={CatalogScreen}
+        options={{title: 'Catálogo de Productos'}}
+      />
+      <Stack.Screen
+        name="CartScreen"
+        component={CartScreen}
+        options={{title: 'Carrito de Compras'}}
+      />
+      <Stack.Screen
+        name="CustomerProductDetailScreen"
+        component={CustomerProductDetailScreen}
+        options={{title: 'Detalle del Producto'}}
       />
     </Stack.Navigator>
   );

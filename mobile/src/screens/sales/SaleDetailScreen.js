@@ -66,6 +66,7 @@ function SaleDetailScreen({route, navigation}) {
               Alert.alert('Éxito', `La orden ha sido marcada como ${newStatus}.`);
               loadSale();
             } catch (error) {
+              console.error(`Error updating sale status to ${newStatus}:`, error);
               const errorMsg = error.response?.data?.message || `No se pudo actualizar a ${newStatus}.`;
               Alert.alert('Error', errorMsg);
             } finally {

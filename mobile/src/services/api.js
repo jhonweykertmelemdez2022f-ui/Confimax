@@ -36,6 +36,7 @@ const fabianaApi = axios.create({
 
 api.interceptors.request.use(
   async (config) => {
+    console.log(`Making request to: ${config.url}`);
     try {
       const stored = await SecureStore.getItemAsync('confimax_auth');
       if (stored) {
@@ -96,6 +97,7 @@ export const inventoryAPI = {
   getProductStockItems: (productId) => api.get(`/inventory/stock/product/${productId}`),
   createStockItem: (data) => api.post('/inventory/stock', data),
   updateStockItem: (id, data) => api.put(`/inventory/stock/${id}`, data),
+  getCategories: () => api.get('/categories'),
 };
 
 export const salesAPI = {
@@ -105,7 +107,7 @@ export const salesAPI = {
   getSaleItems: (id) => api.get(`/sales/${id}/items`),
   getDailySales: (date) => api.get('/sales/daily', { params: { date } }),
   getSalesSummary: (params) => api.get('/sales/summary', { params }),
-  updateSale: (id, data) => api.patch(`/sales/${id}`, data),
+  updateSale: (id, data) => api.patch(`/sales/${id}/status`, data),
   deleteSale: (id) => api.delete(`/sales/${id}`),
   getExchangeRates: () => api.get('/sales/exchange-rates'),
   convertPrice: (params) => api.get('/sales/convert', { params }),

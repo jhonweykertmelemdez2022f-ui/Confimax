@@ -17,7 +17,7 @@ const validateRequest = (req, res, next) => {
 router.post(
   '/',
   authenticate,
-  authorize('admin', 'manager'),
+  authorize('admin', 'manager', 'seller'),
   [
     body('items').isArray({ min: 1 }).withMessage('At least one item required'),
     body('items.*.product_id').isUUID().withMessage('Valid product_id required'),

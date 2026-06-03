@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {View, Text, StyleSheet, TextInput, TouchableOpacity, Alert, ActivityIndicator, ScrollView} from 'react-native';
+import {View, Text, StyleSheet, TextInput, TouchableOpacity, Alert, ActivityIndicator, ScrollView, Platform, KeyboardAvoidingView} from 'react-native';
 import {inventoryAPI} from '../../services/api';
 import { useTheme } from '../../theme';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -16,6 +16,23 @@ function NewProductScreen({navigation, route}) {
   const {colors} = useTheme();
   const [loading, setLoading] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
+  const [availableCategories, setAvailableCategories] = useState([]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await inventoryAPI.getCategories();
+        setAvailableCategories(response.data.map(cat => cat.name));
+        if (response.data.length > 0 && !category) {
+          setCategory(response.data[0].name);
+        }
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+        Alert.alert('Error', 'No se pudieron cargar las categorías.');
+      }
+    };
+    fetchCategories();
+  }, []);
 
   useEffect(() => {
     if (route.params?.product) {
@@ -25,14 +42,12 @@ function NewProductScreen({navigation, route}) {
       setSku(product.sku);
       setPrice(product.unitPrice?.toString() || product.unit_price?.toString() || product.price?.toString() || '');
       setStock(product.stock_quantity?.toString() || '0');
-      setCategory(product.category_id || 'despensa');
+      setCategory(product.category_id || (availableCategories.length > 0 ? availableCategories[0] : ''));
       setDescription(product.description || '');
       setImage(product.image_url || '');
       setExpirationDate(product.expiration_date ? product.expiration_date.split('T')[0] : '');
     }
-  }, [route.params?.product]);
-
-  const categories = ['despensa', 'frescos', 'lácteos', 'limpieza'];
+  }, [route.params?.product, availableCategories]);
 
   const handleSave = async () => {
     if (!name || !sku || !price || !stock) {
@@ -86,9 +101,13 @@ function NewProductScreen({navigation, route}) {
   const dynamicStyles = createStyles(colors);
 
   return (
-    <ScrollView style={dynamicStyles.container} contentContainerStyle={dynamicStyles.contentContainer}>
-      <View style={dynamicStyles.form}>
-        <Text style={dynamicStyles.title}>{editingProduct ? 'EDITAR PRODUCTO' : 'REGISTRO DE PRODUCTO'}</Text>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={dynamicStyles.container}
+    >
+      <ScrollView contentContainerStyle={dynamicStyles.contentContainer} keyboardShouldPersistTaps="handled">
+        <View style={dynamicStyles.form}>
+          <Text style={dynamicStyles.title}>{editingProduct ? 'EDITAR PRODUCTO' : 'REGISTRO DE PRODUCTO'}</Text>
         
         <Text style={dynamicStyles.label}>NOMBRE DEL PRODUCTO *</Text>
         <TextInput
@@ -136,7 +155,7 @@ function NewProductScreen({navigation, route}) {
 
         <Text style={dynamicStyles.label}>CATEGORÍA</Text>
         <View style={dynamicStyles.categoryRow}>
-          {categories.map((cat) => (
+          {availableCategories.map((cat) => (
             <TouchableOpacity 
               key={cat}
               onPress={() => setCategory(cat)}
@@ -202,6 +221,7 @@ function NewProductScreen({navigation, route}) {
         </TouchableOpacity>
       </View>
     </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
