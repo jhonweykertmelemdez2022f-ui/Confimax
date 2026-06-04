@@ -32,11 +32,15 @@ const saleController = {
   },
   async createCustomerOrder(req, res, next) {
     try { 
-      // Force customer_id to be the logged in user
+      // Force user_id to be the logged in user
       const customerId = req.user?.id || req.user?.sub || req.user?.userId;
       if (!customerId) return res.status(401).json({ message: 'User ID missing in token' });
       
-      const payload = { ...req.body, customer_id: customerId };
+      const payload = { 
+        ...req.body, 
+        user_id: customerId, // Customers from mobile app are users (profiles), not CRM customers
+        customer_id: null    // So we leave customer_id null to avoid Foreign Key violations
+      };
       const order = await SalesService.createOrder(payload);
       await sendAudit(req, 'CREATE', 'CustomerSale', order.id, order);
       res.status(201).json(order); 
