@@ -41,10 +41,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     );
   }
 
+  const isVendor = user?.role?.toLowerCase() === "vendor" || user?.role?.toLowerCase() === "vendedor";
+
   const links = [
     { name: "Resumen", href: "/dashboard", icon: "dashboard" },
     { name: "Categorías", href: "/dashboard/categories", icon: "category" },
-    ...(user?.role !== "vendor" && user?.role !== "vendedor" ? [{ name: "Inventario", href: "/dashboard/inventory", icon: "inventory_2" }] : []),
+    ...(!isVendor ? [{ name: "Inventario", href: "/dashboard/inventory", icon: "inventory_2" }] : []),
     { name: "Ventas", href: "/dashboard/sales", icon: "attach_money" },
     { name: "Clientes", href: "/dashboard/customers", icon: "group" },
   ];
