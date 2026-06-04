@@ -36,28 +36,27 @@ const saleController = {
       const tokenUserId = req.user?.id || req.user?.sub || req.user?.userId;
       if (!tokenUserId) return res.status(401).json({ message: 'User ID missing in token' });
       
-      const email = req.user?.email || req.body.email;
       const name = req.user?.username || req.user?.name || 'Cliente App';
+      // El token puede no traer email, así que usamos uno generado si no existe
+      const email = req.user?.email || req.body.email || `app-${tokenUserId.substring(0, 8)}@confimax.com`;
       let finalCustomerId = null;
 
       // Sincronizar con el CRM (customers.customers)
-      if (email) {
-        try {
-          const { pool } = require('../models/sale.model');
-          const result = await pool.query('SELECT id FROM customers.customers WHERE email = $1 LIMIT 1', [email]);
-          
-          if (result.rows[0]) {
-            finalCustomerId = result.rows[0].id;
-          } else {
-            const newCustomer = await pool.query(
-              'INSERT INTO customers.customers (name, email) VALUES ($1, $2) RETURNING id',
-              [name, email]
-            );
-            finalCustomerId = newCustomer.rows[0].id;
-          }
-        } catch (err) {
-          console.log('[SALES] Could not sync with CRM:', err.message);
+      try {
+        const { pool } = require('../models/sale.model');
+        const result = await pool.query('SELECT id FROM customers.customers WHERE email = $1 LIMIT 1', [email]);
+        
+        if (result.rows[0]) {
+          finalCustomerId = result.rows[0].id;
+        } else {
+          const newCustomer = await pool.query(
+            'INSERT INTO customers.customers (name, email) VALUES ($1, $2) RETURNING id',
+            [name, email]
+          );
+          finalCustomerId = newCustomer.rows[0].id;
         }
+      } catch (err) {
+        console.log('[SALES] Could not sync with CRM:', err.message);
       }
 
       const payload = { 
