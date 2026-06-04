@@ -32,16 +32,41 @@ const saleController = {
   },
   async createCustomerOrder(req, res, next) {
     try { 
-      // Force user_id to be the logged in user
-      const customerId = req.user?.id || req.user?.sub || req.user?.userId;
-      if (!customerId) return res.status(401).json({ message: 'User ID missing in token' });
+      // Obtenemos los datos del token
+      const tokenUserId = req.user?.id || req.user?.sub || req.user?.userId;
+      if (!tokenUserId) return res.status(401).json({ message: 'User ID missing in token' });
       
+      const email = req.user?.email || req.body.email;
+      const name = req.user?.username || req.user?.name || 'Cliente App';
+      let finalCustomerId = null;
+
+      // Sincronizar con el CRM (customers.customers)
+      if (email) {
+        try {
+          const { pool } = require('../models/sale.model');
+          const result = await pool.query('SELECT id FROM customers.customers WHERE email = $1 LIMIT 1', [email]);
+          
+          if (result.rows[0]) {
+            finalCustomerId = result.rows[0].id;
+          } else {
+            const newCustomer = await pool.query(
+              'INSERT INTO customers.customers (name, email) VALUES ($1, $2) RETURNING id',
+              [name, email]
+            );
+            finalCustomerId = newCustomer.rows[0].id;
+          }
+        } catch (err) {
+          console.log('[SALES] Could not sync with CRM:', err.message);
+        }
+      }
+
       const payload = { 
         ...req.body, 
-        user_id: null,       // Setting to null because the user specifically requested not to use profiles
-        customer_id: null,   // Setting to null to avoid customer foreign key violation
-        notes: req.body.notes ? `${req.body.notes} | Cliente Web/App ID: ${customerId}` : `Cliente Web/App ID: ${customerId}`
+        user_id: null,               // No usamos profiles (user_id)
+        customer_id: finalCustomerId,// Usamos el ID del CRM
+        notes: req.body.notes ? `${req.body.notes} | Cliente Web/App ID: ${tokenUserId}` : `Cliente Web/App ID: ${tokenUserId}`
       };
+      
       const order = await SalesService.createOrder(payload);
       await sendAudit(req, 'CREATE', 'CustomerSale', order.id, order);
       res.status(201).json(order); 
