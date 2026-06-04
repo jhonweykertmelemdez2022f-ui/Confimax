@@ -294,6 +294,30 @@ class ApiClient {
     });
   }
 
+  async createCustomerSale(data: any) {
+    // Similar conversion if needed
+    let payload = data;
+    if ('customerId' in data || ('items' in data && data.items[0]?.productId)) {
+      const items = data.items.map((item: any) => ({
+        product_id: item.productId,
+        sku: item.productId.substring(0, 8).toUpperCase(),
+        product_name: 'Producto',
+        quantity: item.quantity,
+        unit_price: item.price
+      }));
+      payload = {
+        items,
+        status: 'pending',
+        notes: ''
+      };
+    }
+
+    return this.request('/sales/customer', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
+
   async getSales(params?: { limit?: number; offset?: number; status?: string; customer_id?: string }) {
     const queryString = params ? `?${new URLSearchParams(params as any).toString()}` : '';
     return this.request(`/sales${queryString}`);

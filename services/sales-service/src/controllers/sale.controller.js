@@ -33,7 +33,7 @@ const saleController = {
   async createCustomerOrder(req, res, next) {
     try { 
       // Force customer_id to be the logged in user
-      const customerId = req.user?.id || req.user?.sub;
+      const customerId = req.user?.id || req.user?.sub || req.user?.userId;
       if (!customerId) return res.status(401).json({ message: 'User ID missing in token' });
       
       const payload = { ...req.body, customer_id: customerId };

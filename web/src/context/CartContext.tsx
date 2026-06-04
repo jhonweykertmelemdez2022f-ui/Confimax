@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { api } from "@/lib/api";
+import { useAuth } from "@/context/AuthContext";
 
 export interface CartItem {
   id: string;
@@ -32,6 +33,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const { user } = useAuth();
 
   // Load cart from localStorage on mount
   useEffect(() => {
@@ -99,7 +101,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
         paymentMethod,
       };
 
-      await api.createSale(saleData);
+      if (user?.role === "cliente") {
+        await api.createCustomerSale(saleData);
+      } else {
+        await api.createSale(saleData);
+      }
       clearCart();
     } catch (error) {
       console.error("Error al procesar la venta:", error);
