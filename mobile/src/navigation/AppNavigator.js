@@ -140,6 +140,13 @@ function MainTabs() {
           <Tab.Screen name="Usuarios" component={UsersScreen} />
           <Tab.Screen name="Perfil" component={ProfileScreen} />
         </>
+      ) : user?.role === 'vendor' || user?.role === 'vendedor' ? (
+        <>
+          <Tab.Screen name="Inicio" component={HomeScreen} />
+          <Tab.Screen name="Ventas" component={SalesScreen} />
+          <Tab.Screen name="Clientes" component={CustomersScreen} />
+          <Tab.Screen name="Perfil" component={ProfileScreen} />
+        </>
       ) : (
         <>
           <Tab.Screen name="Inicio" component={HomeScreen} />

@@ -44,7 +44,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const links = [
     { name: "Resumen", href: "/dashboard", icon: "dashboard" },
     { name: "Categorías", href: "/dashboard/categories", icon: "category" },
-    { name: "Inventario", href: "/dashboard/inventory", icon: "inventory_2" },
+    ...(user?.role !== "vendor" && user?.role !== "vendedor" ? [{ name: "Inventario", href: "/dashboard/inventory", icon: "inventory_2" }] : []),
     { name: "Ventas", href: "/dashboard/sales", icon: "attach_money" },
     { name: "Clientes", href: "/dashboard/customers", icon: "group" },
   ];
