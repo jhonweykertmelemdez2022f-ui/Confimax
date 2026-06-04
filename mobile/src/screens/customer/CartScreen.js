@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, Image } from
 import { useTheme } from '../../theme';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useCartStore } from '../../stores/cartStore';
+import { generateInvoicePDF } from '../../utils/pdfGenerator';
+import { Modal, TextInput, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 
 function CartScreen({navigation}) {
   const {colors} = useTheme();
@@ -15,10 +17,32 @@ function CartScreen({navigation}) {
   const getTotalPrice = useCartStore((state) => state.getTotalPrice);
   const removeItem = useCartStore((state) => state.removeItem);
 
+  const [isPaymentModalVisible, setPaymentModalVisible] = React.useState(false);
+  const [paymentData, setPaymentData] = React.useState({ method: 'transfer', reference: '' });
+
+  const handleOpenPaymentModal = () => {
+    setPaymentModalVisible(true);
+  };
+
   const handleCheckout = async () => {
+    if (paymentData.method !== 'cash' && !paymentData.reference.trim()) {
+      Alert.alert('Error', 'Por favor ingresa el número de referencia del pago.');
+      return;
+    }
+    
+    setPaymentModalVisible(false);
+    
     try {
-      await checkout();
-      Alert.alert('Éxito', '¡Compra realizada con éxito!');
+      const order = await checkout(paymentData);
+      Alert.alert('Éxito', '¡Compra realizada con éxito! Generando comprobante...');
+      
+      try {
+        await generateInvoicePDF(order);
+      } catch (pdfError) {
+        console.error("Error al generar PDF:", pdfError);
+        Alert.alert('Aviso', 'La compra fue exitosa pero hubo un error al generar la factura.');
+      }
+      
       navigation.navigate('Inicio');
     } catch (error) {
       Alert.alert('Error', error.message || 'Hubo un error al procesar el pago.');
@@ -71,7 +95,7 @@ function CartScreen({navigation}) {
             <Text style={dynamicStyles.totalText}>Total: ${getTotalPrice().toFixed(2)}</Text>
             <TouchableOpacity 
               style={[dynamicStyles.checkoutButton, isCheckingOut && { opacity: 0.7 }]}
-              onPress={handleCheckout}
+              onPress={handleOpenPaymentModal}
               disabled={isCheckingOut}
             >
               <MaterialIcons name="shopping-cart-checkout" size={24} color="#ffffff" />
@@ -82,6 +106,69 @@ function CartScreen({navigation}) {
           </View>
         </>
       )}
+
+      {/* Modal de Pago */}
+      <Modal visible={isPaymentModalVisible} transparent animationType="slide">
+        <KeyboardAvoidingView 
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={dynamicStyles.modalContainer}
+        >
+          <View style={dynamicStyles.modalContent}>
+            <View style={dynamicStyles.modalHeader}>
+              <Text style={dynamicStyles.modalTitle}>Confirmar Pago</Text>
+              <TouchableOpacity onPress={() => setPaymentModalVisible(false)}>
+                <MaterialIcons name="close" size={28} color={colors.secondary} />
+              </TouchableOpacity>
+            </View>
+
+            <Text style={dynamicStyles.modalLabel}>Método de Pago</Text>
+            <View style={dynamicStyles.methodsContainer}>
+              {['transfer', 'paypal', 'cash', 'card'].map((method) => (
+                <TouchableOpacity
+                  key={method}
+                  style={[
+                    dynamicStyles.methodButton,
+                    paymentData.method === method && dynamicStyles.methodButtonActive
+                  ]}
+                  onPress={() => setPaymentData({ ...paymentData, method })}
+                >
+                  <Text style={[
+                    dynamicStyles.methodText,
+                    paymentData.method === method && dynamicStyles.methodTextActive
+                  ]}>
+                    {method === 'transfer' ? 'Transferencia/Zelle' :
+                     method === 'paypal' ? 'PayPal' :
+                     method === 'card' ? 'Tarjeta' : 'Efectivo'}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            {paymentData.method !== 'cash' && (
+              <>
+                <Text style={dynamicStyles.modalLabel}>Número de Referencia</Text>
+                <TextInput
+                  style={dynamicStyles.input}
+                  placeholder="Ej. 1234567890"
+                  value={paymentData.reference}
+                  onChangeText={(text) => setPaymentData({ ...paymentData, reference: text })}
+                  placeholderTextColor={colors.secondary}
+                />
+              </>
+            )}
+
+            <TouchableOpacity 
+              style={[dynamicStyles.checkoutButton, { marginTop: 20 }]}
+              onPress={handleCheckout}
+              disabled={isCheckingOut}
+            >
+              <Text style={dynamicStyles.checkoutButtonText}>
+                {isCheckingOut ? 'PROCESANDO...' : 'CONFIRMAR Y COMPRAR'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
     </View>
   );
 }
@@ -194,6 +281,69 @@ const createStyles = (colors) => StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     marginLeft: 10,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  modalContent: {
+    backgroundColor: colors.surface,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+    minHeight: 400,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: colors.primary,
+  },
+  modalLabel: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: colors.onSurface,
+    marginBottom: 10,
+    marginTop: 15,
+  },
+  methodsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  methodButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.borderMuted,
+    backgroundColor: colors.surfaceDim,
+  },
+  methodButtonActive: {
+    borderColor: colors.accent,
+    backgroundColor: colors.accent,
+  },
+  methodText: {
+    color: colors.onSurface,
+    fontWeight: '600',
+  },
+  methodTextActive: {
+    color: '#ffffff',
+  },
+  input: {
+    backgroundColor: colors.surfaceDim,
+    borderRadius: 8,
+    padding: 15,
+    borderWidth: 1,
+    borderColor: colors.borderMuted,
+    color: colors.onSurface,
+    fontSize: 16,
   },
 });
 

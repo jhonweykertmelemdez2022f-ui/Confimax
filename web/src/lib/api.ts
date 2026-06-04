@@ -346,6 +346,8 @@ class ApiClient {
     order_id: string;
     payment_method: string;
     amount: number;
+    transaction_id?: string;
+    status?: string;
   }) {
     return this.request('/sales/payments', {
       method: 'POST',

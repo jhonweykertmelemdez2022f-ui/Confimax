@@ -52,7 +52,7 @@ export const useCartStore = create((set, get) => ({
     set({ items: [] });
   },
 
-  checkout: async () => {
+  checkout: async (paymentData) => {
     const { items } = get();
     if (items.length === 0) {
       throw new Error("El carrito está vacío");
@@ -72,17 +72,31 @@ export const useCartStore = create((set, get) => ({
           unit_price: item.price
         })),
         status: 'pending',
-        notes: ''
+        notes: paymentData ? `Pago mediante: ${paymentData.method}. Ref: ${paymentData.reference}` : ''
       };
 
+      let orderResponse;
       if (user?.role === 'cliente' || user?.role === 'customer') {
-        await salesAPI.createCustomerSale(saleData);
+        orderResponse = await salesAPI.createCustomerSale(saleData);
       } else {
-        await salesAPI.createSale(saleData);
+        orderResponse = await salesAPI.createSale(saleData);
       }
       
+      const order = orderResponse.data;
+
+      // Registrar el pago si se proporcionó información de pago
+      if (paymentData && order && order.id) {
+        await salesAPI.createPayment({
+          order_id: order.id,
+          payment_method: paymentData.method,
+          amount: order.total || saleData.items.reduce((sum, i) => sum + (i.quantity * i.unit_price), 0),
+          transaction_id: paymentData.reference,
+          status: 'pending'
+        });
+      }
+
       get().clearCart();
-      return true;
+      return order;
     } catch (error) {
       console.error("Error al procesar la venta:", error);
       if (error.response && error.response.data) {

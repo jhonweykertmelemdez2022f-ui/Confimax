@@ -84,7 +84,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem("confimax_cart");
   };
 
-  const checkout = async (customerId?: string, paymentMethod: string = "cash") => {
+  const checkout = async (customerId?: string, paymentData?: { method: string; reference: string }) => {
     if (items.length === 0) {
       throw new Error("El carrito está vacío");
     }
@@ -98,15 +98,36 @@ export function CartProvider({ children }: { children: ReactNode }) {
           quantity: item.quantity,
           price: item.price,
         })),
-        paymentMethod,
+        paymentMethod: paymentData?.method || "cash",
+        notes: paymentData && paymentData.method !== "cash" ? `Pago mediante: ${paymentData.method}. Ref: ${paymentData.reference}` : ""
       };
 
+      let orderResponse;
       if (user?.role === "cliente") {
-        await api.createCustomerSale(saleData);
+        orderResponse = await api.createCustomerSale(saleData);
       } else {
-        await api.createSale(saleData);
+        orderResponse = await api.createSale(saleData);
       }
+      
+      const order = orderResponse; // Dependiendo de api.js, podría ser orderResponse.data o directamente el objeto
+
+      // Si tenemos datos de pago y un ID de orden, registramos el pago
+      if (paymentData && order && order.id) {
+        try {
+          await api.createPayment({
+            order_id: order.id,
+            payment_method: paymentData.method,
+            amount: order.total || items.reduce((sum, item) => sum + item.price * item.quantity, 0),
+            transaction_id: paymentData.reference,
+            status: "pending"
+          });
+        } catch (paymentErr) {
+          console.error("Error al registrar pago, pero la orden se creó:", paymentErr);
+        }
+      }
+
       clearCart();
+      return order;
     } catch (error) {
       console.error("Error al procesar la venta:", error);
       throw error;

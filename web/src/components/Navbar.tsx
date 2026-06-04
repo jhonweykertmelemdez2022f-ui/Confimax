@@ -12,14 +12,28 @@ function CartDrawer() {
   const { clearCart, isOpen, items, removeItem, setIsOpen, totalItems, totalPrice, updateQuantity, checkout, isCheckingOut } = useCart();
   const { user } = useAuth();
 
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+  const [paymentData, setPaymentData] = useState({ method: "transfer", reference: "" });
+  const [invoiceOrder, setInvoiceOrder] = useState<any>(null);
+
   const handleCheckout = async () => {
+    if (paymentData.method !== "cash" && !paymentData.reference.trim()) {
+      alert("Por favor ingresa el número de referencia del pago.");
+      return;
+    }
+
+    setPaymentModalOpen(false);
+
     try {
-      await checkout(user?.id, "cash");
-      alert("¡Compra realizada con éxito!");
-      setIsOpen(false);
+      const order = await checkout(user?.id, paymentData);
+      setInvoiceOrder(order);
     } catch (error: any) {
       alert(error.message || "Error al procesar la compra");
     }
+  };
+
+  const handlePrint = () => {
+    window.print();
   };
 
   if (!isOpen) return null;
@@ -119,7 +133,7 @@ function CartDrawer() {
                 </button>
                 <button 
                   className="btn-precision justify-center bg-slate-900 px-4 py-3 text-white dark:bg-white dark:text-background disabled:opacity-50"
-                  onClick={handleCheckout}
+                  onClick={() => setPaymentModalOpen(true)}
                   disabled={isCheckingOut}
                 >
                   {isCheckingOut ? "Procesando..." : "Comprar"}
@@ -129,6 +143,158 @@ function CartDrawer() {
           </>
         )}
       </aside>
+
+      {/* Modal de Pago */}
+      {paymentModalOpen && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 p-4">
+          <div className="w-full max-w-md bg-white p-6 shadow-xl dark:bg-surface border border-slate-900 dark:border-white">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold uppercase tracking-tight text-slate-900 dark:text-white">Confirmar Pago</h2>
+              <button onClick={() => setPaymentModalOpen(false)}>
+                <X className="w-6 h-6 text-slate-500 hover:text-slate-900 dark:hover:text-white" />
+              </button>
+            </div>
+            
+            <label className="block mb-2 font-data-label text-sm font-bold text-slate-700 dark:text-slate-300">Método de Pago</label>
+            <div className="grid grid-cols-2 gap-2 mb-4">
+              {[
+                { id: "transfer", label: "Transferencia / Zelle" },
+                { id: "paypal", label: "PayPal" },
+                { id: "card", label: "Tarjeta" },
+                { id: "cash", label: "Efectivo" }
+              ].map(method => (
+                <button
+                  key={method.id}
+                  onClick={() => setPaymentData({ ...paymentData, method: method.id })}
+                  className={`p-3 border text-sm font-bold uppercase transition-colors ${
+                    paymentData.method === method.id 
+                      ? 'border-slate-900 bg-slate-900 text-white dark:border-white dark:bg-white dark:text-background' 
+                      : 'border-slate-300 text-slate-600 hover:border-slate-900 dark:border-slate-700 dark:text-slate-400 dark:hover:border-white'
+                  }`}
+                >
+                  {method.label}
+                </button>
+              ))}
+            </div>
+
+            {paymentData.method !== "cash" && (
+              <div className="mb-6">
+                <label className="block mb-2 font-data-label text-sm font-bold text-slate-700 dark:text-slate-300">Número de Referencia</label>
+                <input
+                  type="text"
+                  placeholder="Ej. 12345678"
+                  value={paymentData.reference}
+                  onChange={(e) => setPaymentData({ ...paymentData, reference: e.target.value })}
+                  className="w-full border border-slate-300 bg-transparent p-3 text-slate-900 focus:border-slate-900 focus:outline-none dark:border-slate-700 dark:text-white dark:focus:border-white"
+                />
+              </div>
+            )}
+
+            <button
+              onClick={handleCheckout}
+              disabled={isCheckingOut}
+              className="w-full bg-data-blue py-4 font-data-label font-bold text-white uppercase tracking-widest hover:bg-blue-600 disabled:opacity-50"
+            >
+              {isCheckingOut ? "Procesando..." : "Confirmar y Comprar"}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Modal / Vista de Factura (Oculta excepto al imprimir) */}
+      {invoiceOrder && (
+        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/80 p-4">
+          <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white p-8 shadow-2xl relative print:fixed print:inset-0 print:max-h-none print:w-full print:h-full print:overflow-visible print:bg-white print:p-0 print:m-0">
+            {/* Controles solo en pantalla, no en impresión */}
+            <div className="absolute top-4 right-4 flex gap-2 print:hidden">
+              <button 
+                onClick={handlePrint}
+                className="bg-slate-900 text-white px-4 py-2 font-data-label text-sm uppercase"
+              >
+                Imprimir / PDF
+              </button>
+              <button 
+                onClick={() => {
+                  setInvoiceOrder(null);
+                  setIsOpen(false);
+                }}
+                className="bg-red-600 text-white px-4 py-2 font-data-label text-sm uppercase"
+              >
+                Cerrar
+              </button>
+            </div>
+
+            {/* Diseño de Factura imprimible */}
+            <div className="text-black bg-white p-4">
+              <div className="border-b-2 border-data-blue pb-6 mb-6 flex justify-between items-start">
+                <div>
+                  <h1 className="text-3xl font-black text-data-blue uppercase tracking-tighter">CONFIMAX</h1>
+                  <p className="text-sm text-slate-600 mt-1">Soluciones Inteligentes de Inventario</p>
+                  <span className="inline-block mt-3 px-3 py-1 bg-green-100 text-green-800 border border-green-300 text-xs font-bold uppercase rounded">
+                    {invoiceOrder.status || "Pagado"}
+                  </span>
+                </div>
+                <div className="text-right">
+                  <h2 className="text-2xl font-bold text-data-blue mb-2">FACTURA</h2>
+                  <p className="text-sm"><strong>Nº:</strong> {invoiceOrder.order_number || invoiceOrder.id?.substring(0,8).toUpperCase()}</p>
+                  <p className="text-sm"><strong>Fecha:</strong> {new Date().toLocaleDateString()}</p>
+                </div>
+              </div>
+
+              <div className="mb-6">
+                <h3 className="text-xs font-bold text-slate-500 uppercase border-b border-slate-200 pb-1 mb-2">Información del Cliente</h3>
+                <p className="text-lg"><strong>Nombre:</strong> {invoiceOrder.customer_name || user?.name || "Consumidor Final"}</p>
+              </div>
+
+              <div className="mb-6">
+                <h3 className="text-xs font-bold text-slate-500 uppercase border-b border-slate-200 pb-1 mb-2">Detalle de la Transacción</h3>
+                <table className="w-full text-left border-collapse mt-2">
+                  <thead>
+                    <tr className="bg-slate-50 text-slate-600 uppercase text-xs">
+                      <th className="py-2 px-2 border-b">Cant.</th>
+                      <th className="py-2 px-2 border-b">Descripción</th>
+                      <th className="py-2 px-2 border-b text-right">P. Unit</th>
+                      <th className="py-2 px-2 border-b text-right">Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(invoiceOrder.items || []).map((item: any, i: number) => (
+                      <tr key={i} className="border-b border-slate-100 text-sm">
+                        <td className="py-2 px-2">{item.quantity || item.qty}</td>
+                        <td className="py-2 px-2">{item.product_name || item.name || "Producto"}</td>
+                        <td className="py-2 px-2 text-right">${Number(item.unit_price || item.price).toFixed(2)}</td>
+                        <td className="py-2 px-2 text-right">${(Number(item.quantity || item.qty) * Number(item.unit_price || item.price)).toFixed(2)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="flex justify-end mt-8">
+                <div className="w-64">
+                  <div className="flex justify-between py-1 text-sm text-slate-600">
+                    <span>Subtotal</span>
+                    <span>${Number(invoiceOrder.subtotal || invoiceOrder.total).toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between py-1 text-sm text-slate-600">
+                    <span>Impuestos (IVA)</span>
+                    <span>${Number(invoiceOrder.tax || 0).toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between py-3 mt-2 border-t-2 border-data-blue text-lg font-bold text-data-blue">
+                    <span>TOTAL A PAGAR</span>
+                    <span>${Number(invoiceOrder.total).toFixed(2)}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-16 pt-6 border-t border-slate-200 text-center text-slate-500 text-xs">
+                <p className="font-bold mb-1">¡Gracias por confiar en Confimax!</p>
+                <p>Documento generado electrónicamente.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
