@@ -119,7 +119,7 @@ router.get(
 router.post(
   '/payments',
   authenticate,
-  authorize('admin', 'manager', 'vendor', 'vendedor'),
+  authorize('admin', 'manager', 'vendor', 'vendedor', 'customer', 'cliente'),
   [
     body('order_id').isUUID().withMessage('Valid order_id required'),
     body('payment_method').isIn(['card', 'cash', 'transfer', 'paypal', 'other']).withMessage('Invalid payment method'),
