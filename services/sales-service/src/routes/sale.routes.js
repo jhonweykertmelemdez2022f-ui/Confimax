@@ -89,7 +89,7 @@ router.get(
 router.patch(
   '/:id/status',
   authenticate,
-  authorize('admin', 'manager'),
+  authorize('admin', 'manager', 'vendor', 'vendedor'),
   [
     param('id').isUUID().withMessage('Valid UUID required'),
     body('status').isIn(['pendiente', 'entregado', 'cancelado', 'pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded']).withMessage('Invalid status'),
@@ -119,7 +119,7 @@ router.get(
 router.post(
   '/payments',
   authenticate,
-  authorize('admin', 'manager'),
+  authorize('admin', 'manager', 'vendor', 'vendedor'),
   [
     body('order_id').isUUID().withMessage('Valid order_id required'),
     body('payment_method').isIn(['card', 'cash', 'transfer', 'paypal', 'other']).withMessage('Invalid payment method'),
@@ -132,7 +132,7 @@ router.post(
 router.patch(
   '/payments/:id/status',
   authenticate,
-  authorize('admin', 'manager'),
+  authorize('admin', 'manager', 'vendor', 'vendedor'),
   [
     param('id').isUUID().withMessage('Valid UUID required'),
     body('status').isIn(['pending', 'completed', 'failed', 'refunded']).withMessage('Invalid status'),
