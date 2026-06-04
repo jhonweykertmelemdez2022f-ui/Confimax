@@ -9,7 +9,18 @@ import Link from "next/link";
 import { Menu, Minus, Moon, Plus, ShoppingCart, Sun, Trash2, X } from "lucide-react";
 
 function CartDrawer() {
-  const { clearCart, isOpen, items, removeItem, setIsOpen, totalItems, totalPrice, updateQuantity } = useCart();
+  const { clearCart, isOpen, items, removeItem, setIsOpen, totalItems, totalPrice, updateQuantity, checkout, isCheckingOut } = useCart();
+  const { user } = useAuth();
+
+  const handleCheckout = async () => {
+    try {
+      await checkout(user?.id, "cash");
+      alert("¡Compra realizada con éxito!");
+      setIsOpen(false);
+    } catch (error: any) {
+      alert(error.message || "Error al procesar la compra");
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -106,8 +117,12 @@ function CartDrawer() {
                 <button className="btn-precision justify-center px-4 py-3" onClick={clearCart}>
                   Vaciar
                 </button>
-                <button className="btn-precision justify-center bg-slate-900 px-4 py-3 text-white dark:bg-white dark:text-background">
-                  Comprar
+                <button 
+                  className="btn-precision justify-center bg-slate-900 px-4 py-3 text-white dark:bg-white dark:text-background disabled:opacity-50"
+                  onClick={handleCheckout}
+                  disabled={isCheckingOut}
+                >
+                  {isCheckingOut ? "Procesando..." : "Comprar"}
                 </button>
               </div>
             </div>

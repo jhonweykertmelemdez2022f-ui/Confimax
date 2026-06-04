@@ -31,6 +31,22 @@ router.post(
   saleController.createOrder
 );
 
+router.post(
+  '/customer',
+  authenticate,
+  authorize('customer'),
+  [
+    body('items').isArray({ min: 1 }).withMessage('At least one item required'),
+    body('items.*.product_id').isUUID().withMessage('Valid product_id required'),
+    body('items.*.sku').trim().notEmpty().withMessage('SKU required'),
+    body('items.*.product_name').trim().notEmpty().withMessage('Product name required'),
+    body('items.*.quantity').isInt({ min: 1 }).withMessage('Valid quantity required'),
+    body('items.*.unit_price').isFloat({ min: 0 }).withMessage('Valid price required'),
+  ],
+  validateRequest,
+  saleController.createCustomerOrder
+);
+
 router.get(
   '/',
   saleController.listOrders

@@ -28,6 +28,7 @@
         "ITSAppUsesNonExemptEncryption": false
       }
     },
-    "plugins": []
+    "plugins": [],
+    "icon": "./assets/icon.png"
   }
 }

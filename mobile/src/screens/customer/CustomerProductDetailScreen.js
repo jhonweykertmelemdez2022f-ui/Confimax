@@ -15,6 +15,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { inventoryAPI } from '../../services/api';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Package, Tag, Hash, ShoppingCart, Plus, Minus } from 'lucide-react-native';
+import { useCartStore } from '../../stores/cartStore';
 
 const { width } = Dimensions.get('window');
 
@@ -24,6 +25,9 @@ function CustomerProductDetailScreen({ route, navigation }) {
   const [loading, setLoading] = useState(!initialProduct);
   const [quantity, setQuantity] = useState(1);
   const { colors, spacing, borderRadius, typography } = useTheme();
+  
+  const addItem = useCartStore((state) => state.addItem);
+  const isFocused = useIsFocused();
 
   const loadProduct = useCallback(async () => {
     try {
@@ -45,8 +49,6 @@ function CustomerProductDetailScreen({ route, navigation }) {
     }
   }, [initialProduct, id, navigation]);
 
-  const isFocused = useIsFocused();
-
   useEffect(() => {
     if (isFocused) {
       loadProduct();
@@ -66,9 +68,8 @@ function CustomerProductDetailScreen({ route, navigation }) {
   const displayPrice = product.unitPrice || product.unit_price || product.price || 0;
 
   const handleAddToCart = () => {
-    // TODO: Implement actual add to cart logic using a global state (e.g., Zustand store)
-    Alert.alert('Añadir al Carrito', `${quantity} ${product.name} añadido(s) al carrito.`);
-    // navigation.navigate('CartScreen'); // Optional: navigate to cart after adding
+    addItem(product, quantity);
+    Alert.alert('Añadido al Carrito', `${quantity} ${product.name} añadido(s) al carrito exitosamente.`);
   };
 
   return (

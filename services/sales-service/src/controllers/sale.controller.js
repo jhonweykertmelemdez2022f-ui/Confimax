@@ -30,6 +30,19 @@ const saleController = {
     }
     catch (e) { next(e); }
   },
+  async createCustomerOrder(req, res, next) {
+    try { 
+      // Force customer_id to be the logged in user
+      const customerId = req.user?.id || req.user?.sub;
+      if (!customerId) return res.status(401).json({ message: 'User ID missing in token' });
+      
+      const payload = { ...req.body, customer_id: customerId };
+      const order = await SalesService.createOrder(payload);
+      await sendAudit(req, 'CREATE', 'CustomerSale', order.id, order);
+      res.status(201).json(order); 
+    }
+    catch (e) { next(e); }
+  },
   async getOrder(req, res, next) {
     try {
       const order = await SalesService.getOrder(req.params.id);
