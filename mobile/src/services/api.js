@@ -102,6 +102,7 @@ export const inventoryAPI = {
 
 export const salesAPI = {
   createSale: (saleData) => api.post('/sales', saleData),
+  createCustomerSale: (saleData) => api.post('/sales/customer', saleData),
   getSales: (params) => api.get('/sales', { params }),
   getSale: (id) => api.get(`/sales/${id}`),
   getSaleItems: (id) => api.get(`/sales/${id}/items`),

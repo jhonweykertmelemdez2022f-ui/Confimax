@@ -90,7 +90,7 @@ function CartScreen({navigation}) {
 const createStyles = (colors) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: colors.surfaceDim,
     padding: 20,
   },
   title: {
@@ -108,7 +108,7 @@ const createStyles = (colors) => StyleSheet.create({
   },
   itemContainer: {
     flexDirection: 'row',
-    backgroundColor: colors.surface || '#fff',
+    backgroundColor: colors.surface,
     borderRadius: 8,
     padding: 10,
     marginBottom: 10,
@@ -140,7 +140,7 @@ const createStyles = (colors) => StyleSheet.create({
   itemName: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: colors.text || '#000',
+    color: colors.onSurface,
   },
   itemPrice: {
     fontSize: 14,
@@ -155,7 +155,7 @@ const createStyles = (colors) => StyleSheet.create({
   quantityText: {
     fontSize: 16,
     marginHorizontal: 10,
-    color: colors.text || '#000',
+    color: colors.onSurface,
   },
   removeButton: {
     padding: 8,
@@ -166,13 +166,13 @@ const createStyles = (colors) => StyleSheet.create({
   footer: {
     marginTop: 'auto',
     borderTopWidth: 1,
-    borderTopColor: colors.border || '#eee',
+    borderTopColor: colors.borderMuted,
     paddingTop: 15,
   },
   totalText: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: colors.text || '#000',
+    color: colors.onSurface,
     marginBottom: 15,
     textAlign: 'right',
   },

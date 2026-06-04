@@ -56,7 +56,7 @@ function CatalogScreen({navigation}) {
         <Text style={dynamicStyles.productSku}>{item.sku}</Text>
         <Text style={dynamicStyles.productPrice}>${(Number(item.price || item.unitPrice) || 0).toFixed(2)}</Text>
       </View>
-      <MaterialIcons name="arrow-forward-ios" size={20} color={colors.text} />
+      <MaterialIcons name="arrow-forward-ios" size={20} color={colors.onSurface} />
     </TouchableOpacity>
   );
 
@@ -90,7 +90,7 @@ function CatalogScreen({navigation}) {
 const createStyles = (colors) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: colors.surfaceDim,
     paddingHorizontal: 15,
   },
   searchInput: {
@@ -99,7 +99,7 @@ const createStyles = (colors) => StyleSheet.create({
     paddingHorizontal: 15,
     paddingVertical: 12,
     fontSize: 16,
-    color: colors.text,
+    color: colors.onSurface,
     marginTop: 15,
     marginBottom: 10,
     borderWidth: 1,

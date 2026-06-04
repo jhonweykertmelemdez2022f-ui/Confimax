@@ -75,7 +75,12 @@ export const useCartStore = create((set, get) => ({
         notes: ''
       };
 
-      await salesAPI.createSale(saleData);
+      if (user?.role === 'cliente' || user?.role === 'customer') {
+        await salesAPI.createCustomerSale(saleData);
+      } else {
+        await salesAPI.createSale(saleData);
+      }
+      
       get().clearCart();
       return true;
     } catch (error) {
