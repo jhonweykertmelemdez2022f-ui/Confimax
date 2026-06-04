@@ -85,6 +85,9 @@ export const useCartStore = create((set, get) => ({
       return true;
     } catch (error) {
       console.error("Error al procesar la venta:", error);
+      if (error.response && error.response.data) {
+        console.error("Detalles del servidor:", JSON.stringify(error.response.data, null, 2));
+      }
       throw error;
     } finally {
       set({ isCheckingOut: false });

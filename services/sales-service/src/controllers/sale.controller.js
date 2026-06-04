@@ -36,6 +36,18 @@ const saleController = {
       const customerId = req.user?.id || req.user?.sub || req.user?.userId;
       if (!customerId) return res.status(401).json({ message: 'User ID missing in token' });
       
+      // HACK: Ensure the user exists in public.profiles to prevent Foreign Key Violation
+      // Since local auth uses public.users but sales expects public.profiles
+      try {
+        const { pool } = require('../models/sale.model');
+        await pool.query(
+          `INSERT INTO public.profiles (id, name) VALUES ($1, $2) ON CONFLICT (id) DO NOTHING`,
+          [customerId, req.user?.username || req.user?.name || 'Cliente App']
+        );
+      } catch (err) {
+        console.log('[SALES] Could not sync profile:', err.message);
+      }
+
       const payload = { 
         ...req.body, 
         user_id: customerId, // Customers from mobile app are users (profiles), not CRM customers
