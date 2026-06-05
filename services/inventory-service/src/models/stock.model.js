@@ -86,14 +86,12 @@ const Stock = {
 
   async getLowStock(threshold) {
     const queryStr = threshold 
-      ? `SELECT s.*, p.name as product_name, p.sku
-         FROM inventory.stock s
-         JOIN inventory.products p ON s.product_id = p.id
-         WHERE s.quantity <= $1`
-      : `SELECT s.*, p.name as product_name, p.sku
-         FROM inventory.stock s
-         JOIN inventory.products p ON s.product_id = p.id
-         WHERE s.quantity <= s.min_quantity`;
+      ? `SELECT p.id, p.name as product_name, p.sku, p.stock_quantity as quantity
+         FROM inventory.products p
+         WHERE p.stock_quantity <= $1 AND p.is_active = true`
+      : `SELECT p.id, p.name as product_name, p.sku, p.stock_quantity as quantity
+         FROM inventory.products p
+         WHERE p.stock_quantity <= p.min_stock_level AND p.is_active = true`;
     const params = threshold ? [threshold] : [];
     const result = await pool.query(queryStr, params);
     return result.rows;

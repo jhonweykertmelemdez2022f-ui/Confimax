@@ -24,6 +24,7 @@ import CustomerDetailScreen from '../screens/customers/CustomerDetailScreen';
 import NewCustomerScreen from '../screens/customers/NewCustomerScreen';
 import NewSaleScreen from '../screens/sales/NewSaleScreen';
 import NewProductScreen from '../screens/inventory/NewProductScreen';
+import CategoriesScreen from '../screens/inventory/CategoriesScreen';
 import UsersScreen from '../screens/users/UsersScreen';
 import NewUserScreen from '../screens/users/NewUserScreen';
 import CatalogScreen from '../screens/customer/CatalogScreen';
@@ -229,6 +230,11 @@ function AppNavigator() {
         name="NewProduct"
         component={NewProductScreen}
         options={({ route }) => ({ title: route.params?.product ? 'Editar Producto' : 'Registrar Producto' })}
+      />
+      <Stack.Screen
+        name="Categories"
+        component={CategoriesScreen}
+        options={{title: 'Gestionar Categorías'}}
       />
       <Stack.Screen
         name="Users"

@@ -143,11 +143,18 @@ export default function DashboardOverviewPage() {
           </Link>
 
           {user?.role?.toLowerCase() !== "vendor" && user?.role?.toLowerCase() !== "vendedor" && (
-            <Link href="/dashboard/inventory" className="flex flex-col border border-slate-900 dark:border-white p-5 sm:p-6 bg-slate-50 dark:bg-surface-dim hover:bg-data-blue hover:text-white transition-colors group min-h-[140px]">
-              <span className="material-symbols-outlined text-[28px] sm:text-[32px] mb-4 group-hover:text-white text-slate-900 dark:text-white">inventory_2</span>
-              <h4 className="font-headline-lg-mobile text-base sm:text-lg uppercase tracking-tight mb-2">NUEVO PRODUCTO</h4>
-              <p className="font-data-label text-[9px] sm:text-[10px] tracking-widest uppercase text-slate-500 dark:text-slate-400 group-hover:text-white/70">Agregar al inventario</p>
-            </Link>
+            <>
+              <Link href="/dashboard/inventory" className="flex flex-col border border-slate-900 dark:border-white p-5 sm:p-6 bg-slate-50 dark:bg-surface-dim hover:bg-data-blue hover:text-white transition-colors group min-h-[140px]">
+                <span className="material-symbols-outlined text-[28px] sm:text-[32px] mb-4 group-hover:text-white text-slate-900 dark:text-white">inventory_2</span>
+                <h4 className="font-headline-lg-mobile text-base sm:text-lg uppercase tracking-tight mb-2">NUEVO PRODUCTO</h4>
+                <p className="font-data-label text-[9px] sm:text-[10px] tracking-widest uppercase text-slate-500 dark:text-slate-400 group-hover:text-white/70">Agregar al inventario</p>
+              </Link>
+              <Link href="/dashboard/categories" className="flex flex-col border border-slate-900 dark:border-white p-5 sm:p-6 bg-slate-50 dark:bg-surface-dim hover:bg-data-blue hover:text-white transition-colors group min-h-[140px]">
+                <span className="material-symbols-outlined text-[28px] sm:text-[32px] mb-4 group-hover:text-white text-slate-900 dark:text-white">category</span>
+                <h4 className="font-headline-lg-mobile text-base sm:text-lg uppercase tracking-tight mb-2">NUEVA CATEGORÍA</h4>
+                <p className="font-data-label text-[9px] sm:text-[10px] tracking-widest uppercase text-slate-500 dark:text-slate-400 group-hover:text-white/70">Clasificar inventario</p>
+              </Link>
+            </>
           )}
 
           <Link href="/dashboard/customers" className="flex flex-col border border-slate-900 dark:border-white p-5 sm:p-6 bg-slate-50 dark:bg-surface-dim hover:bg-data-blue hover:text-white transition-colors group min-h-[140px]">

@@ -41,9 +41,9 @@ function ProductsScreen({navigation}) {
   }, [isFocused]);
 
   const isProductExpiringSoon = (product) => {
-    if (!product.expiry_date) return false;
+    if (!product.expiration_date) return false;
     const today = new Date();
-    const expiry = new Date(product.expiry_date);
+    const expiry = new Date(product.expiration_date);
     const diffTime = expiry - today;
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays >= 0 && diffDays <= 7;
@@ -52,7 +52,7 @@ function ProductsScreen({navigation}) {
   const checkExpiringProducts = (productsList) => {
     productsList.forEach(product => {
       if (isProductExpiringSoon(product) && !notifiedProductsRef.current.has(product.id)) {
-        const expiryDate = new Date(product.expiry_date).toLocaleDateString('es-ES');
+        const expiryDate = new Date(product.expiration_date).toLocaleDateString('es-ES');
         notificationService.sendImmediateNotification(
           '⚠️ Producto próximo a vencer',
           `${product.name} vence el ${expiryDate}`,
@@ -194,6 +194,16 @@ function ProductsScreen({navigation}) {
           <MaterialIcons name="picture-as-pdf" size={22} color={colors.onPrimary} />
           <Text style={dynamicStyles.actionButtonText}>Todos los QRs</Text>
         </TouchableOpacity>
+        
+        {user?.role === 'admin' && (
+          <TouchableOpacity 
+            style={[dynamicStyles.actionButton, { backgroundColor: colors.secondary }]}
+            onPress={() => navigation.navigate('Categories')}
+          >
+            <MaterialIcons name="category" size={22} color={colors.onPrimary} />
+            <Text style={dynamicStyles.actionButtonText}>Categorías</Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       <FlatList

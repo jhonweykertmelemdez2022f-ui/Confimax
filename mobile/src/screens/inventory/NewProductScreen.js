@@ -22,9 +22,10 @@ function NewProductScreen({navigation, route}) {
     const fetchCategories = async () => {
       try {
         const response = await inventoryAPI.getCategories();
-        setAvailableCategories(response.data.map(cat => cat.name));
-        if (response.data.length > 0 && !category) {
-          setCategory(response.data[0].name);
+        const categories = response.data.data || [];
+        setAvailableCategories(categories.map(cat => cat.name));
+        if (categories.length > 0 && !category) {
+          setCategory(categories[0].name);
         }
       } catch (error) {
         console.error('Error fetching categories:', error);

@@ -97,7 +97,10 @@ export const inventoryAPI = {
   getProductStockItems: (productId) => api.get(`/inventory/stock/product/${productId}`),
   createStockItem: (data) => api.post('/inventory/stock', data),
   updateStockItem: (id, data) => api.put(`/inventory/stock/${id}`, data),
-  getCategories: () => api.get('/categories'),
+  getCategories: () => api.get('/inventory/categories'),
+  createCategory: (data) => api.post('/inventory/categories', data),
+  updateCategory: (id, data) => api.put(`/inventory/categories/${id}`, data),
+  deleteCategory: (id) => api.delete(`/inventory/categories/${id}`),
 };
 
 export const salesAPI = {
