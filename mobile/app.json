@@ -1,34 +1,29 @@
 {
-  "name": "ConfimaxMobile",
-  "displayName": "Confimax",
-  "plugins": [
-    "expo-asset",
-    "expo-font",
-    "expo-secure-store"
-  ],
-  "extra": {
-    "eas": {
-      "projectId": "a14fd31c-7547-40c7-9c81-e3ae5dc8a5be"
-    }
-  },
-  "owner": "jackson-melendez67s-organization",
-  "slug": "confimax",
   "expo": {
+    "name": "ConfimaxMobile",
+    "displayName": "Confimax",
+    "slug": "confimax-mobile",
+    "owner": "jackson-melendez67",
+    "version": "1.0.0",
     "android": {
       "package": "com.jacksonmelendez67sorganization.confimax"
     },
+    "ios": {
+      "bundleIdentifier": "com.jacksonmelendez67sorganization.confimax",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "plugins": [
+      "expo-asset",
+      "expo-font",
+      "expo-secure-store"
+    ],
     "extra": {
       "eas": {
         "projectId": "d677fce3-214a-49e8-91f7-0c858501a06b"
       }
     },
-    "ios": {
-      "bundleIdentifier": "y",
-      "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
-      }
-    },
-    "plugins": [],
     "icon": "./assets/icon.png"
   }
 }

@@ -1,7 +1,7 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {View, Text, StyleSheet, ScrollView, TouchableOpacity, Animated, ActivityIndicator} from 'react-native';
 import {useAuthStore} from '../../stores/authStore';
-import { Package, Users, ShoppingCart, RefreshCw, Settings, UserPlus, Info, ShoppingBag } from 'lucide-react-native';
+import { Package, Users, ShoppingCart, RefreshCw, Settings, UserPlus, Info, ShoppingBag, AlertTriangle, Clock } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../../theme';
 import { inventoryAPI, salesAPI, customersAPI } from '../../services/api';
@@ -122,6 +122,7 @@ function HomeScreen({ navigation }) {
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({ products: 0, sales: 0, customers: 0 });
   const [activities, setActivities] = useState([]);
+  const [alerts, setAlerts] = useState({ lowStock: [], expiring: [] });
 
   useEffect(() => {
     loadHomeData();
@@ -129,21 +130,35 @@ function HomeScreen({ navigation }) {
 
   const loadHomeData = async () => {
     try {
-      const [prodRes, salesRes, custRes] = await Promise.all([
+      const promises = [
         inventoryAPI.getProducts().catch(() => ({ data: [] })),
         salesAPI.getSales().catch(() => ({ data: [] })),
         customersAPI.getCustomers().catch(() => ({ data: [] })),
-      ]);
+      ];
 
-      const prods = prodRes.data || [];
-      const sales = salesRes.data || [];
-      const custs = custRes.data || [];
+      if (user?.role === 'admin') {
+        promises.push(inventoryAPI.getLowStock(30).catch(() => ({ data: [] })));
+        promises.push(inventoryAPI.getExpiring(7).catch(() => ({ data: [] })));
+      }
+
+      const results = await Promise.all(promises);
+      
+      const prods = results[0].data || [];
+      const sales = results[1].data || [];
+      const custs = results[2].data || [];
 
       setStats({
         products: prods.length,
         sales: sales.length,
         customers: custs.length,
       });
+
+      if (user?.role === 'admin') {
+        setAlerts({
+          lowStock: results[3]?.data || [],
+          expiring: results[4]?.data || []
+        });
+      }
 
       const activeList = [];
       
@@ -448,6 +463,48 @@ function HomeScreen({ navigation }) {
                 </Text>
               </TouchableOpacity>
             </View>
+          </View>
+        </FadeInUpCard>
+      )}
+
+      {user?.role === 'admin' && (alerts.lowStock.length > 0 || alerts.expiring.length > 0) && (
+        <FadeInUpCard delay={380} duration={400}>
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Alertas de Inventario</Text>
+            </View>
+
+            {alerts.lowStock.length > 0 && (
+              <View style={[styles.activityCard, { borderColor: '#fef08a', borderWidth: 1, marginBottom: spacing.md }]}>
+                <View style={styles.adminHeader}>
+                  <AlertTriangle size={20} color="#ca8a04" />
+                  <Text style={[styles.adminTitle, { color: '#ca8a04', fontSize: 16 }]}>Stock Bajo (≤ 30)</Text>
+                </View>
+                {alerts.lowStock.slice(0, 5).map((item, i) => (
+                  <View key={`low-${item.id}`} style={[styles.activityItem, i === Math.min(alerts.lowStock.length, 5) - 1 && styles.activityItemLast]}>
+                    <Text style={styles.activityText} numberOfLines={1}>{item.product_name || item.sku}</Text>
+                    <Text style={[styles.activityAmount, { color: '#ca8a04' }]}>{item.quantity} unds</Text>
+                  </View>
+                ))}
+              </View>
+            )}
+
+            {alerts.expiring.length > 0 && (
+              <View style={[styles.activityCard, { borderColor: '#fecaca', borderWidth: 1 }]}>
+                <View style={styles.adminHeader}>
+                  <Clock size={20} color="#dc2626" />
+                  <Text style={[styles.adminTitle, { color: '#dc2626', fontSize: 16 }]}>Próximos a Expirar (≤ 7 días)</Text>
+                </View>
+                {alerts.expiring.slice(0, 5).map((item, i) => (
+                  <View key={`exp-${item.id}`} style={[styles.activityItem, i === Math.min(alerts.expiring.length, 5) - 1 && styles.activityItemLast]}>
+                    <Text style={styles.activityText} numberOfLines={1}>{item.name || item.sku}</Text>
+                    <Text style={[styles.activityAmount, { color: '#dc2626' }]}>
+                      {new Date(item.expiration_date).toLocaleDateString()}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            )}
           </View>
         </FadeInUpCard>
       )}
