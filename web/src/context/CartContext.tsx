@@ -23,7 +23,7 @@ interface CartContextType {
   totalPrice: number;
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
-  checkout: (customerId: string | undefined, paymentMethod: string) => Promise<void>;
+  checkout: (customerId?: string, paymentData?: { method: string; reference: string }) => Promise<any>;
   isCheckingOut: boolean;
 }
 

@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "b73683e9-39bc-4fe3-a535-19e9886fec7a"
+      }
+    },
+    "android": {
+      "package": "com.jacksonmelendez67.confimax"
+    }
+  }
+}

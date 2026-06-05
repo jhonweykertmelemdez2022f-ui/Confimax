@@ -254,6 +254,14 @@ class ApiClient {
     return this.request(`/products/search?q=${encodeURIComponent(query)}`);
   }
 
+  async getLowStock(threshold: number = 30) {
+    return this.request(`/inventory/stock/low-stock?threshold=${threshold}`);
+  }
+
+  async getExpiringProducts(days: number = 7) {
+    return this.request(`/products/alerts/expiring?days=${days}`);
+  }
+
   // Sales Service - Overload para compatibilidad con CartContext
   async createSale(data: any): Promise<any>;
   

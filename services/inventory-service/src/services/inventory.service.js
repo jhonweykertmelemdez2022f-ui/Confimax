@@ -119,8 +119,8 @@ const InventoryService = {
     return await Stock.listAll();
   },
 
-  async getLowStock() {
-    return await Stock.getLowStock();
+  async getLowStock(threshold) {
+    return await Stock.getLowStock(threshold);
   },
 
   async createStock(stockData) {

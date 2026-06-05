@@ -15,6 +15,11 @@ export default function DashboardOverviewPage() {
     totalCustomers: 0,
     lowStockCount: 0
   });
+
+  const [alerts, setAlerts] = useState({
+    lowStock: [],
+    expiring: []
+  });
   
   const [loading, setLoading] = useState(true);
   const statsRef = useRef<HTMLDivElement>(null);
@@ -28,15 +33,22 @@ export default function DashboardOverviewPage() {
     if (!user) return;
     try {
       setLoading(true);
-      const [productsRes, salesRes, customersRes] = (await Promise.all([
+      const promises: Promise<any>[] = [
         api.getProducts().catch(() => []),
         api.getSales().catch(() => []),
         api.getCustomers().catch(() => [])
-      ])) as any[];
+      ];
 
-      const products = Array.isArray(productsRes.data || productsRes) ? (productsRes.data || productsRes) : [];
-      const sales = Array.isArray(salesRes.data || salesRes) ? (salesRes.data || salesRes) : [];
-      const customers = Array.isArray(customersRes.data || customersRes) ? (customersRes.data || customersRes) : [];
+      if (user?.role === 'admin') {
+        promises.push(api.getLowStock(30).catch(() => []));
+        promises.push(api.getExpiringProducts(7).catch(() => []));
+      }
+
+      const results = await Promise.all(promises);
+
+      const products = Array.isArray(results[0]?.data || results[0]) ? (results[0].data || results[0]) : [];
+      const sales = Array.isArray(results[1]?.data || results[1]) ? (results[1].data || results[1]) : [];
+      const customers = Array.isArray(results[2]?.data || results[2]) ? (results[2].data || results[2]) : [];
 
       setStats({
         totalProducts: products.length,
@@ -44,6 +56,13 @@ export default function DashboardOverviewPage() {
         totalCustomers: customers.length,
         lowStockCount: products.filter((p: any) => parseInt(p.stock || p.stock_quantity || 0) < 10).length
       });
+
+      if (user?.role === 'admin') {
+        setAlerts({
+          lowStock: results[3]?.data || results[3] || [],
+          expiring: results[4]?.data || results[4] || []
+        });
+      }
 
     } catch (err) {
       console.error("Error loading overview:", err);
@@ -168,7 +187,45 @@ export default function DashboardOverviewPage() {
             <h2 className="font-headline-lg-mobile text-xl uppercase tracking-tighter text-slate-900 dark:text-white">ATENCIÓN REQUERIDA</h2>
           </div>
           
-          {stats.lowStockCount > 0 ? (
+          {user?.role === 'admin' && (alerts.lowStock.length > 0 || alerts.expiring.length > 0) ? (
+            <div className="flex flex-col gap-4">
+              {alerts.lowStock.length > 0 && (
+                <div className="p-4 border-2 border-[#ca8a04] bg-[#ca8a04]/10 flex flex-col gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-[24px] text-[#ca8a04]">warning</span>
+                    <h4 className="font-headline-lg-mobile text-base uppercase tracking-tight text-[#ca8a04]">STOCK BAJO (≤ 30)</h4>
+                  </div>
+                  <div className="flex flex-col gap-1 mt-2">
+                    {alerts.lowStock.slice(0, 5).map((item: any, i: number) => (
+                      <div key={i} className="flex justify-between items-center text-sm border-b border-[#ca8a04]/20 pb-1 last:border-0">
+                        <span className="text-slate-700 dark:text-slate-300 truncate pr-2">{item.product_name || item.sku}</span>
+                        <span className="font-data-label font-bold text-[#ca8a04]">{item.quantity} unds</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {alerts.expiring.length > 0 && (
+                <div className="p-4 border-2 border-error bg-error/10 flex flex-col gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-[24px] text-error">schedule</span>
+                    <h4 className="font-headline-lg-mobile text-base uppercase tracking-tight text-error">PRÓXIMOS A EXPIRAR (≤ 7 días)</h4>
+                  </div>
+                  <div className="flex flex-col gap-1 mt-2">
+                    {alerts.expiring.slice(0, 5).map((item: any, i: number) => (
+                      <div key={i} className="flex justify-between items-center text-sm border-b border-error/20 pb-1 last:border-0">
+                        <span className="text-slate-700 dark:text-slate-300 truncate pr-2">{item.name || item.sku}</span>
+                        <span className="font-data-label font-bold text-error">
+                          {new Date(item.expiration_date).toLocaleDateString()}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : stats.lowStockCount > 0 ? (
             <div className="p-6 border-2 border-error bg-error/5 flex items-start gap-4">
               <span className="material-symbols-outlined text-[32px] text-error">warning</span>
               <div>
@@ -180,7 +237,7 @@ export default function DashboardOverviewPage() {
             <div className="flex flex-col items-center justify-center py-16 text-center bg-slate-50 dark:bg-surface-dim border border-slate-900/10 dark:border-white/10">
               <span className="material-symbols-outlined text-[48px] text-[#00FF66] mb-4">check_circle</span>
               <p className="font-headline-lg-mobile text-lg uppercase tracking-tight text-slate-900 dark:text-white mb-2">TODO EN ORDEN</p>
-              <p className="font-data-label text-xs uppercase tracking-widest text-slate-500">STOCK SALUDABLE</p>
+              <p className="font-data-label text-xs uppercase tracking-widest text-slate-500">SIN ALERTAS</p>
             </div>
           )}
         </div>

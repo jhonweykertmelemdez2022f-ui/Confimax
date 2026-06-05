@@ -21,7 +21,10 @@ const stockController = {
     catch (e) { next(e); }
   },
   async getLowStock(req, res, next) {
-    try { res.json(await InventoryService.getLowStock()); }
+    try { 
+      const threshold = req.query.threshold ? parseInt(req.query.threshold, 10) : null;
+      res.json(await InventoryService.getLowStock(threshold)); 
+    }
     catch (e) { next(e); }
   },
   async createStock(req, res, next) {
