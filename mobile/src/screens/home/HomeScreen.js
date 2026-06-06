@@ -134,12 +134,9 @@ function HomeScreen({ navigation }) {
         inventoryAPI.getProducts().catch(() => ({ data: [] })),
         salesAPI.getSales().catch(() => ({ data: [] })),
         customersAPI.getCustomers().catch(() => ({ data: [] })),
+        inventoryAPI.getLowStock(30).catch((err) => { console.log('Error getLowStock:', err); return { data: [] }; }),
+        inventoryAPI.getExpiring(7).catch((err) => { console.log('Error getExpiring:', err); return { data: [] }; }),
       ];
-
-      if (user?.role === 'admin') {
-        promises.push(inventoryAPI.getLowStock(30).catch(() => ({ data: [] })));
-        promises.push(inventoryAPI.getExpiring(7).catch(() => ({ data: [] })));
-      }
 
       const results = await Promise.all(promises);
       
@@ -153,12 +150,15 @@ function HomeScreen({ navigation }) {
         customers: custs.length,
       });
 
-      if (user?.role === 'admin') {
-        setAlerts({
-          lowStock: results[3]?.data || [],
-          expiring: results[4]?.data || []
-        });
-      }
+      setAlerts({
+        lowStock: results[3]?.data || [],
+        expiring: results[4]?.data || []
+      });
+
+      console.log('Alerts loaded:', {
+        lowStock: results[3]?.data?.length,
+        expiring: results[4]?.data?.length
+      });
 
       const activeList = [];
       
@@ -467,7 +467,7 @@ function HomeScreen({ navigation }) {
         </FadeInUpCard>
       )}
 
-      {user?.role === 'admin' && (alerts.lowStock.length > 0 || alerts.expiring.length > 0) && (
+      {(alerts.lowStock.length > 0 || alerts.expiring.length > 0) && (
         <FadeInUpCard delay={380} duration={400}>
           <View style={styles.section}>
             <View style={styles.sectionHeader}>

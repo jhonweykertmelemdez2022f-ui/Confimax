@@ -12,7 +12,7 @@ import {
   Alert,
   AsyncStorage,
 } from 'react-native';
-import {inventoryAPI} from '../../services/api';
+import {inventoryAPI, notificationsAPI} from '../../services/api';
 import { useTheme } from '../../theme';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useIsFocused } from '@react-navigation/native';
@@ -31,8 +31,18 @@ function ProductsScreen({navigation}) {
   const notifiedProductsRef = useRef(new Set());
 
   useEffect(() => {
-    notificationService.registerForPushNotificationsAsync();
-  }, []);
+    const setupNotifications = async () => {
+      const token = await notificationService.registerForPushNotificationsAsync();
+      if (token && user?.id) {
+        try {
+          await notificationsAPI.updateSettings(user.id, { push_token: token });
+        } catch (error) {
+          console.log('Error updating push token on server:', error);
+        }
+      }
+    };
+    setupNotifications();
+  }, [user]);
 
   useEffect(() => {
     if (isFocused) {
@@ -49,15 +59,34 @@ function ProductsScreen({navigation}) {
     return diffDays >= 0 && diffDays <= 7;
   };
 
-  const checkExpiringProducts = (productsList) => {
+  const isStockLow = (product) => {
+    const stock = parseInt(product.stock_quantity || product.stock || 0);
+    const minStock = parseInt(product.min_stock_level || 10);
+    return stock <= minStock;
+  };
+
+  const checkAlerts = (productsList) => {
     productsList.forEach(product => {
-      if (isProductExpiringSoon(product) && !notifiedProductsRef.current.has(product.id)) {
+      // Ignorar productos inactivos
+      if (product.is_active === false || product.active === false) return;
+
+      // Alerta de Expiración
+      if (isProductExpiringSoon(product) && !notifiedProductsRef.current.has(`${product.id}-exp`)) {
         const expiryDate = new Date(product.expiration_date).toLocaleDateString('es-ES');
         notificationService.sendImmediateNotification(
           '⚠️ Producto próximo a vencer',
           `${product.name} vence el ${expiryDate}`,
         );
-        notifiedProductsRef.current.add(product.id);
+        notifiedProductsRef.current.add(`${product.id}-exp`);
+      }
+
+      // Alerta de Stock Bajo
+      if (isStockLow(product) && !notifiedProductsRef.current.has(`${product.id}-stock`)) {
+        notificationService.sendImmediateNotification(
+          '📉 Alerta de Stock Bajo',
+          `El producto "${product.name}" tiene solo ${product.stock_quantity || 0} unidades restantes.`,
+        );
+        notifiedProductsRef.current.add(`${product.id}-stock`);
       }
     });
   };
@@ -67,7 +96,7 @@ function ProductsScreen({navigation}) {
       const response = await inventoryAPI.getProducts();
       const productsList = response.data || [];
       setProducts(productsList);
-      checkExpiringProducts(productsList);
+      checkAlerts(productsList);
     } catch (error) {
       console.error('Error loading products:', error);
       setProducts([]);

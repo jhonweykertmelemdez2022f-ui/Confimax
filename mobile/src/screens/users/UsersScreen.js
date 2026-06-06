@@ -15,6 +15,7 @@ import {authAPI} from '../../services/api';
 import { useTheme } from '../../theme';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useIsFocused } from '@react-navigation/native';
+import { useAuthStore } from '../../stores/authStore';
 
 // Animated Component for cards
 function FadeInUpCard({ children, delay = 0, duration = 400 }) {

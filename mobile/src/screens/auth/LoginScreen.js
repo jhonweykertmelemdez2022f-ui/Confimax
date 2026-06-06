@@ -68,7 +68,7 @@ function LoginScreen({ navigation }) {
     setDetailedError('');
     try {
       // Hacer ping rápido al endpoint /health de auth-service expuesto en el Gateway
-      const response = await api.get('/auth/health', { timeout: 8000 });
+      const response = await api.get('/auth/health', { timeout: 15000 });
       if (response.status === 200) {
         setConnectionStatus('connected');
       } else {
