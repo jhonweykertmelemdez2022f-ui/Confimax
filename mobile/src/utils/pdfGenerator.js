@@ -259,3 +259,136 @@ export const generateInvoicePDF = async (sale) => {
     throw error;
   }
 };
+
+/**
+ * Genera un PDF de reporte general para cualquier entidad.
+ * @param {string} title - Título del reporte.
+ * @param {Array} columns - Array de objetos con { label, key }.
+ * @param {Array} data - Array de objetos con los datos.
+ */
+export const generateReportPDF = async (title, columns, data) => {
+  if (!data || data.length === 0) return;
+
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>${title}</title>
+        <style>
+            body {
+                font-family: 'Helvetica', 'Arial', sans-serif;
+                color: #333;
+                margin: 0;
+                padding: 40px;
+                background-color: #fff;
+            }
+            .header {
+                border-bottom: 2px solid #4f46e5;
+                padding-bottom: 20px;
+                margin-bottom: 30px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .logo-section h1 {
+                margin: 0;
+                color: #4f46e5;
+                font-size: 28px;
+                letter-spacing: 1px;
+            }
+            .report-info {
+                text-align: right;
+            }
+            .report-info p {
+                margin: 3px 0;
+                font-size: 12px;
+                color: #666;
+            }
+            h2 {
+                color: #1e293b;
+                font-size: 20px;
+                margin-bottom: 20px;
+                text-align: center;
+                text-transform: uppercase;
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+            th {
+                background-color: #f8fafc;
+                text-align: left;
+                padding: 10px;
+                font-size: 10px;
+                text-transform: uppercase;
+                color: #64748b;
+                border-bottom: 2px solid #e2e8f0;
+            }
+            td {
+                padding: 10px;
+                border-bottom: 1px solid #f1f5f9;
+                font-size: 11px;
+                color: #334155;
+            }
+            .footer {
+                margin-top: 40px;
+                text-align: center;
+                padding-top: 20px;
+                border-top: 1px solid #eee;
+            }
+            .footer p {
+                font-size: 10px;
+                color: #94a3b8;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <div class="logo-section">
+                <h1>CONFIMAX</h1>
+            </div>
+            <div class="report-info">
+                <p><strong>Fecha:</strong> ${new Date().toLocaleDateString()}</p>
+                <p><strong>Registros:</strong> ${data.length}</p>
+            </div>
+        </div>
+
+        <h2>${title}</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    ${columns.map(col => `<th>${col.label}</th>`).join('')}
+                </tr>
+            </thead>
+            <tbody>
+                ${data.map(item => `
+                    <tr>
+                        ${columns.map(col => `<td>${item[col.key] || '-'}</td>`).join('')}
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+
+        <div class="footer">
+            <p>Reporte generado automáticamente por el Sistema Confimax</p>
+        </div>
+    </body>
+    </html>
+  `;
+
+  try {
+    const { uri } = await Print.printToFileAsync({ html: htmlContent });
+    await Sharing.shareAsync(uri, { 
+      mimeType: 'application/pdf', 
+      dialogTitle: title,
+      UTI: 'com.adobe.pdf' 
+    });
+    return uri;
+  } catch (error) {
+    console.error('Error al generar reporte PDF:', error);
+    throw error;
+  }
+};

@@ -16,6 +16,7 @@ import { useTheme } from '../../theme';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useIsFocused } from '@react-navigation/native';
 import { useAuthStore } from '../../stores/authStore';
+import { generateReportPDF } from '../../utils/pdfGenerator';
 
 // Animated Component for cards
 function FadeInUpCard({ children, delay = 0, duration = 400 }) {
@@ -122,6 +123,20 @@ function AuditLogsScreen({navigation}) {
     }
   };
 
+  const exportPDF = async () => {
+    const columns = [
+      { label: 'Fecha', key: 'display_date' },
+      { label: 'Usuario', key: 'username' },
+      { label: 'Acción', key: 'operation' },
+      { label: 'Entidad', key: 'entity' }
+    ];
+    const data = filteredLogs.map(l => ({
+      ...l,
+      display_date: new Date(l.timestamp).toLocaleString(),
+    }));
+    await generateReportPDF('Reporte de Auditoría', columns, data);
+  };
+
   const filteredLogs = getFilteredLogs();
 
   return (
@@ -138,10 +153,13 @@ function AuditLogsScreen({navigation}) {
             style={[styles.searchInput, {color: colors.primary}]}
           />
           {searchQuery ? (
-            <TouchableOpacity onPress={() => setSearchQuery('')}>
+            <TouchableOpacity onPress={() => setSearchQuery('')} style={{marginRight: 8}}>
               <MaterialIcons name="close" size={18} color={colors.secondary} />
             </TouchableOpacity>
           ) : null}
+          <TouchableOpacity onPress={exportPDF}>
+            <MaterialIcons name="picture-as-pdf" size={24} color={colors.dataBlue} />
+          </TouchableOpacity>
         </View>
 
         {/* Horizontal Operation Filters */}

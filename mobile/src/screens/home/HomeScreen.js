@@ -462,6 +462,14 @@ function HomeScreen({ navigation }) {
                   Auditoría
                 </Text>
               </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => navigation.navigate('SalesReports')}
+                style={[styles.adminButton, styles.adminButtonSecondary]}
+              >
+                <Text style={[styles.adminButtonText, styles.adminButtonTextSecondary]}>
+                  Reportes
+                </Text>
+              </TouchableOpacity>
             </View>
           </View>
         </FadeInUpCard>

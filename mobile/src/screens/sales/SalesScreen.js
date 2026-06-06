@@ -14,6 +14,7 @@ import {salesAPI} from '../../services/api';
 import { useTheme } from '../../theme';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useIsFocused } from '@react-navigation/native';
+import { generateReportPDF } from '../../utils/pdfGenerator';
 
 // Componente animado elástico nativo para las tarjetas en cascada
 function FadeInUpCard({ children, delay = 0, duration = 400 }) {
@@ -133,6 +134,21 @@ function SalesScreen({navigation}) {
     );
   };
 
+  const exportPDF = async () => {
+    const columns = [
+      { label: 'ID/Nº', key: 'display_id' },
+      { label: 'Cliente', key: 'customer_name' },
+      { label: 'Total', key: 'display_total' },
+      { label: 'Estado', key: 'status' }
+    ];
+    const data = filteredSales.map(s => ({
+      ...s,
+      display_id: s.order_number || s.id.toString().substring(0, 8),
+      display_total: `$${Number(s.total || 0).toFixed(2)}`
+    }));
+    await generateReportPDF('Reporte General de Ventas', columns, data);
+  };
+
   const dynamicStyles = createStyles(colors);
 
   const renderSale = ({item, index}) => {
@@ -192,6 +208,9 @@ function SalesScreen({navigation}) {
             setPage(1); // Reset page on new search
           }}
         />
+        <TouchableOpacity onPress={exportPDF} style={{ padding: 5 }}>
+          <MaterialIcons name="picture-as-pdf" size={24} color={colors.dataBlue} />
+        </TouchableOpacity>
       </View>
       
       {filteredSales.length === 0 ? (

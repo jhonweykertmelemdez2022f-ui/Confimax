@@ -14,6 +14,7 @@ import {customersAPI} from '../../services/api';
 import { useTheme } from '../../theme';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useIsFocused } from '@react-navigation/native';
+import { generateReportPDF } from '../../utils/pdfGenerator';
 
 // Componente animado elástico nativo para las tarjetas en cascada
 function FadeInUpCard({ children, delay = 0, duration = 400 }) {
@@ -128,6 +129,16 @@ function CustomersScreen({navigation}) {
     );
   };
 
+  const exportPDF = async () => {
+    const columns = [
+      { label: 'Nombre', key: 'name' },
+      { label: 'Email', key: 'email' },
+      { label: 'Teléfono', key: 'phone' },
+      { label: 'Dirección', key: 'address' }
+    ];
+    await generateReportPDF('Reporte de Clientes', columns, filteredCustomers);
+  };
+
   const dynamicStyles = createStyles(colors);
 
   const renderCustomer = ({item, index}) => (
@@ -165,6 +176,9 @@ function CustomersScreen({navigation}) {
               setPage(1); // Reset page on new search
             }}
           />
+          <TouchableOpacity onPress={exportPDF} style={{ padding: 5 }}>
+            <MaterialIcons name="picture-as-pdf" size={24} color={colors.dataBlue} />
+          </TouchableOpacity>
         </View>
       </FadeInUpCard>
 

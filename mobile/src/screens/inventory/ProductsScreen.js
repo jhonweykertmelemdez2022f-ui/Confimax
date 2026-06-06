@@ -20,6 +20,7 @@ import { useAuthStore } from '../../stores/authStore';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import * as notificationService from '../../services/notificationService';
+import { generateReportPDF } from '../../utils/pdfGenerator';
 
 function ProductsScreen({navigation}) {
   const [products, setProducts] = useState([]);
@@ -184,6 +185,22 @@ function ProductsScreen({navigation}) {
     }
   };
 
+  const exportPDF = async () => {
+    const columns = [
+      { label: 'Nombre', key: 'name' },
+      { label: 'SKU', key: 'sku' },
+      { label: 'Precio', key: 'price' },
+      { label: 'Stock', key: 'stock_quantity' }
+    ];
+    // Map data to ensure numeric fields are correctly displayed
+    const data = filteredProducts.map(p => ({
+      ...p,
+      price: `$${Number(p.unit_price || p.price || 0).toFixed(2)}`,
+      stock_quantity: p.stock_quantity || p.stock || 0
+    }));
+    await generateReportPDF('Reporte General de Productos', columns, data);
+  };
+
   const dynamicStyles = createStyles(colors);
 
   if (loading) {
@@ -205,6 +222,9 @@ function ProductsScreen({navigation}) {
           value={searchQuery}
           onChangeText={setSearchQuery}
         />
+        <TouchableOpacity onPress={exportPDF} style={{ padding: 5 }}>
+          <MaterialIcons name="picture-as-pdf" size={24} color={colors.primary} />
+        </TouchableOpacity>
       </View>
 
       <View style={dynamicStyles.buttonsRow}>

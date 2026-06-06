@@ -16,6 +16,7 @@ import { useTheme } from '../../theme';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useIsFocused } from '@react-navigation/native';
 import { useAuthStore } from '../../stores/authStore';
+import { generateReportPDF } from '../../utils/pdfGenerator';
 
 // Animated Component for cards
 function FadeInUpCard({ children, delay = 0, duration = 400 }) {
@@ -232,6 +233,16 @@ function UsersScreen({navigation}) {
     </FadeInUpCard>
   );
 
+  const exportPDF = async () => {
+    const columns = [
+      { label: 'Nombre', key: 'name' },
+      { label: 'Usuario', key: 'username' },
+      { label: 'Email', key: 'email' },
+      { label: 'Rol', key: 'role' }
+    ];
+    await generateReportPDF('Reporte de Usuarios', columns, filteredUsers);
+  };
+
   const dynamicStyles = createStyles(colors);
 
   if (loading && users.length === 0) {
@@ -257,6 +268,9 @@ function UsersScreen({navigation}) {
               setPage(1);
             }}
           />
+          <TouchableOpacity onPress={exportPDF} style={{ padding: 5 }}>
+            <MaterialIcons name="picture-as-pdf" size={24} color={colors.primary} />
+          </TouchableOpacity>
         </View>
       </FadeInUpCard>
 
