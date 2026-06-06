@@ -1,11 +1,20 @@
 const { Notification, NotificationSettings } = require('../models/notification.model');
 const { messageQueue } = require('../services/redis.service');
+const PushService = require('./push.service');
 const config = require('../config');
 
 const NotificationsService = {
   async createNotification(notificationData) {
     const notification = await Notification.create(notificationData);
     
+    // Enviar notificación Push en segundo plano
+    PushService.sendPushNotification(
+      notificationData.user_id,
+      notificationData.title,
+      notificationData.message,
+      { notification_id: notification.id, type: notificationData.type }
+    ).catch(err => console.error('[NOTIFICATIONS] Push error:', err.message));
+
     await messageQueue.publish('notifications:new', {
       user_id: notificationData.user_id,
       notification_id: notification.id,
@@ -132,9 +141,19 @@ const NotificationsService = {
   },
 
   async updateNotificationSettings(userId, settings) {
+    const { push_token, ...otherSettings } = settings;
+    
+    let updateQuery = { ...otherSettings, updated_at: new Date() };
+    
+    // Si viene un push_token, lo agregamos al array sin duplicados
+    let updateOperation = { $set: updateQuery };
+    if (push_token) {
+      updateOperation.$addToSet = { push_tokens: push_token };
+    }
+
     const updated = await NotificationSettings.findOneAndUpdate(
       { user_id: userId },
-      { ...settings, updated_at: new Date() },
+      updateOperation,
       { new: true, upsert: true }
     );
     return updated;

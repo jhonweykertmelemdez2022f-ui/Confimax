@@ -106,7 +106,7 @@ const Sale = {
 
       // 3. Get sale items with product info
       const { rows: itemsRows } = await query(
-        'SELECT si.*, p.stock_quantity, p.name as product_name FROM sale_items si LEFT JOIN products p ON si.product_id = p.id WHERE si.sale_id = $1',
+        'SELECT si.*, p.stock_quantity, p.name as product_name, p.active FROM sale_items si LEFT JOIN products p ON si.product_id = p.id WHERE si.sale_id = $1',
         [id],
         client
       );
@@ -126,6 +126,26 @@ const Sale = {
             [item.quantity, item.product_id],
             client
           );
+
+          // Notificar stock bajo si es necesario (solo si el producto está activo)
+          const newStock = item.stock_quantity - item.quantity;
+          if (newStock <= 10 && item.active !== false) {
+            try {
+              const notificationsUrl = process.env.NOTIFICATIONS_SERVICE_URL || 'http://notifications-service:3005';
+              fetch(`${notificationsUrl}/`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  type: 'stock_low',
+                  title: 'Alerta: Stock Bajo',
+                  message: `El producto "${item.product_name}" tiene stock bajo tras la venta (${newStock} unidades).`,
+                  user_id: userId || '00000000-0000-0000-0000-000000000000'
+                })
+              }).catch(e => console.log('Error notifying stock low from backend:', e.message));
+            } catch (e) {
+              console.log('Error triggering notification:', e.message);
+            }
+          }
         }
         // TODO: Add cash balance logic here when cash table exists
       }

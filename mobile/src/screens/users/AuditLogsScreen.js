@@ -15,8 +15,10 @@ import {auditAPI} from '../../services/api';
 import { useTheme } from '../../theme';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useIsFocused } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuthStore } from '../../stores/authStore';
 import { generateReportPDF } from '../../utils/pdfGenerator';
+import { PdfButton } from '../../components/PdfButton';
 
 // Animated Component for cards
 function FadeInUpCard({ children, delay = 0, duration = 400 }) {
@@ -57,6 +59,7 @@ function FadeInUpCard({ children, delay = 0, duration = 400 }) {
 }
 
 function AuditLogsScreen({navigation}) {
+  const insets = useSafeAreaInsets();
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -140,7 +143,7 @@ function AuditLogsScreen({navigation}) {
   const filteredLogs = getFilteredLogs();
 
   return (
-    <View style={[styles.container, {backgroundColor: colors.background}]}>
+    <View style={[styles.container, {backgroundColor: colors.background, paddingTop: insets.top }]}>
       {/* Search Header */}
       <View style={[styles.searchHeader, {backgroundColor: colors.surface, borderBottomColor: colors.border}]}>
         <View style={[styles.searchBar, {backgroundColor: colors.surfaceDim, borderColor: colors.border}]}>
@@ -157,9 +160,7 @@ function AuditLogsScreen({navigation}) {
               <MaterialIcons name="close" size={18} color={colors.secondary} />
             </TouchableOpacity>
           ) : null}
-          <TouchableOpacity onPress={exportPDF}>
-            <MaterialIcons name="picture-as-pdf" size={24} color={colors.dataBlue} />
-          </TouchableOpacity>
+          <PdfButton onPress={exportPDF} />
         </View>
 
         {/* Horizontal Operation Filters */}

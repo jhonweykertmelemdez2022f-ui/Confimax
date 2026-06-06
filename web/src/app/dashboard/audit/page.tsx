@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
 import { useRouter } from "next/navigation";
+import { PdfButton } from "@/components/PdfButton";
 
 export default function AuditPage() {
   const { user, isLoading: authLoading } = useAuth();
@@ -84,13 +85,15 @@ export default function AuditPage() {
           </p>
         </div>
         
-        <button 
-          onClick={() => loadAuditLogs()}
-          className="btn-precision inline-flex items-center gap-2 bg-white text-slate-900 hover:bg-slate-900 hover:text-white dark:bg-slate-900 dark:text-white dark:hover:bg-white dark:hover:text-slate-900 min-h-[44px]"
-        >
-          <span className={`material-symbols-outlined ${loading ? 'animate-spin' : ''}`}>sync</span>
-          ACTUALIZAR DATOS
-        </button>
+        <div className="flex gap-4">
+          <PdfButton onClick={handleDownloadPDF} />
+          <button 
+            onClick={() => fetchAuditLogs()}
+            className="min-h-[44px] min-w-[44px] flex items-center justify-center border-2 border-slate-900 dark:border-white text-slate-900 dark:text-white hover:bg-slate-900 hover:text-white dark:hover:bg-white dark:hover:text-slate-900 transition-colors"
+          >
+            <span className={`material-symbols-outlined ${loading ? 'animate-spin' : ''}`}>sync</span>
+          </button>
+        </div>
       </div>
 
       {errorMsg && (

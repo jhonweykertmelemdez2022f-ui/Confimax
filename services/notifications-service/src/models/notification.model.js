@@ -54,6 +54,10 @@ const NotificationSettingsSchema = new mongoose.Schema({
     type: Boolean,
     default: true,
   },
+  push_tokens: {
+    type: [String],
+    default: [],
+  },
   notification_types: {
     stock_low: { type: Boolean, default: true },
     stock_expiring: { type: Boolean, default: true },

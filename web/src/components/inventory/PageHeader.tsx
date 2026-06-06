@@ -1,6 +1,7 @@
-import { RefreshCw, Tag, Plus, Download } from "lucide-react";
+import { RefreshCw, Tag, Plus } from "lucide-react";
 import Link from "next/link";
 import { api } from "@/lib/api";
+import { PdfButton } from "../PdfButton";
 
 interface PageHeaderProps {
   onRefresh: () => void;
@@ -32,13 +33,11 @@ export function PageHeader({ onRefresh, loading, onNewProduct }: PageHeaderProps
           <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin text-blue-500' : ''}`} />
         </button>
         
-        <button 
+        <PdfButton 
           onClick={handleDownloadPDF}
-          className="p-2.5 rounded-xl border border-gray-200 dark:border-[#333] bg-white dark:bg-[#111] text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#222] transition-colors"
+          className="rounded-xl border-gray-200 dark:border-[#333] shadow-none active:translate-y-0 active:translate-x-0"
           title="Descargar lista de productos en PDF"
-        >
-          <Download className="w-5 h-5" />
-        </button>
+        />
         
         <Link
           href="/dashboard/categories"

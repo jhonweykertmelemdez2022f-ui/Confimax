@@ -3,10 +3,12 @@ import { View, Text, Button, StyleSheet, ActivityIndicator, Alert, ScrollView, T
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import { useTheme } from '../../theme';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { salesAPI } from '../../services/api'; // Assuming a salesAPI exists
 import { Picker } from '@react-native-picker/picker'; // Añadir import para Picker
 
 function SalesReportsScreen() {
+  const insets = useSafeAreaInsets();
   const [loading, setLoading] = useState(false);
   const [reportType, setReportType] = useState('salesDetail'); // Nuevo estado para el tipo de reporte
   const [customerId, setCustomerId] = useState(''); // Nuevo estado para filtrar por cliente
@@ -231,7 +233,7 @@ function SalesReportsScreen() {
   const dynamicStyles = createStyles(colors);
 
   return (
-    <View style={dynamicStyles.container}>
+    <View style={[dynamicStyles.container, { paddingTop: insets.top }]}>
       <ScrollView contentContainerStyle={dynamicStyles.scrollContent}>
         <Text style={dynamicStyles.title}>Generación de Reportes</Text>
         <Text style={dynamicStyles.description}>Selecciona el tipo de reporte que deseas generar.</Text>

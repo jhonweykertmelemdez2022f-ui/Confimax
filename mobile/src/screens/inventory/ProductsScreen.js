@@ -16,13 +16,16 @@ import {inventoryAPI, notificationsAPI} from '../../services/api';
 import { useTheme } from '../../theme';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useIsFocused } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuthStore } from '../../stores/authStore';
 import * as Print from 'expo-print';
+import { PdfButton } from '../../components/PdfButton';
 import * as Sharing from 'expo-sharing';
 import * as notificationService from '../../services/notificationService';
 import { generateReportPDF } from '../../utils/pdfGenerator';
 
 function ProductsScreen({navigation}) {
+  const insets = useSafeAreaInsets();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -212,7 +215,7 @@ function ProductsScreen({navigation}) {
   }
 
   return (
-    <View style={dynamicStyles.container}>
+    <View style={[dynamicStyles.container, { paddingTop: insets.top }]}>
       <View style={dynamicStyles.searchBarContainer}>
         <MaterialIcons name="search" size={20} color={colors.muted} style={dynamicStyles.searchIcon} />
         <TextInput
@@ -222,9 +225,7 @@ function ProductsScreen({navigation}) {
           value={searchQuery}
           onChangeText={setSearchQuery}
         />
-        <TouchableOpacity onPress={exportPDF} style={{ padding: 5 }}>
-          <MaterialIcons name="picture-as-pdf" size={24} color={colors.primary} />
-        </TouchableOpacity>
+        <PdfButton onPress={exportPDF} />
       </View>
 
       <View style={dynamicStyles.buttonsRow}>

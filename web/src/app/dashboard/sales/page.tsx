@@ -5,6 +5,8 @@ import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
 import Pagination from "@/components/Pagination";
 import { gsap } from "gsap";
+import { generateReportPDF } from "@/lib/pdfGenerator";
+import { PdfButton } from "@/components/PdfButton";
 
 interface SaleItem {
   id?: string;
@@ -375,6 +377,25 @@ export default function SalesPage() {
   const currentItems = sales.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(sales.length / ITEMS_PER_PAGE);
 
+  const handleDownloadPDF = () => {
+    const columns = [
+      { header: 'Nº Orden', dataKey: 'order_number_label' },
+      { header: 'Fecha', dataKey: 'created_at_label' },
+      { header: 'Cliente', dataKey: 'customer_name' },
+      { header: 'Estado', dataKey: 'status' },
+      { header: 'Total', dataKey: 'total_label' },
+    ];
+
+    const data = allSales.map(s => ({
+      ...s,
+      order_number_label: s.order_number || s.id.substring(0, 8).toUpperCase(),
+      created_at_label: new Date(s.created_at).toLocaleDateString(),
+      total_label: `$${formatPrice(s.total)}`
+    }));
+
+    generateReportPDF('Reporte General de Ventas', columns, data, 'reporte_ventas.pdf');
+  };
+
   return (
     <div className="space-y-8 pb-12 relative">
       {/* Notificaciones */}
@@ -403,6 +424,7 @@ export default function SalesPage() {
         </div>
         
         <div className="flex gap-4">
+          <PdfButton onClick={handleDownloadPDF} />
           <button 
             onClick={() => loadAllData()}
             className="min-h-[44px] min-w-[44px] flex items-center justify-center border-2 border-slate-900 dark:border-white text-slate-900 dark:text-white hover:bg-slate-900 hover:text-white dark:hover:bg-white dark:hover:text-slate-900 transition-colors"

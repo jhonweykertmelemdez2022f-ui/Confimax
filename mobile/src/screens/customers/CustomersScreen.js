@@ -14,7 +14,9 @@ import {customersAPI} from '../../services/api';
 import { useTheme } from '../../theme';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useIsFocused } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { generateReportPDF } from '../../utils/pdfGenerator';
+import { PdfButton } from '../../components/PdfButton';
 
 // Componente animado elástico nativo para las tarjetas en cascada
 function FadeInUpCard({ children, delay = 0, duration = 400 }) {
@@ -85,6 +87,7 @@ function AnimatedEmptyState({ icon, title, subtitle, colors }) {
 }
 
 function CustomersScreen({navigation}) {
+  const insets = useSafeAreaInsets();
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -162,7 +165,7 @@ function CustomersScreen({navigation}) {
   }
 
   return (
-    <View style={dynamicStyles.container}>
+    <View style={[dynamicStyles.container, { paddingTop: insets.top }]}>
       <FadeInUpCard delay={0} duration={300}>
         <View style={dynamicStyles.searchBarContainer}>
           <MaterialIcons name="search" size={20} color={colors.secondary} style={dynamicStyles.searchIcon} />
@@ -176,9 +179,7 @@ function CustomersScreen({navigation}) {
               setPage(1); // Reset page on new search
             }}
           />
-          <TouchableOpacity onPress={exportPDF} style={{ padding: 5 }}>
-            <MaterialIcons name="picture-as-pdf" size={24} color={colors.dataBlue} />
-          </TouchableOpacity>
+          <PdfButton onPress={exportPDF} />
         </View>
       </FadeInUpCard>
 

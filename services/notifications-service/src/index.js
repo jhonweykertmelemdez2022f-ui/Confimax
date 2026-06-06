@@ -9,6 +9,7 @@ const sharedPath = process.env.SHARED_MODULES_PATH || '../../shared';
 const { connectUpstash } = require(sharedPath + '/upstash-redis');
 const { connectAtlas, checkAtlasHealth, getMongoose } = require(sharedPath + '/mongo-atlas');
 const logger = require('./services/logger.service');
+const JobsService = require('./services/jobs.service');
 
 const mongoose = getMongoose();
 
@@ -28,6 +29,9 @@ const startAuditListener = async () => {
 
     // Log inicial de bienvenida
     await logger.audit('DASHBOARD_BOOTED', { message: 'Sistema de auditoría reiniciado con éxito' });
+
+    // Iniciar trabajos en segundo plano
+    JobsService.start();
   } catch (err) {
     console.error('[NOTIFICATIONS] Startup failed:', err.message);
   }

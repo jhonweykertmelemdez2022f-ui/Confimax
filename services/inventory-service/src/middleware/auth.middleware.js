@@ -5,6 +5,13 @@ const JWT_SECRET = process.env.JWT_SECRET || config.jwtSecret || 'confimax_secre
 
 const authenticate = async (req, res, next) => {
   try {
+    // Permitir llamadas internas entre microservicios
+    const internalKey = req.headers['internal-service-key'];
+    if (internalKey === (process.env.INTERNAL_SERVICE_KEY || 'confimax-internal')) {
+      req.user = { id: '00000000-0000-0000-0000-000000000000', role: 'admin', name: 'System' };
+      return next();
+    }
+
     const authHeader = req.headers.authorization;
     
     if (!authHeader || !authHeader.startsWith('Bearer ')) {

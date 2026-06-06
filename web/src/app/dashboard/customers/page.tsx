@@ -7,6 +7,7 @@ import Pagination from "@/components/Pagination";
 import { gsap } from "gsap";
 import { Customer, PERSON_TYPES, TAX_ID_LENGTH, ITEMS_PER_PAGE } from "@/types/customers";
 import { useCustomersData } from "@/hooks/useCustomersData";
+import { PdfButton } from "@/components/PdfButton";
 
 export default function CustomersPage() {
   const { user } = useAuth();
@@ -155,17 +156,22 @@ export default function CustomersPage() {
   };
 
   const resetForm = () => {
-    setFormData({ 
-      name: "", 
-      email: "", 
-      phone: "", 
-      address: "", 
-      person_type: "V", 
-      tax_id_number: "" 
-    });
+    setFormData({ name: "", email: "", phone: "", address: "", person_type: "V", tax_id_number: "" });
+  };
+
+  const handleDownloadPDF = () => {
+    const columns = [
+      { header: 'Nombre', dataKey: 'name' },
+      { header: 'Email', dataKey: 'email' },
+      { header: 'Teléfono', dataKey: 'phone' },
+      { header: 'ID Fiscal', dataKey: 'tax_id' },
+    ];
+
+    generateReportPDF('Reporte General de Clientes', columns, allCustomers, 'reporte_clientes.pdf');
   };
 
   const indexOfLastItem = currentPage * ITEMS_PER_PAGE;
+
   const indexOfFirstItem = indexOfLastItem - ITEMS_PER_PAGE;
   const currentItems = customers.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(customers.length / ITEMS_PER_PAGE);
@@ -199,6 +205,7 @@ export default function CustomersPage() {
         </div>
         
         <div className="flex gap-4">
+          <PdfButton onClick={handleDownloadPDF} />
           <button 
             onClick={() => loadCustomers()}
             className="min-h-[44px] min-w-[44px] flex items-center justify-center border-2 border-slate-900 dark:border-white text-slate-900 dark:text-white hover:bg-slate-900 hover:text-white dark:hover:bg-white dark:hover:text-slate-900 transition-colors"

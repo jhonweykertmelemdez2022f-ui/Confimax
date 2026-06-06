@@ -8,6 +8,7 @@ import Pagination from "@/components/Pagination";
 import { gsap } from "gsap";
 import { ITEMS_PER_PAGE } from "@/types/inventory";
 import { useInventoryData } from "@/hooks/useInventoryData";
+import { PdfButton } from "@/components/PdfButton";
 
 interface Product {
   id: string;
@@ -165,7 +166,23 @@ export default function InventoryPage() {
     setFormData({ name: "", sku: "", price: "", stock: "", category_id: "", description: "", expiration_date: "", images: [] });
   };
 
+  const handleDownloadPDF = () => {
+    const columns = [
+      { header: 'Producto', dataKey: 'name' },
+      { header: 'SKU', dataKey: 'sku' },
+      { header: 'Categoría', dataKey: 'category_name' },
+      { header: 'Precio', dataKey: 'price_formatted' },
+      { header: 'Stock', dataKey: 'stock_quantity' },
+    ];
 
+    const data = allProducts.map(p => ({
+      ...p,
+      price_formatted: `$${formatPrice(p.price)}`,
+      stock_quantity: p.stock_quantity || p.stock || 0
+    }));
+
+    generateReportPDF('Reporte General de Productos', columns, data, 'reporte_productos.pdf');
+  };
 
   const removeImage = (index: number) => {
     setFormData(prev => ({
@@ -213,6 +230,7 @@ export default function InventoryPage() {
         </div>
         
         <div className="flex gap-4">
+          <PdfButton onClick={handleDownloadPDF} />
           <button 
             onClick={() => loadAllData()}
             className="min-h-[44px] min-w-[44px] flex items-center justify-center border-2 border-slate-900 dark:border-white text-slate-900 dark:text-white hover:bg-slate-900 hover:text-white dark:hover:bg-white dark:hover:text-slate-900 transition-colors"

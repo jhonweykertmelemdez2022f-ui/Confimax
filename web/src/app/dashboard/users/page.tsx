@@ -5,6 +5,8 @@ import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
 import { gsap } from "gsap";
 import { useRouter } from "next/navigation";
+import { generateReportPDF } from "@/lib/pdfGenerator";
+import { PdfButton } from "@/components/PdfButton";
 
 interface SystemUser {
   id: string;
@@ -129,11 +131,29 @@ export default function UsersPage() {
     }
   };
 
+  const handleDownloadPDF = () => {
+    const columns = [
+      { header: 'Usuario', dataKey: 'username' },
+      { header: 'Email', dataKey: 'email' },
+      { header: 'Rol', dataKey: 'role' },
+      { header: 'Estado', dataKey: 'active_status' },
+    ];
+
+    const data = systemUsers.map(u => ({
+      ...u,
+      active_status: u.active ? 'Activo' : 'Inactivo'
+    }));
+
+    generateReportPDF('Reporte General de Usuarios', columns, data, 'reporte_usuarios.pdf');
+  };
+
   const filteredUsers = systemUsers.filter(u => {
-    const matchesSearch = u.username.toLowerCase().includes(search.toLowerCase()) || u.email.toLowerCase().includes(search.toLowerCase());
+    const matchesSearch = u.username.toLowerCase().includes(search.toLowerCase()) || 
+                          u.email.toLowerCase().includes(search.toLowerCase());
     const matchesRole = roleFilter === "all" || u.role === roleFilter;
     return matchesSearch && matchesRole;
   });
+
 
   if (user?.role !== "admin" && user?.name?.toLowerCase() !== "fabiana") return null;
 
@@ -150,6 +170,7 @@ export default function UsersPage() {
         </div>
         
         <div className="flex gap-4">
+          <PdfButton onClick={handleDownloadPDF} />
           <button 
             onClick={() => loadUsers()}
             className="min-h-[44px] min-w-[44px] flex items-center justify-center border-2 border-slate-900 dark:border-white text-slate-900 dark:text-white hover:bg-slate-900 hover:text-white dark:hover:bg-white dark:hover:text-slate-900 transition-colors"
@@ -184,11 +205,10 @@ export default function UsersPage() {
         </div>
       )}
 
-      <div className="border-2 border-slate-900 dark:border-white bg-white dark:bg-surface relative">
-        <div className="crosshair-tl" />
+      {/* Controles de Búsqueda */}
+      <div className="border-2 border-slate-900 dark:border-white bg-slate-50 dark:bg-surface-dim p-4 relative">
         <div className="crosshair-tr" />
-
-        <div className="p-4 border-b-2 border-slate-900 dark:border-white flex flex-col md:flex-row gap-4 bg-slate-50 dark:bg-surface-dim">
+        <div className="flex flex-col md:flex-row gap-4">
           <div className="relative flex-1 max-w-md">
             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">search</span>
             <input 
@@ -196,13 +216,13 @@ export default function UsersPage() {
               placeholder="BUSCAR POR NOMBRE O CORREO..." 
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 min-h-[44px] bg-white dark:bg-surface-bright border border-slate-900 dark:border-white font-data-label uppercase tracking-widest text-xs focus:outline-none focus:ring-1 focus:ring-data-blue"
+              className="w-full pl-10 pr-4 py-3 min-h-[44px] bg-white dark:bg-surface-bright border-2 border-slate-900 dark:border-white font-data-label uppercase tracking-widest text-xs focus:outline-none focus:ring-1 focus:ring-data-blue"
             />
           </div>
           <select
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value)}
-            className="min-h-[44px] px-4 bg-white dark:bg-surface-bright border border-slate-900 dark:border-white font-data-label text-xs uppercase tracking-widest cursor-pointer focus:outline-none focus:ring-1 focus:ring-data-blue"
+            className="min-h-[44px] px-4 bg-white dark:bg-surface-bright border-2 border-slate-900 dark:border-white font-data-label text-xs uppercase tracking-widest cursor-pointer focus:outline-none focus:ring-1 focus:ring-data-blue"
           >
             <option value="all">TODOS LOS ROLES</option>
             {ROLE_OPTIONS.map(opt => (
@@ -210,6 +230,11 @@ export default function UsersPage() {
             ))}
           </select>
         </div>
+      </div>
+
+      <div className="border-2 border-slate-900 dark:border-white bg-white dark:bg-surface relative">
+        <div className="crosshair-tl" />
+        <div className="crosshair-tr" />
 
         <div className="overflow-x-auto min-h-[500px]" ref={listRef}>
           <table className="w-full text-left border-collapse">
