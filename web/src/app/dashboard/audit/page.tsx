@@ -70,6 +70,22 @@ export default function AuditPage() {
     );
   };
 
+  const handleDownloadPDF = () => {
+    const content = filteredLogs.map(log => 
+      `${log.timestamp} | ${log.operation} | ${log.username} | ${log.entity || 'N/A'} | ID: ${log.recordId || 'N/A'}`
+    ).join('\n');
+
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `audit-logs-${new Date().toISOString().split('T')[0]}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   if (user?.role !== "admin" && user?.name?.toLowerCase() !== "fabiana") return null;
 
   return (
