@@ -167,21 +167,19 @@ export default function InventoryPage() {
   };
 
   const handleDownloadPDF = () => {
-    const columns = [
-      { header: 'Producto', dataKey: 'name' },
-      { header: 'SKU', dataKey: 'sku' },
-      { header: 'Categoría', dataKey: 'category_name' },
-      { header: 'Precio', dataKey: 'price_formatted' },
-      { header: 'Stock', dataKey: 'stock_quantity' },
-    ];
+    const content = allProducts.map(p =>
+      `${p.name} | ${p.sku} | ${p.category || 'N/A'} | $${formatPrice(p.price)} | ${p.stock || 0}`
+    ).join('\n');
 
-    const data = allProducts.map(p => ({
-      ...p,
-      price_formatted: `$${formatPrice(p.price)}`,
-      stock_quantity: p.stock_quantity || p.stock || 0
-    }));
-
-    generateReportPDF('Reporte General de Productos', columns, data, 'reporte_productos.pdf');
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `productos-${new Date().toISOString().split('T')[0]}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   const removeImage = (index: number) => {

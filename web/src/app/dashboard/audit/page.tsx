@@ -103,8 +103,8 @@ export default function AuditPage() {
         
         <div className="flex gap-4">
           <PdfButton onClick={handleDownloadPDF} />
-          <button 
-            onClick={() => fetchAuditLogs()}
+          <button
+            onClick={() => loadAuditLogs()}
             className="min-h-[44px] min-w-[44px] flex items-center justify-center border-2 border-slate-900 dark:border-white text-slate-900 dark:text-white hover:bg-slate-900 hover:text-white dark:hover:bg-white dark:hover:text-slate-900 transition-colors"
           >
             <span className={`material-symbols-outlined ${loading ? 'animate-spin' : ''}`}>sync</span>

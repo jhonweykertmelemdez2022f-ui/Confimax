@@ -39,7 +39,7 @@ export default function DashboardOverviewPage() {
         api.getCustomers().catch(() => [])
       ];
 
-      if (user?.role === 'admin' || user?.role === 'manager' || user?.role === 'vendor') {
+      if (user?.role === 'admin') {
         promises.push(api.getLowStock(30).catch(() => []));
         promises.push(api.getExpiringProducts(7).catch(() => []));
       }
@@ -57,7 +57,7 @@ export default function DashboardOverviewPage() {
         lowStockCount: products.filter((p: any) => parseInt(p.stock || p.stock_quantity || 0) < 10).length
       });
 
-      if (user?.role === 'admin' || user?.role === 'manager' || user?.role === 'vendor') {
+      if (user?.role === 'admin') {
         setAlerts({
           lowStock: results[3]?.data || results[3] || [],
           expiring: results[4]?.data || results[4] || []
@@ -194,7 +194,7 @@ export default function DashboardOverviewPage() {
             <h2 className="font-headline-lg-mobile text-xl uppercase tracking-tighter text-slate-900 dark:text-white">ATENCIÓN REQUERIDA</h2>
           </div>
           
-          {(user?.role === 'admin' || user?.role === 'manager' || user?.role === 'vendor') && (alerts.lowStock.length > 0 || alerts.expiring.length > 0) ? (
+          {(user?.role === 'admin') && (alerts.lowStock.length > 0 || alerts.expiring.length > 0) ? (
             <div className="flex flex-col gap-4">
               {alerts.lowStock.length > 0 && (
                 <div className="p-4 border-2 border-[#ca8a04] bg-[#ca8a04]/10 flex flex-col gap-2">

@@ -160,14 +160,19 @@ export default function CustomersPage() {
   };
 
   const handleDownloadPDF = () => {
-    const columns = [
-      { header: 'Nombre', dataKey: 'name' },
-      { header: 'Email', dataKey: 'email' },
-      { header: 'Teléfono', dataKey: 'phone' },
-      { header: 'ID Fiscal', dataKey: 'tax_id' },
-    ];
+    const content = allCustomers.map(c =>
+      `${c.name} | ${c.email} | ${c.phone || 'N/A'} | ${c.tax_id || 'N/A'}`
+    ).join('\n');
 
-    generateReportPDF('Reporte General de Clientes', columns, allCustomers, 'reporte_clientes.pdf');
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `clientes-${new Date().toISOString().split('T')[0]}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   const indexOfLastItem = currentPage * ITEMS_PER_PAGE;
