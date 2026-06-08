@@ -82,7 +82,7 @@ app.use(helmet());
 // Configuración flexible de CORS
 const allowedOrigins = process.env.CORS_ORIGIN 
   ? process.env.CORS_ORIGIN.split(',') 
-  : ['http://localhost:3000', 'https://confimax.vercel.app', 'http://localhost:5173'];
+  : ['http://localhost:3000', 'https://confimax.vercel.app', 'https://confimax-api-gateway.onrender.com', 'http://localhost:5173'];
 
 app.use(cors({
   origin: (origin, callback) => {
