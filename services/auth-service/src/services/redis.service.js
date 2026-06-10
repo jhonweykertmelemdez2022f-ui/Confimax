@@ -66,6 +66,11 @@ const messageQueue = {
     if (!redisClient) return;
     await redisClient.expire(key, ttl);
   },
+
+  async ttl(key) {
+    if (!redisClient) return -1;
+    return await redisClient.ttl(key);
+  },
 };
 
 module.exports = {

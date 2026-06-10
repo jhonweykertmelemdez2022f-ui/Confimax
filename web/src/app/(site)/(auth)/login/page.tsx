@@ -4,19 +4,33 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { validatePassword, validateUsernameOrEmail } from "@/lib/validation";
 
 export default function LoginPage() {
   const [usernameOrEmail, setUsernameOrEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const { login, recoverPassword, isLoading } = useAuth();
+  const { login, recoverPassword, isLoading, isLockedOut, lockoutRemaining } = useAuth();
   const router = useRouter();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isLockedOut) {
+      setError(`Demasiados intentos fallidos. Intenta de nuevo en ${lockoutRemaining} segundos.`);
+      return;
+    }
+
     setLoading(true);
     setError("");
+
+    const usernameError = validateUsernameOrEmail(usernameOrEmail);
+    const passwordError = validatePassword(password);
+    if (usernameError || passwordError) {
+      setError(usernameError || passwordError);
+      setLoading(false);
+      return;
+    }
 
     try {
       const loggedUser = await login(usernameOrEmail, password);
@@ -100,10 +114,10 @@ export default function LoginPage() {
 
           <button
             type="submit"
-            disabled={loading || isLoading}
+            disabled={loading || isLoading || isLockedOut}
             className="w-full btn-precision justify-center py-3 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading || isLoading ? "Procesando..." : "Iniciar sesión"}
+            {isLockedOut ? `Bloqueado (${lockoutRemaining}s)` : loading || isLoading ? "Procesando..." : "Iniciar sesión"}
           </button>
         </form>
 

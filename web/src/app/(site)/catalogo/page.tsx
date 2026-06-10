@@ -19,6 +19,7 @@ interface Product {
   reviews: number;
   description: string;
   badge?: string;
+  currency?: string;
 }
 
 const categories = ["Todas", "despensa", "frescos", "lácteos", "limpieza"];
@@ -67,7 +68,8 @@ export default function CatalogoPage() {
           rating: p.rating || 5.0,
           reviews: p.reviews || 0,
           description: p.description || "Sin descripción disponible.",
-          badge: p.badge || undefined
+          badge: p.badge || undefined,
+          currency: p.currency || p.currency_code || 'USD'
         }));
 
         setProductsList(mappedProducts);

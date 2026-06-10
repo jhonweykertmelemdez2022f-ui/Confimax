@@ -53,9 +53,31 @@ interface Customer {
 
 const ITEMS_PER_PAGE = 9;
 
+const formatCurrency = (price: any, currency: string = 'USD') => {
+  const num = parseFloat(String(price || 0));
+  const symbol = currency === 'VES' ? 'Bs.' : currency === 'COP' ? 'COP' : '$';
+  return `${symbol} ${isNaN(num) ? '0.00' : num.toFixed(2)}`;
+};
+
 const formatPrice = (price: any) => {
   const num = parseFloat(String(price || 0));
   return isNaN(num) ? '0.00' : num.toFixed(2);
+};
+
+const getSaleItemLabel = (item: any) => {
+  return item.product_name || item.name || item.product?.name || item.product?.title || item.sku || item.product_id || 'Producto';
+};
+
+const getSaleItemQuantity = (item: any) => {
+  return item.quantity ?? item.qty ?? item.quantity_sold ?? 0;
+};
+
+const getSaleItemUnitPrice = (item: any) => {
+  return item.unit_price ?? item.price ?? 0;
+};
+
+const getSaleItemTotal = (item: any) => {
+  return item.total ?? item.subtotal ?? getSaleItemQuantity(item) * getSaleItemUnitPrice(item);
 };
 
 const STATUS_OPTIONS = [
@@ -390,7 +412,7 @@ export default function SalesPage() {
       ...s,
       order_number_label: s.order_number || s.id.substring(0, 8).toUpperCase(),
       created_at_label: new Date(s.created_at).toLocaleDateString(),
-      total_label: `$${formatPrice(s.total)}`
+      total_label: formatCurrency(s.total, s.currency || 'USD')
     }));
 
     generateReportPDF('Reporte General de Ventas', columns, data, 'reporte_ventas.pdf');
@@ -543,7 +565,7 @@ export default function SalesPage() {
                       </td>
                       <td className="p-4 border-r border-slate-900/10 dark:border-white/10 text-right">
                         <p className="font-display-xl text-xl font-black text-slate-900 dark:text-white">
-                          ${formatPrice(sale.total)}
+                          {formatCurrency(sale.total, sale.currency || 'USD')}
                         </p>
                       </td>
                       <td className="p-4 text-center">
@@ -752,10 +774,10 @@ export default function SalesPage() {
                    <tbody className="divide-y divide-slate-900/10 dark:divide-white/10 border-b border-slate-900/10 dark:border-white/10">
                      {(selectedSale.items || []).map((item, idx) => (
                        <tr key={idx}>
-                         <td className="p-2 font-body-md uppercase">{item.product_name}</td>
-                         <td className="p-2 font-data-label text-center">{item.quantity}</td>
-                         <td className="p-2 font-data-label text-right">${formatPrice(item.unit_price)}</td>
-                         <td className="p-2 font-data-label text-right font-bold">${formatPrice(item.total)}</td>
+                         <td className="p-2 font-body-md uppercase">{getSaleItemLabel(item)}</td>
+                         <td className="p-2 font-data-label text-center">{getSaleItemQuantity(item)}</td>
+                         <td className="p-2 font-data-label text-right">{formatCurrency(getSaleItemUnitPrice(item), selectedSale.currency || 'USD')}</td>
+                         <td className="p-2 font-data-label text-right font-bold">{formatCurrency(getSaleItemTotal(item), selectedSale.currency || 'USD')}</td>
                        </tr>
                      ))}
                    </tbody>
@@ -764,11 +786,11 @@ export default function SalesPage() {
               
               <div className="flex justify-end mt-6">
                 <div className="w-48">
-                  <div className="flex justify-between font-data-label text-xs mb-2"><span>SUBTOTAL:</span><span>${formatPrice(selectedSale.subtotal)}</span></div>
-                  <div className="flex justify-between font-data-label text-xs mb-2"><span>IMPUESTO:</span><span>${formatPrice(selectedSale.tax)}</span></div>
+                  <div className="flex justify-between font-data-label text-xs mb-2"><span>SUBTOTAL:</span><span>{formatCurrency(selectedSale.subtotal, selectedSale.currency || 'USD')}</span></div>
+                  <div className="flex justify-between font-data-label text-xs mb-2"><span>IMPUESTO:</span><span>{formatCurrency(selectedSale.tax, selectedSale.currency || 'USD')}</span></div>
                   <div className="flex justify-between font-data-label font-bold text-lg border-t-2 border-slate-900 dark:border-white pt-2 mt-2">
                     <span>TOTAL:</span>
-                    <span>${formatPrice(selectedSale.total)}</span>
+                    <span>{formatCurrency(selectedSale.total, selectedSale.currency || 'USD')}</span>
                   </div>
                 </div>
               </div>

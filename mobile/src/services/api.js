@@ -11,7 +11,7 @@ const USE_PRODUCTION = true;
 const LOCAL_IP = '100.101.30.4'; 
 
 const API_BASE_URL = USE_PRODUCTION 
-  ? 'https://confimax-api-gateway.onrender.com/api'
+  ? 'https://confimax-api-gateway-i0ms.onrender.com/api'
   : `http://${LOCAL_IP}:8080/api`;
 
 const api = axios.create({

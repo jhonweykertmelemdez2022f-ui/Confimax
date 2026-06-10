@@ -3,7 +3,16 @@ const jwt = require('jsonwebtoken');
 const { v4: uuidv4 } = require('uuid');
 const config = require('../config');
 const { Profile } = require('../models/user.model');
-const { getRedisClient } = require('../services/redis.service');
+const { getRedisClient, messageQueue } = require('../services/redis.service');
+
+const FAILED_LOGIN_LIMIT = 3;
+const LOCKOUT_SECONDS = 30;
+
+const getFailedLoginKey = (identifier, ip) => {
+  const safeIdentifier = identifier ? identifier.toString().trim().toLowerCase().replace(/[^a-z0-9@.-]/g, '_') : 'anonymous';
+  const safeIp = ip ? ip.toString().replace(/[^a-zA-Z0-9.:]/g, '_') : 'unknown';
+  return `auth:login:failed:${safeIdentifier}:${safeIp}`;
+};
 
 const AuthService = {
   async register(userData) {
@@ -49,6 +58,8 @@ const AuthService = {
   async login(credentials) {
     const { username, email, password } = credentials;
     const loginIdentifier = (username || email || '').trim();
+    const ipAddress = credentials.ip || 'unknown';
+    const failedLoginKey = getFailedLoginKey(loginIdentifier, ipAddress);
 
     if (!loginIdentifier) {
       throw new Error('Username or email is required');
@@ -56,6 +67,15 @@ const AuthService = {
 
     if (!password) {
       throw new Error('Password is required');
+    }
+
+    const previousAttempts = Number(await messageQueue.get(failedLoginKey)) || 0;
+    if (previousAttempts >= FAILED_LOGIN_LIMIT) {
+      const ttl = await messageQueue.ttl(failedLoginKey);
+      const wait = ttl > 0 ? ttl : LOCKOUT_SECONDS;
+      const error = new Error(`Demasiados intentos fallidos. Espera ${wait} segundos antes de volver a intentar.`);
+      error.statusCode = 429;
+      throw error;
     }
 
     let profile = null;
@@ -73,6 +93,17 @@ const AuthService = {
     }
 
     if (!profile) {
+      const currentAttempts = await messageQueue.incr(failedLoginKey);
+      if (currentAttempts === 1) {
+        await messageQueue.expire(failedLoginKey, LOCKOUT_SECONDS);
+      }
+      if (currentAttempts >= FAILED_LOGIN_LIMIT) {
+        const ttl = await messageQueue.ttl(failedLoginKey);
+        const wait = ttl > 0 ? ttl : LOCKOUT_SECONDS;
+        const error = new Error(`Demasiados intentos fallidos. Espera ${wait} segundos antes de volver a intentar.`);
+        error.statusCode = 429;
+        throw error;
+      }
       const error = new Error('Invalid credentials');
       error.statusCode = 401;
       throw error;
@@ -91,11 +122,23 @@ const AuthService = {
     }
 
     if (!passwordMatches) {
+      const currentAttempts = await messageQueue.incr(failedLoginKey);
+      if (currentAttempts === 1) {
+        await messageQueue.expire(failedLoginKey, LOCKOUT_SECONDS);
+      }
+      if (currentAttempts >= FAILED_LOGIN_LIMIT) {
+        const ttl = await messageQueue.ttl(failedLoginKey);
+        const wait = ttl > 0 ? ttl : LOCKOUT_SECONDS;
+        const error = new Error(`Demasiados intentos fallidos. Espera ${wait} segundos antes de volver a intentar.`);
+        error.statusCode = 429;
+        throw error;
+      }
       const error = new Error('Invalid credentials');
       error.statusCode = 401;
       throw error;
     }
-    
+
+    await messageQueue.del(failedLoginKey);
     await Profile.updateLastLogin(profile.id);
 
     const tokens = await this.generateTokens(profile);

@@ -29,16 +29,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [tokenExpired, setTokenExpired] = useState(false);
   const [countdown, setCountdown] = useState(5);
+  const [failedAttempts, setFailedAttempts] = useState(0);
+  const [lockoutUntil, setLockoutUntil] = useState<number | null>(null);
+  const [isLockedOut, setIsLockedOut] = useState(false);
+  const [lockoutRemaining, setLockoutRemaining] = useState(0);
 
   useEffect(() => {
     // Verificar sesión al cargar
     const storedUser = localStorage.getItem("confimax_user");
     const storedToken = localStorage.getItem("confimax_token");
-    
+    const storedAttempts = Number(localStorage.getItem("confimax_failed_attempts") || "0");
+    const storedLockout = Number(localStorage.getItem("confimax_lockout_until") || "0");
+
     if (storedUser && storedToken) {
       setUser(JSON.parse(storedUser));
       api.setToken(storedToken);
     }
+
+    setFailedAttempts(storedAttempts);
+    if (storedLockout && storedLockout > Date.now()) {
+      setLockoutUntil(storedLockout);
+      setIsLockedOut(true);
+      setLockoutRemaining(Math.ceil((storedLockout - Date.now()) / 1000));
+    }
+
     setIsLoading(false);
 
     // Configurar callback para token expirado
@@ -62,13 +76,63 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => clearTimeout(timer);
   }, [tokenExpired, countdown]);
 
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isLockedOut && lockoutUntil) {
+      interval = setInterval(() => {
+        const remaining = Math.max(0, Math.ceil((lockoutUntil - Date.now()) / 1000));
+        setLockoutRemaining(remaining);
+        if (remaining <= 0) {
+          clearLockout();
+        }
+      }, 1000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isLockedOut, lockoutUntil]);
+
   const handleTokenExpiredClose = () => {
     setTokenExpired(false);
     setCountdown(5);
     router.push('/login');
   };
 
+  const clearLockout = () => {
+    setFailedAttempts(0);
+    setIsLockedOut(false);
+    setLockoutUntil(null);
+    setLockoutRemaining(0);
+    localStorage.setItem("confimax_failed_attempts", "0");
+    localStorage.removeItem("confimax_lockout_until");
+  };
+
+  const activateLockout = () => {
+    const until = Date.now() + 30000;
+    setFailedAttempts(3);
+    setLockoutUntil(until);
+    setIsLockedOut(true);
+    setLockoutRemaining(30);
+    localStorage.setItem("confimax_failed_attempts", "3");
+    localStorage.setItem("confimax_lockout_until", String(until));
+  };
+
+  const incrementFailedAttempt = () => {
+    const nextAttempts = failedAttempts + 1;
+    localStorage.setItem("confimax_failed_attempts", String(nextAttempts));
+    setFailedAttempts(nextAttempts);
+    if (nextAttempts >= 3) {
+      activateLockout();
+      return true;
+    }
+    return false;
+  };
+
   const login = async (usernameOrEmail: string, password: string) => {
+    if (isLockedOut && lockoutRemaining > 0) {
+      throw new Error(`Demasiados intentos fallidos. Intenta de nuevo en ${lockoutRemaining} segundos.`);
+    }
+
     setIsLoading(true);
     try {
       const response = await api.login(usernameOrEmail, password) as any;
@@ -97,8 +161,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       setUser(userData);
       localStorage.setItem("confimax_user", JSON.stringify(userData));
+      clearLockout();
       return userData;
-    } catch (error) {
+    } catch (error: any) {
+      const status = error?.response?.status;
+      const message = error?.message?.toString?.() || "Error al iniciar sesión";
+      const isAuthError = status === 401 || status === 403 || /clave|credencial|credenciales|usuario|contraseña/i.test(message);
+
+      if (isAuthError) {
+        const locked = incrementFailedAttempt();
+        if (locked) {
+          throw new Error("Demasiados intentos fallidos. Bloqueado por 30 segundos.");
+        }
+      }
+
       throw error;
     } finally {
       setIsLoading(false);

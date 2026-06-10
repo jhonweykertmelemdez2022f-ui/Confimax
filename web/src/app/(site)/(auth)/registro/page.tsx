@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
+import { validatePassword } from "@/lib/validation";
 
 export default function RegisterPage() {
   const [name, setName] = useState("");
@@ -19,8 +20,9 @@ export default function RegisterPage() {
     e.preventDefault();
     setError("");
     if (password !== confirmPassword) return setError("Las contraseñas no coinciden");
-    if (password.length < 6) return setError("La contraseña debe tener al menos 6 caracteres");
-    
+    const passwordError = validatePassword(password);
+    if (passwordError) return setError(passwordError);
+
     try {
       await register(name, email, password);
       router.push("/catalogo");

@@ -55,7 +55,8 @@ function LoginScreen({ navigation }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({});
-  const { login, isLoading, error } = useAuthStore();
+  const { login, isLoading, error, isLockedOut, lockoutExpiresAt, loadLockoutState } = useAuthStore();
+  const [lockoutSeconds, setLockoutSeconds] = useState(0);
   const [connectionStatus, setConnectionStatus] = useState('checking'); // 'checking', 'connected', 'disconnected'
   const [detailedError, setDetailedError] = useState('');
 
@@ -111,7 +112,24 @@ function LoginScreen({ navigation }) {
   useEffect(() => {
     checkConnection();
     checkBiometrics();
+    loadLockoutState?.();
   }, []);
+
+  useEffect(() => {
+    if (!isLockedOut || !lockoutExpiresAt) {
+      setLockoutSeconds(0);
+      return;
+    }
+
+    const update = () => {
+      const remaining = Math.max(0, Math.ceil((Number(lockoutExpiresAt) - Date.now()) / 1000));
+      setLockoutSeconds(remaining);
+    };
+
+    update();
+    const interval = setInterval(update, 1000);
+    return () => clearInterval(interval);
+  }, [isLockedOut, lockoutExpiresAt]);
 
   // Función para disparar la lectura de huella/rostro
   const handleBiometricAuth = async () => {
@@ -155,6 +173,11 @@ function LoginScreen({ navigation }) {
   };
 
   const handleLogin = async () => {
+    if (isLockedOut) {
+      Alert.alert('Bloqueo temporal', `Demasiados intentos fallidos. Intenta de nuevo en ${lockoutSeconds || 1} segundos.`);
+      return;
+    }
+
     const trimmedUsername = username.trim();
     
     // Validate fields
@@ -274,14 +297,16 @@ function LoginScreen({ navigation }) {
         <FadeInUpCard delay={400} duration={400}>
           <View style={dynamicStyles.actionContainer}>
             <TouchableOpacity
-              style={[dynamicStyles.loginButton, isLoading && dynamicStyles.disabledButton]}
+              style={[dynamicStyles.loginButton, (isLoading || isLockedOut) && dynamicStyles.disabledButton]}
               onPress={handleLogin}
-              disabled={isLoading}
+              disabled={isLoading || isLockedOut}
             >
               {isLoading ? (
                 <ActivityIndicator color={colors.onPrimary} />
               ) : (
-                <Text style={dynamicStyles.loginButtonText}>Iniciar Sesión</Text>
+                <Text style={dynamicStyles.loginButtonText}>
+                  {isLockedOut ? `Bloqueado (${lockoutSeconds}s)` : 'Iniciar Sesión'}
+                </Text>
               )}
             </TouchableOpacity>
 

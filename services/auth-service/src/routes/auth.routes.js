@@ -16,12 +16,20 @@ const validateRequest = (req, res, next) => {
   next();
 };
 
+const passwordRules = [
+  body('password')
+    .isLength({ min: 8, max: 8 })
+    .withMessage('La contraseña debe tener exactamente 8 caracteres')
+    .matches(/^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8}$/)
+    .withMessage('La contraseña debe contener letras, números y signos'),
+];
+
 router.post(
   '/register',
   [
     body('username').trim().isLength({ min: 3, max: 30 }).withMessage('Username must be 3-30 characters'),
     body('email').isEmail().withMessage('Valid email required'),
-    body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
+    ...passwordRules,
     body('role').optional().isIn(['admin', 'vendor', 'manager', 'customer', 'cliente', 'vendedor']).withMessage('Invalid role'),
   ],
   validateRequest,
@@ -32,7 +40,7 @@ router.post(
   '/login',
   [
     body('username').trim().notEmpty().withMessage('Username required'),
-    body('password').notEmpty().withMessage('Password required'),
+    ...passwordRules,
   ],
   validateRequest,
   authController.login

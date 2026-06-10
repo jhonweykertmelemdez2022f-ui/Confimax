@@ -36,7 +36,8 @@ const authController = {
 
   async login(req, res, next) {
     try {
-      const result = await AuthService.login(req.body);
+      const requestIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip || req.connection?.remoteAddress || 'unknown';
+      const result = await AuthService.login({ ...req.body, ip: requestIp });
       await sendAudit(req, 'LOGIN', 'User', result?.user?.id, result?.user);
       res.json(result);
     } catch (error) {

@@ -16,6 +16,7 @@ interface Product {
   image: string
   badge?: string
   description: string
+  currency?: string
 }
 
 interface ProductCardProps {
@@ -32,6 +33,7 @@ export default function ProductCard({ product, viewMode }: ProductCardProps) {
   }
 
   const stockStatus = getStockStatus(product.stock)
+  const currencySymbol = product.currency === 'VES' ? 'Bs.' : product.currency === 'COP' ? 'COP' : '$'
 
   // List View
   if (viewMode === "list") {
@@ -92,9 +94,9 @@ export default function ProductCard({ product, viewMode }: ProductCardProps) {
             <div className="flex items-end justify-between mt-auto">
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="font-data-value text-data-value text-xl font-bold text-slate-900 dark:text-white">${product.price.toFixed(2)}</span>
+                  <span className="font-data-value text-data-value text-xl font-bold text-slate-900 dark:text-white">{currencySymbol} {product.price.toFixed(2)}</span>
                   {product.originalPrice && (
-                    <span className="font-data-label text-data-label text-sm text-slate-500 dark:text-slate-500 line-through">${product.originalPrice.toFixed(2)}</span>
+                    <span className="font-data-label text-data-label text-sm text-slate-500 dark:text-slate-500 line-through">{currencySymbol} {product.originalPrice.toFixed(2)}</span>
                   )}
                 </div>
                 <span className={`font-data-label text-data-label text-xs ${stockStatus.color}`}>
@@ -183,9 +185,9 @@ export default function ProductCard({ product, viewMode }: ProductCardProps) {
 
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <span className="font-data-value text-data-value text-lg font-bold text-slate-900 dark:text-white">${product.price.toFixed(2)}</span>
+            <span className="font-data-value text-data-value text-lg font-bold text-slate-900 dark:text-white">{currencySymbol} {product.price.toFixed(2)}</span>
             {product.originalPrice && (
-              <span className="font-data-label text-data-label text-sm text-slate-500 dark:text-slate-500 line-through">${product.originalPrice.toFixed(2)}</span>
+              <span className="font-data-label text-data-label text-sm text-slate-500 dark:text-slate-500 line-through">{currencySymbol} {product.originalPrice.toFixed(2)}</span>
             )}
           </div>
           <div className={`flex items-center gap-1 text-xs font-data-label font-data-label ${stockStatus.color}`}>

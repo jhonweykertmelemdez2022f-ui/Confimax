@@ -325,6 +325,8 @@ export default function Navbar() {
     ].join(" ");
   };
 
+  const hideCart = ["/login", "/registro", "/recuperar-password"].some((path) => pathname?.startsWith(path));
+
   return (
     <>
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-slate-900 dark:border-white bg-white/95 dark:bg-background/95 backdrop-blur-md">
@@ -362,18 +364,20 @@ export default function Navbar() {
               <span>{theme === "dark" ? "CLARO" : "OSCURO"}</span>
             </button>
 
-            <button
-              className="text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors duration-200 p-2 border-2 border-slate-900 dark:border-white bg-white dark:bg-surface focus:outline-none relative"
-              onClick={() => setIsOpen(true)}
-              aria-label="Abrir carrito"
-            >
-              <ShoppingCart className="w-6 h-6" />
-              {totalItems > 0 && (
-                <span className="absolute -top-2 -right-2 min-w-6 h-6 px-1 bg-accent-pink text-white text-[10px] leading-6 text-center font-data-label rounded-full border-2 border-white dark:border-background">
-                  {totalItems}
-                </span>
-              )}
-            </button>
+            {!hideCart && (
+              <button
+                className="text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors duration-200 p-2 border-2 border-slate-900 dark:border-white bg-white dark:bg-surface focus:outline-none relative"
+                onClick={() => setIsOpen(true)}
+                aria-label="Abrir carrito"
+              >
+                <ShoppingCart className="w-6 h-6" />
+                {totalItems > 0 && (
+                  <span className="absolute -top-2 -right-2 min-w-6 h-6 px-1 bg-accent-pink text-white text-[10px] leading-6 text-center font-data-label rounded-full border-2 border-white dark:border-background">
+                    {totalItems}
+                  </span>
+                )}
+              </button>
+            )}
 
             {user ? (
               <div className="flex items-center gap-2">
@@ -497,6 +501,7 @@ export default function Navbar() {
                 <span className="text-[10px] font-data-label uppercase font-bold">Tema</span>
               </button>
 
+              {!hideCart && (
               <button
                 className="flex flex-col items-center justify-center p-4 border-2 border-slate-900 dark:border-white bg-white dark:bg-surface hover:bg-slate-900 hover:text-white dark:hover:bg-white dark:hover:text-background transition-colors relative"
                 onClick={() => {
@@ -512,6 +517,7 @@ export default function Navbar() {
                 )}
                 <span className="text-[10px] font-data-label uppercase font-bold">Carrito</span>
               </button>
+            )}
             </div>
 
             <div className="mt-4 text-center">
@@ -521,7 +527,7 @@ export default function Navbar() {
         </div>
       )}
 
-      <CartDrawer />
+      {!hideCart && <CartDrawer />}
     </>
   );
 }
