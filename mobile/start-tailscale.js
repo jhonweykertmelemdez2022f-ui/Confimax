@@ -37,11 +37,11 @@ process.env.EXPO_PACKAGER_HOSTNAME = tailscaleIp;
 process.env.REACT_NATIVE_PACKAGER_HOSTNAME = tailscaleIp;
 
 const child = spawn(
-  'npx', 
-  ['expo', 'start', '--port', '6767', '--host', 'lan'], 
-  { 
+  'npx',
+  ['expo', 'start', '--port', '6767', '--host', 'lan'],
+  {
     stdio: 'inherit',
-    shell: true 
+    shell: false,
   }
 );
 

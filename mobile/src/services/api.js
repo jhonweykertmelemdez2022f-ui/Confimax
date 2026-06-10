@@ -2,17 +2,16 @@ import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 
 // ⚠️ CONFIGURACIÓN DE CONEXIÓN CLOUD VS LOCAL:
-// Cambia USE_PRODUCTION a:
-//   - true: Para conectarte al servidor central de producción en la nube (Supabase + Render)
-//   - false: Para conectarte al backend de desarrollo local ejecutándose en tu PC en Docker
-const USE_PRODUCTION = true; 
+// Si quieres usar producción explícitamente crea un `.env` con API_BASE_URL.
+// En desarrollo local con Tailscale recomendamos usar la IP de tu equipo.
+const USE_PRODUCTION = false;
 
-// Para conexión local: cambia esta IP por la IP local de tu PC en tu red WiFi
-const LOCAL_IP = '100.101.30.4'; 
+const ENV_API_BASE_URL = process.env.API_BASE_URL || process.env.REACT_NATIVE_APP_API_BASE_URL;
+const LOCAL_IP = '100.101.30.4';
 
-const API_BASE_URL = USE_PRODUCTION 
+const API_BASE_URL = ENV_API_BASE_URL || (USE_PRODUCTION
   ? 'https://confimax-api-gateway-i0ms.onrender.com/api'
-  : `http://${LOCAL_IP}:8080/api`;
+  : `http://${LOCAL_IP}:8080/api`);
 
 const api = axios.create({
   baseURL: API_BASE_URL,
