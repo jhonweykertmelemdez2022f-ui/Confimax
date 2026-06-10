@@ -18,9 +18,9 @@ const validateRequest = (req, res, next) => {
 
 const passwordRules = [
   body('password')
-    .isLength({ min: 8, max: 8 })
-    .withMessage('La contraseña debe tener exactamente 8 caracteres')
-    .matches(/^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8}$/)
+    .isLength({ min: 8 })
+    .withMessage('La contraseña debe tener al menos 8 caracteres')
+    .matches(/^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/)
     .withMessage('La contraseña debe contener letras, números y signos'),
 ];
 
