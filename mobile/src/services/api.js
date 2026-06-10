@@ -4,7 +4,7 @@ import * as SecureStore from 'expo-secure-store';
 // ⚠️ CONFIGURACIÓN DE CONEXIÓN CLOUD VS LOCAL:
 // Si quieres usar producción explícitamente crea un `.env` con API_BASE_URL.
 // En desarrollo local con Tailscale recomendamos usar la IP de tu equipo.
-const USE_PRODUCTION = false;
+const USE_PRODUCTION = true;
 
 const ENV_API_BASE_URL = process.env.API_BASE_URL || process.env.REACT_NATIVE_APP_API_BASE_URL;
 const LOCAL_IP = '100.101.30.4';

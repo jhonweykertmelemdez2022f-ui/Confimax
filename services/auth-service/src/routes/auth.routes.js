@@ -16,12 +16,12 @@ const validateRequest = (req, res, next) => {
   next();
 };
 
-const passwordRules = [
+const registerPasswordRules = [
   body('password')
-    .isLength({ min: 8 })
-    .withMessage('La contraseña debe tener al menos 8 caracteres')
-    .matches(/^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/)
-    .withMessage('La contraseña debe contener letras, números y signos'),
+    .isLength({ min: 8, max: 8 })
+    .withMessage('La contraseña debe tener exactamente 8 caracteres')
+    .matches(/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8}$/)
+    .withMessage('La contraseña debe contener mayúsculas, minúsculas, números y signos'),
 ];
 
 router.post(
@@ -29,7 +29,7 @@ router.post(
   [
     body('username').trim().isLength({ min: 3, max: 30 }).withMessage('Username must be 3-30 characters'),
     body('email').isEmail().withMessage('Valid email required'),
-    ...passwordRules,
+    ...registerPasswordRules,
     body('role').optional().isIn(['admin', 'vendor', 'manager', 'customer', 'cliente', 'vendedor']).withMessage('Invalid role'),
   ],
   validateRequest,
@@ -40,7 +40,7 @@ router.post(
   '/login',
   [
     body('username').trim().notEmpty().withMessage('Username required'),
-    ...passwordRules,
+    body('password').notEmpty().withMessage('Password required'),
   ],
   validateRequest,
   authController.login

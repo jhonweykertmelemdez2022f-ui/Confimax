@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import { useAuthStore } from '../../stores/authStore';
 import api from '../../services/api';
-import { validateUsername, validatePassword } from '../../utils/validation';
+import { validateUsername, validateLoginPassword } from '../../utils/validation';
 import * as SecureStore from 'expo-secure-store';
 import * as LocalAuthentication from 'expo-local-authentication';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -182,7 +182,7 @@ function LoginScreen({ navigation }) {
     
     // Validate fields
     const usernameError = validateUsername(trimmedUsername);
-    const passwordError = validatePassword(password);
+    const passwordError = validateLoginPassword(password);
     
     if (usernameError || passwordError) {
       setErrors({

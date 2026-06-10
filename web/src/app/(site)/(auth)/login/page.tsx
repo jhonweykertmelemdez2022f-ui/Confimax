@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { validatePassword, validateUsernameOrEmail } from "@/lib/validation";
+import { validateLoginPassword, validateUsernameOrEmail } from "@/lib/validation";
 
 export default function LoginPage() {
   const [usernameOrEmail, setUsernameOrEmail] = useState("");
@@ -25,7 +25,7 @@ export default function LoginPage() {
     setError("");
 
     const usernameError = validateUsernameOrEmail(usernameOrEmail);
-    const passwordError = validatePassword(password);
+    const passwordError = validateLoginPassword(password);
     if (usernameError || passwordError) {
       setError(usernameError || passwordError);
       setLoading(false);

@@ -36,14 +36,31 @@ console.log('================================================================\n'
 process.env.EXPO_PACKAGER_HOSTNAME = tailscaleIp;
 process.env.REACT_NATIVE_PACKAGER_HOSTNAME = tailscaleIp;
 
-const child = spawn(
-  'npx',
-  ['expo', 'start', '--port', '6767', '--host', 'lan'],
-  {
-    stdio: 'inherit',
-    shell: false,
-  }
-);
+let child;
+if (process.platform === 'win32') {
+  child = spawn(
+    'cmd.exe',
+    ['/c', 'npx expo start --port 6767 --host lan'],
+    {
+      stdio: 'inherit',
+      shell: false,
+    }
+  );
+} else {
+  child = spawn(
+    'npx',
+    ['expo', 'start', '--port', '6767', '--host', 'lan'],
+    {
+      stdio: 'inherit',
+      shell: false,
+    }
+  );
+}
+
+child.on('error', (error) => {
+  console.error('Error launching Expo:', error.message);
+  process.exit(1);
+});
 
 child.on('close', (code) => {
   process.exit(code);
