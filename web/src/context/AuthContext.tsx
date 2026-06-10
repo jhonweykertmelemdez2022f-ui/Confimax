@@ -15,6 +15,8 @@ interface User {
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
+  isLockedOut: boolean;
+  lockoutRemaining: number;
   login: (usernameOrEmail: string, password: string) => Promise<User>;
   register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => void;
@@ -240,7 +242,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, register, logout, recoverPassword }}>
+    <AuthContext.Provider value={{ user, isLoading, isLockedOut, lockoutRemaining, login, register, logout, recoverPassword }}>
       {children}
       
       {/* Alert de token expirado */}

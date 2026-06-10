@@ -32,6 +32,7 @@ interface Sale {
   tax: number;
   discount: number;
   total: number;
+  currency?: string;
   notes?: string;
   items?: SaleItem[];
   created_at: string;

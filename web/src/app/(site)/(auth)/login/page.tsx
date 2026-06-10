@@ -27,7 +27,7 @@ export default function LoginPage() {
     const usernameError = validateUsernameOrEmail(usernameOrEmail);
     const passwordError = validateLoginPassword(password);
     if (usernameError || passwordError) {
-      setError(usernameError || passwordError);
+      setError(usernameError || passwordError || "");
       setLoading(false);
       return;
     }

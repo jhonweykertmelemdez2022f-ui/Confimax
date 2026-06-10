@@ -38,11 +38,12 @@ export default function ProductDetailPage() {
 
   useEffect(() => {
     const loadProduct = async () => {
-      if (!params?.id) return;
+      const productId = Array.isArray(params?.id) ? params.id[0] : params?.id;
+      if (!productId) return;
       setLoading(true);
       setError("");
       try {
-        const data = await api.getProduct(params.id);
+        const data = await api.getProduct(productId);
         setProduct(data);
       } catch (err: any) {
         console.error("Error cargando producto:", err);
