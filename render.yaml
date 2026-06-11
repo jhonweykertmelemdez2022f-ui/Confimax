@@ -99,6 +99,12 @@ services:
           type: web
           envVarKey: RENDER_EXTERNAL_URL
 
+      - key: PROVIDERS_SERVICE_URL
+        fromService:
+          name: confimax-providers-service
+          type: web
+          envVarKey: RENDER_EXTERNAL_URL
+
       - key: NOTIFICATIONS_SERVICE_URL
         fromService:
           name: confimax-notifications-service
@@ -220,7 +226,30 @@ services:
           envVarKey: JWT_SECRET
 
   # ============================================================================
-  # SERVICIO 6: Confimax Notifications Service
+  # SERVICIO 6: Confimax Providers Service
+  # ============================================================================
+  - type: web
+    name: confimax-providers-service
+    runtime: node
+    plan: free
+    buildCommand: npm install && cd services/providers-service && npm install
+    startCommand: cd services/providers-service && npm start
+    healthCheckPath: /health
+    envVars:
+      - fromGroup: confimax-cloud-credentials
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      
+      - key: JWT_SECRET
+        fromService:
+          name: confimax-auth-service
+          type: web
+          envVarKey: JWT_SECRET
+
+  # ============================================================================
+  # SERVICIO 7: Confimax Notifications Service
   # ============================================================================
   - type: web
     name: confimax-notifications-service
@@ -243,7 +272,7 @@ services:
           envVarKey: JWT_SECRET
 
   # ============================================================================
-  # SERVICIO 7: Confimax Fabiana Service (Chatbot)
+  # SERVICIO 8: Confimax Fabiana Service (Chatbot)
   # ============================================================================
   - type: web
     name: confimax-fabiana-service
