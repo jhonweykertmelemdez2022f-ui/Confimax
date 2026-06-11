@@ -27,6 +27,11 @@ export default function ProvidersPage() {
   });
   const [productForm, setProductForm] = useState({ name: '', sku: '', price: '' });
   const [purchaseForm, setPurchaseForm] = useState({ total: '', tax: '', due_date: '', items: '' });
+  const [productQuery, setProductQuery] = useState('');
+  const [productResults, setProductResults] = useState<any[]>([]);
+  const [productSearchLoading, setProductSearchLoading] = useState(false);
+  const [purchaseItems, setPurchaseItems] = useState<any[]>([]);
+  const [selectedSearchProduct, setSelectedSearchProduct] = useState<any>(null);
   const [providerProducts, setProviderProducts] = useState<any[]>([]);
   const [providerPurchases, setProviderPurchases] = useState<any[]>([]);
   const [expiringInvoices, setExpiringInvoices] = useState<any[]>([]);
@@ -196,28 +201,80 @@ export default function ProvidersPage() {
     }
   };
 
+  const handleSearchProducts = async (q: string) => {
+    setProductQuery(q);
+    if (!q || q.trim() === '') { setProductResults([]); return; }
+    setProductSearchLoading(true);
+    try {
+      const res = await api.searchProducts(q.trim());
+      const data = res?.data || res || [];
+      setProductResults(Array.isArray(data) ? data : (data.data || []));
+    } catch (err) {
+      console.error('Product search failed', err);
+      setProductResults([]);
+    } finally {
+      setProductSearchLoading(false);
+    }
+  };
+
+  const handleAddItemToPurchase = (product: any, qty = 1, unit_price?: number) => {
+    const item = {
+      product_id: product.id,
+      name: product.name,
+      sku: product.sku,
+      qty: qty || 1,
+      unit_price: unit_price !== undefined ? Number(unit_price) : (product.price || 0),
+    };
+    setPurchaseItems((prev) => {
+      const existing = prev.find(p => p.product_id === item.product_id);
+      if (existing) {
+        return prev.map(p => p.product_id === item.product_id ? { ...p, qty: p.qty + item.qty, unit_price: item.unit_price } : p);
+      }
+      return [...prev, item];
+    });
+
+    // update total auto
+    const newTotal = (parseFloat(purchaseForm.total || '0') || 0) + (item.qty * item.unit_price);
+    setPurchaseForm({ ...purchaseForm, total: String(Math.round(newTotal * 100) / 100) });
+    setProductQuery('');
+    setProductResults([]);
+    setSelectedSearchProduct(null);
+  };
+
+  const handleRemovePurchaseItem = (productId: string) => {
+    const remaining = purchaseItems.filter(i => i.product_id !== productId);
+    setPurchaseItems(remaining);
+    // recalc total
+    const newTotal = remaining.reduce((s, it) => s + (it.qty * (it.unit_price || 0)), 0);
+    setPurchaseForm({ ...purchaseForm, total: String(Math.round(newTotal * 100) / 100) });
+  };
+
   const handleRecordPurchase = async () => {
     if (!selectedProvider) return;
-    if (!purchaseForm.total.trim() || !purchaseForm.due_date.trim()) {
-      setErrorMsg('Total y fecha de vencimiento son obligatorios.');
+    if (!purchaseForm.due_date.trim()) {
+      setErrorMsg('La fecha de vencimiento es obligatoria.');
       setTimeout(() => setErrorMsg(''), 4000);
       return;
     }
 
     try {
-      const items = purchaseForm.items
+      const itemsToSend = purchaseItems.length > 0 ? purchaseItems.map(i => ({ product_id: i.product_id, name: i.name, qty: i.qty, unit_price: i.unit_price })) : (purchaseForm.items
         .split(',')
         .map((item) => item.trim())
         .filter(Boolean)
-        .map((description) => ({ description }));
+        .map((description) => ({ description })));
+
+      const totalToSend = purchaseItems.length > 0 ? purchaseItems.reduce((s, it) => s + (it.qty * (it.unit_price || 0)), 0) : parseFloat(purchaseForm.total) || 0;
 
       await api.recordPurchase(selectedProvider.id, {
-        total: parseFloat(purchaseForm.total) || 0,
-        tax: parseFloat(purchaseForm.tax) || 0,
+        total: totalToSend,
+        tax: purchaseForm.tax ? parseFloat(purchaseForm.tax) : undefined,
         due_date: purchaseForm.due_date,
-        items,
+        items: itemsToSend,
       });
+
       setPurchaseForm({ total: '', tax: '', due_date: '', items: '' });
+      setPurchaseItems([]);
       await loadProviderDetails(selectedProvider.id);
       await loadExpiringInvoices();
       setSuccessMsg('Compra registrada con IVA.');
@@ -358,10 +415,52 @@ export default function ProvidersPage() {
                   ))}
                 </div>
                 <div className="space-y-3">
-                  <input value={productForm.name} onChange={(e) => setProductForm({ ...productForm, name: e.target.value })} className="w-full px-4 py-3 min-h-[44px] bg-white dark:bg-surface-bright border border-slate-900 dark:border-white font-data-label text-sm outline-none focus:ring-1 focus:ring-data-blue" placeholder="Nombre producto" />
-                  <input value={productForm.sku} onChange={(e) => setProductForm({ ...productForm, sku: e.target.value })} className="w-full px-4 py-3 min-h-[44px] bg-white dark:bg-surface-bright border border-slate-900 dark:border-white font-data-label text-sm outline-none focus:ring-1 focus:ring-data-blue" placeholder="SKU" />
-                  <input value={productForm.price} onChange={(e) => setProductForm({ ...productForm, price: e.target.value })} className="w-full px-4 py-3 min-h-[44px] bg-white dark:bg-surface-bright border border-slate-900 dark:border-white font-data-label text-sm outline-none focus:ring-1 focus:ring-data-blue" placeholder="Precio" type="number" />
-                  <button onClick={handleAddProduct} className="min-h-[44px] px-4 py-2 border border-slate-900 dark:border-white bg-white dark:bg-surface-bright text-slate-900 dark:text-white font-data-label text-xs uppercase tracking-widest hover:bg-slate-900 hover:text-white dark:hover:bg-white dark:hover:text-slate-900 transition-colors w-full">Agregar producto</button>
+                  <div>
+                    <input value={productQuery} onChange={(e) => handleSearch(e.target.value)} placeholder="Buscar producto en inventario..." className="w-full px-4 py-3 min-h-[44px] bg-white dark:bg-surface-bright border border-slate-900 dark:border-white font-data-label text-sm outline-none" />
+                    {productSearchLoading && <div className="text-sm text-slate-500">Buscando...</div>}
+                    {productResults.length > 0 && (
+                      <div className="mt-2 border rounded bg-white">
+                        {productResults.slice(0,8).map(p => (
+                          <div key={p.id} className="p-2 hover:bg-slate-100 cursor-pointer" onClick={() => { setSelectedSearchProduct(p); setProductResults([]); setProductQuery(p.name); }}>
+                            <div className="font-semibold">{p.name}</div>
+                            <div className="text-xs text-slate-500">SKU: {p.sku || 'N/A'} · {p.category_name || ''}</div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2">
+                    <input value={selectedSearchProduct ? selectedSearchProduct.name : ''} readOnly className="col-span-2 px-3 py-2 border" placeholder="Producto seleccionado" />
+                    <input defaultValue={1} type="number" id="selected_qty" className="px-3 py-2 border" placeholder="Qty" />
+                  </div>
+                  <div className="space-y-2">
+                    <div className="text-sm text-slate-500">Precio unitario (editable)</div>
+                    <input defaultValue={selectedSearchProduct?.price || ''} type="number" id="selected_price" className="w-full px-4 py-3 min-h-[44px] border" placeholder="Precio unitario" />
+                    <button onClick={() => {
+                      if (!selectedSearchProduct) { setErrorMsg('Selecciona un producto antes de agregarlo.'); setTimeout(() => setErrorMsg(''), 3000); return; }
+                      const qtyInput: any = document.getElementById('selected_qty');
+                      const priceInput: any = document.getElementById('selected_price');
+                      const qty = parseInt(qtyInput?.value || '1', 10) || 1;
+                      const price = parseFloat(priceInput?.value || selectedSearchProduct.price || 0) || 0;
+                      handleAddItemToPurchase(selectedSearchProduct, qty, price);
+                    }} className="min-h-[44px] px-4 py-2 border bg-white">Agregar producto al pedido</button>
+                  </div>
+                  <div>
+                    {purchaseItems.length === 0 ? <div className="text-sm text-slate-500">No hay items agregados.</div> : (
+                      <div className="space-y-2">
+                        {purchaseItems.map(it => (
+                          <div key={it.product_id} className="p-2 border rounded flex justify-between items-center">
+                            <div>
+                              <div className="font-semibold">{it.name}</div>
+                              <div className="text-xs text-slate-500">SKU: {it.sku} · Qty: {it.qty} · Unit: {it.unit_price}</div>
+                            </div>
+                            <button onClick={() => handleRemovePurchaseItem(it.product_id)} className="text-red-600">Eliminar</button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 
