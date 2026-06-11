@@ -1,5 +1,6 @@
-const sharedPath = process.env.SHARED_MODULES_PATH || '../../shared';
-const { query, transaction } = require(sharedPath + '/database');
+const path = require('path');
+const sharedPath = process.env.SHARED_MODULES_PATH || path.resolve(__dirname, '../../..', 'shared');
+const { query, transaction } = require(path.join(sharedPath, 'database'));
 const { v4: uuidv4 } = require('uuid');
 
 const listProviders = async (params) => {

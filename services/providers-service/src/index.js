@@ -8,8 +8,9 @@ const purchaseRoutes = require('./routes/purchase.routes');
 const { errorHandler } = require('./middleware/error.middleware');
 const { rateLimiter } = require('./middleware/rateLimiter.middleware');
 
-const sharedPath = process.env.SHARED_MODULES_PATH || '../../shared';
-const { pool } = require(sharedPath + '/database');
+const path = require('path');
+const sharedPath = process.env.SHARED_MODULES_PATH || path.resolve(__dirname, '../..', 'shared');
+const { pool } = require(path.join(sharedPath, 'database'));
 
 const app = express();
 const PORT = process.env.PORT || 3010;
