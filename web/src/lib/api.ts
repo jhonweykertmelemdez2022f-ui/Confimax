@@ -50,7 +50,7 @@ class ApiClient {
     this.onTokenExpired = callback;
   }
 
-  private async request<T>(
+  private async request<T = any>(
     endpoint: string,
     options: RequestInit = {},
     skipAuth: boolean = false
