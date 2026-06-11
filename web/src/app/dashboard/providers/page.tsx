@@ -416,27 +416,27 @@ export default function ProvidersPage() {
                 </div>
                 <div className="space-y-3">
                   <div>
-                    <input value={productQuery} onChange={(e) => handleSearch(e.target.value)} placeholder="Buscar producto en inventario..." className="w-full px-4 py-3 min-h-[44px] bg-white dark:bg-surface-bright border border-slate-900 dark:border-white font-data-label text-sm outline-none" />
-                    {productSearchLoading && <div className="text-sm text-slate-500">Buscando...</div>}
+                    <input value={productQuery} onChange={(e) => handleSearchProducts(e.target.value)} placeholder="Buscar producto en inventario..." className="w-full px-4 py-3 min-h-[44px] bg-white dark:bg-slate-800 border border-slate-900 dark:border-slate-600 font-data-label text-sm text-slate-900 dark:text-slate-100 outline-none" />
+                      {productSearchLoading && <div className="text-sm text-slate-500 dark:text-slate-300">Buscando...</div>}
                     {productResults.length > 0 && (
                       <div className="mt-2 border rounded bg-white">
                         {productResults.slice(0,8).map(p => (
-                          <div key={p.id} className="p-2 hover:bg-slate-100 cursor-pointer" onClick={() => { setSelectedSearchProduct(p); setProductResults([]); setProductQuery(p.name); }}>
-                            <div className="font-semibold">{p.name}</div>
-                            <div className="text-xs text-slate-500">SKU: {p.sku || 'N/A'} · {p.category_name || ''}</div>
-                          </div>
+                              <div key={p.id} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer" onClick={() => { setSelectedSearchProduct(p); setProductResults([]); setProductQuery(p.name); }}>
+                                <div className="font-semibold text-slate-900 dark:text-slate-100">{p.name}</div>
+                                <div className="text-xs text-slate-500 dark:text-slate-300">SKU: {p.sku || 'N/A'} · {p.category_name || ''}</div>
+                              </div>
                         ))}
                       </div>
                     )}
                   </div>
 
                   <div className="grid grid-cols-3 gap-2">
-                    <input value={selectedSearchProduct ? selectedSearchProduct.name : ''} readOnly className="col-span-2 px-3 py-2 border" placeholder="Producto seleccionado" />
-                    <input defaultValue={1} type="number" id="selected_qty" className="px-3 py-2 border" placeholder="Qty" />
+                    <input value={selectedSearchProduct ? selectedSearchProduct.name : ''} readOnly className="col-span-2 px-3 py-2 border bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-600" placeholder="Producto seleccionado" />
+                    <input defaultValue={1} type="number" id="selected_qty" className="px-3 py-2 border bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-600" placeholder="Qty" />
                   </div>
                   <div className="space-y-2">
-                    <div className="text-sm text-slate-500">Precio unitario (editable)</div>
-                    <input defaultValue={selectedSearchProduct?.price || ''} type="number" id="selected_price" className="w-full px-4 py-3 min-h-[44px] border" placeholder="Precio unitario" />
+                    <div className="text-sm text-slate-500 dark:text-slate-300">Precio unitario (editable)</div>
+                    <input defaultValue={selectedSearchProduct?.price || ''} type="number" id="selected_price" className="w-full px-4 py-3 min-h-[44px] border bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-600" placeholder="Precio unitario" />
                     <button onClick={() => {
                       if (!selectedSearchProduct) { setErrorMsg('Selecciona un producto antes de agregarlo.'); setTimeout(() => setErrorMsg(''), 3000); return; }
                       const qtyInput: any = document.getElementById('selected_qty');
@@ -447,15 +447,15 @@ export default function ProvidersPage() {
                     }} className="min-h-[44px] px-4 py-2 border bg-white">Agregar producto al pedido</button>
                   </div>
                   <div>
-                    {purchaseItems.length === 0 ? <div className="text-sm text-slate-500">No hay items agregados.</div> : (
+                    {purchaseItems.length === 0 ? <div className="text-sm text-slate-500 dark:text-slate-300">No hay items agregados.</div> : (
                       <div className="space-y-2">
                         {purchaseItems.map(it => (
-                          <div key={it.product_id} className="p-2 border rounded flex justify-between items-center">
+                          <div key={it.product_id} className="p-2 border rounded flex justify-between items-center bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600">
                             <div>
-                              <div className="font-semibold">{it.name}</div>
-                              <div className="text-xs text-slate-500">SKU: {it.sku} · Qty: {it.qty} · Unit: {it.unit_price}</div>
+                              <div className="font-semibold text-slate-900 dark:text-slate-100">{it.name}</div>
+                              <div className="text-xs text-slate-500 dark:text-slate-300">SKU: {it.sku} · Qty: {it.qty} · Unit: {it.unit_price}</div>
                             </div>
-                            <button onClick={() => handleRemovePurchaseItem(it.product_id)} className="text-red-600">Eliminar</button>
+                            <button onClick={() => handleRemovePurchaseItem(it.product_id)} className="text-red-500">Eliminar</button>
                           </div>
                         ))}
                       </div>
