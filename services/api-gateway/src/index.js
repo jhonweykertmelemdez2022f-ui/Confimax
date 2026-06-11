@@ -67,6 +67,12 @@ const SERVICES = {
     changeOrigin: true,
   },
 
+  providers: {
+    target: process.env.PROVIDERS_SERVICE_URL || 'http://providers-service:3010',
+    pathRewrite: { '^/api/suppliers': '' },
+    changeOrigin: true,
+  },
+
   qr: {
     target: process.env.INVENTORY_SERVICE_URL || 'http://inventory-service:3002',
     pathRewrite: { '^/api/qr': '/qr' },
@@ -210,6 +216,19 @@ console.log(`[GATEWAY] 🧩 Running in MICROSERVICES MODE`);
   app.use('/api/notifications', authenticateGateway, createServiceProxy('notifications', {
     target: SERVICES.notifications.target,
     pathRewrite: { '^/api/notifications': '/notifications' },
+    changeOrigin: true,
+  }));
+
+  // Providers service (suppliers & purchases)
+  app.use('/api/suppliers', authenticateGateway, createServiceProxy('providers', {
+    target: SERVICES.providers.target,
+    pathRewrite: { '^/api/suppliers': '' },
+    changeOrigin: true,
+  }));
+
+  app.use('/api/purchases', authenticateGateway, createServiceProxy('providers', {
+    target: SERVICES.providers.target,
+    pathRewrite: { '^/api/purchases': '' },
     changeOrigin: true,
   }));
 

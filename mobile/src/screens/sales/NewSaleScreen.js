@@ -18,7 +18,23 @@ import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ShoppingCart, User, Search, Trash2, Plus, Minus, Tag, CreditCard, UserPlus, X } from 'lucide-react-native';
 
-const VAT_RATE = 0.16; // 16% VAT
+const CURRENCY_OPTIONS = [
+  { value: 'USD', label: 'Dólares' },
+  { value: 'COP', label: 'Pesos' },
+  { value: 'VES', label: 'Bolívares' },
+];
+
+const TAX_RATE_BY_CURRENCY = {
+  USD: 0.16,
+  COP: 0.16,
+  VES: 0.16,
+};
+
+const formatCurrency = (amount, currency = 'USD') => {
+  const num = parseFloat(String(amount || 0));
+  const symbol = currency === 'VES' ? 'Bs.' : currency === 'COP' ? 'COP' : '$';
+  return `${symbol} ${isNaN(num) ? '0.00' : num.toFixed(2)}`;
+};
 
 function NewSaleScreen({route, navigation}) {
   const initialItem = route.params?.initialItem;
@@ -35,8 +51,9 @@ function NewSaleScreen({route, navigation}) {
   const [searchingProducts, setSearchingProducts] = useState(false);
 
   // Sale states
-  const [cart, setCart] = useState([]); // Stores { product, quantity, discount }
+  const [cart, setCart] = useState([]); // Stores { product, quantity, discount, unit_price, original_price, original_currency }
   const [discount, setDiscount] = useState(0); // Overall sale discount
+  const [saleCurrency, setSaleCurrency] = useState('USD');
   const [loading, setLoading] = useState(false);
   
   const {colors, spacing, borderRadius, typography} = useTheme();
@@ -112,15 +129,46 @@ function NewSaleScreen({route, navigation}) {
     setSelectedCustomer(null);
   };
 
-  const handleAddToCart = (product) => {
+  const handleAddToCart = async (product) => {
+    const sourceCurrency = product.currency || product.currency_code || 'USD';
+    const basePrice = parseFloat(String(product.unitPrice || product.unit_price || product.price || 0)) || 0;
+    let unitPrice = basePrice;
+
+    if (sourceCurrency !== saleCurrency) {
+      try {
+        const convert = await salesAPI.convertPrice({ amount: basePrice, from: sourceCurrency, to: saleCurrency });
+        unitPrice = convert.data?.amount ?? basePrice;
+      } catch (e) {
+        console.warn('Currency conversion failed', e);
+      }
+    }
+
     setCart(prevCart => {
       const existingItem = prevCart.find(item => item.product.id === product.id);
       if (existingItem) {
         return prevCart.map(item =>
-          item.product.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+          item.product.id === product.id
+            ? {
+                ...item,
+                quantity: item.quantity + 1,
+                total: (item.quantity + 1) * item.unit_price
+              }
+            : item
         );
       } else {
-        return [...prevCart, { product, quantity: 1, discount: 0 }];
+        return [
+          ...prevCart,
+          {
+            product,
+            quantity: 1,
+            discount: 0,
+            original_price: basePrice,
+            original_currency: sourceCurrency,
+            unit_price: unitPrice,
+            currency: saleCurrency,
+            total: unitPrice
+          }
+        ];
       }
     });
     setProductSearchQuery('');
@@ -150,16 +198,43 @@ function NewSaleScreen({route, navigation}) {
     );
   };
 
+  const handleCurrencyChange = async (currency) => {
+    const convertedCart = await Promise.all(cart.map(async item => {
+      const fromCurrency = item.original_currency || item.currency || 'USD';
+      const basePrice = item.original_price ?? item.unit_price ?? 0;
+      let unit_price = basePrice;
+
+      if (fromCurrency !== currency) {
+        try {
+          const convert = await salesAPI.convertPrice({ amount: basePrice, from: fromCurrency, to: currency });
+          unit_price = convert.data?.amount ?? basePrice;
+        } catch (e) {
+          console.warn('Currency conversion failed', e);
+        }
+      }
+
+      return {
+        ...item,
+        currency,
+        unit_price,
+        total: unit_price * item.quantity,
+      };
+    }));
+
+    setSaleCurrency(currency);
+    setCart(convertedCart);
+  };
+
   const calculateTotals = () => {
     let subtotal = cart.reduce((sum, item) => {
-      const price = item.product.unitPrice || item.product.unit_price || item.product.price || 0;
-      return sum + (price * item.quantity);
+      const unitPrice = parseFloat(String(item.unit_price || item.product.unitPrice || item.product.unit_price || item.product.price || 0)) || 0;
+      return sum + (unitPrice * item.quantity);
     }, 0);
-    
+
     let itemDiscountsTotal = cart.reduce((sum, item) => sum + (item.discount || 0), 0);
     let totalDiscount = discount + itemDiscountsTotal;
     let taxableBase = Math.max(0, subtotal - totalDiscount);
-    const ivaAmount = taxableBase * VAT_RATE;
+    const ivaAmount = taxableBase * (TAX_RATE_BY_CURRENCY[saleCurrency] ?? 0.16);
     const total = taxableBase + ivaAmount;
 
     return { subtotal, totalDiscount, ivaAmount, total };
@@ -173,24 +248,30 @@ function NewSaleScreen({route, navigation}) {
       return;
     }
 
+    const { subtotal, totalDiscount, ivaAmount, total } = calculateTotals();
+
     setLoading(true);
     try {
       await salesAPI.createSale({ 
         customer_id: selectedCustomer?.id,
-        customer_name: selectedCustomer?.name, 
-        discount: totalDiscount, // Match backend model field name
+        customer_name: selectedCustomer?.name,
+        discount: totalDiscount,
+        tax: ivaAmount,
+        subtotal,
+        total,
+        currency: saleCurrency,
         status: 'pendiente',
-        items: cart.map(item => {
-          const price = item.product.unitPrice || item.product.unit_price || item.product.price || 0;
-          return {
-            product_id: item.product.id,
-            sku: item.product.sku,
-            product_name: item.product.name,
-            quantity: item.quantity,
-            unit_price: price,
-            discount: item.discount || 0,
-          };
-        }),
+        items: cart.map(item => ({
+          product_id: item.product.id,
+          sku: item.product.sku,
+          product_name: item.product.name,
+          quantity: item.quantity,
+          unit_price: item.unit_price,
+          discount: item.discount || 0,
+        })),
+      }, {
+        currency: saleCurrency,
+        taxRate: TAX_RATE_BY_CURRENCY[saleCurrency] ?? 0.16,
       });
       Alert.alert('Éxito', 'Venta registrada con éxito.', [
         { text: 'OK', onPress: () => navigation.goBack() }
@@ -308,7 +389,7 @@ function NewSaleScreen({route, navigation}) {
                   >
                     <View style={{ flex: 1 }}>
                       <Text style={dynamicStyles.searchResultItemText}>{item.name}</Text>
-                      <Text style={dynamicStyles.searchResultItemPrice}>${Number(price).toFixed(2)}</Text>
+                      <Text style={dynamicStyles.searchResultItemPrice}>{formatCurrency(price, saleCurrency)}</Text>
                     </View>
                     <Plus size={24} color={colors.primary} />
                   </TouchableOpacity>
@@ -330,12 +411,12 @@ function NewSaleScreen({route, navigation}) {
             </View>
             
             {cart.map((item) => {
-              const price = item.product.unitPrice || item.product.unit_price || item.product.price || 0;
+              const price = item.unit_price || item.product.unitPrice || item.product.unit_price || item.product.price || 0;
               return (
                 <View key={item.product.id} style={dynamicStyles.cartItem}>
                   <View style={dynamicStyles.cartItemDetails}>
                     <Text style={dynamicStyles.cartItemName}>{item.product.name}</Text>
-                    <Text style={dynamicStyles.cartItemPrice}>${Number(price).toFixed(2)} c/u</Text>
+                    <Text style={dynamicStyles.cartItemPrice}>{formatCurrency(price, saleCurrency)} c/u</Text>
                     
                     <View style={dynamicStyles.discountRow}>
                       <Tag size={12} color={colors.muted} />
@@ -393,18 +474,40 @@ function NewSaleScreen({route, navigation}) {
             />
           </View>
 
+          <View style={dynamicStyles.inputGroup}>
+            <View style={dynamicStyles.labelRow}>
+              <Text style={dynamicStyles.label}>MONEDA</Text>
+            </View>
+            <View style={dynamicStyles.currencyRow}>
+              {CURRENCY_OPTIONS.map((option) => (
+                <TouchableOpacity
+                  key={option.value}
+                  onPress={() => handleCurrencyChange(option.value)}
+                  style={[
+                    dynamicStyles.currencyOption,
+                    saleCurrency === option.value && dynamicStyles.currencyOptionActive,
+                  ]}
+                >
+                  <Text style={[dynamicStyles.currencyOptionText, saleCurrency === option.value && dynamicStyles.currencyOptionTextActive]}>
+                    {option.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+
           <View style={dynamicStyles.totalsContainer}>
             <View style={dynamicStyles.summaryRow}>
               <Text style={dynamicStyles.summaryLabel}>SUBTOTAL</Text>
-              <Text style={dynamicStyles.summaryValue}>${subtotal.toFixed(2)}</Text>
+              <Text style={dynamicStyles.summaryValue}>{formatCurrency(subtotal, saleCurrency)}</Text>
             </View>
             <View style={dynamicStyles.summaryRow}>
               <Text style={dynamicStyles.summaryLabel}>DESCUENTO</Text>
-              <Text style={[dynamicStyles.summaryValue, { color: colors.error }]}>-${totalDiscount.toFixed(2)}</Text>
+              <Text style={[dynamicStyles.summaryValue, { color: colors.error }]}>-{formatCurrency(totalDiscount, saleCurrency)}</Text>
             </View>
             <View style={dynamicStyles.summaryRow}>
-              <Text style={dynamicStyles.summaryLabel}>IMPUESTO (16% IVA)</Text>
-              <Text style={dynamicStyles.summaryValue}>${ivaAmount.toFixed(2)}</Text>
+              <Text style={dynamicStyles.summaryLabel}>IMPUESTO ({Math.round((TAX_RATE_BY_CURRENCY[saleCurrency] ?? 0.16) * 100)}% IVA)</Text>
+              <Text style={dynamicStyles.summaryValue}>{formatCurrency(ivaAmount, saleCurrency)}</Text>
             </View>
             <LinearGradient
               colors={[colors.primary, colors.primaryDark]}
@@ -413,7 +516,7 @@ function NewSaleScreen({route, navigation}) {
               style={dynamicStyles.totalRow}
             >
               <Text style={dynamicStyles.totalLabel}>TOTAL A PAGAR</Text>
-              <Text style={dynamicStyles.totalValue}>${total.toFixed(2)}</Text>
+              <Text style={dynamicStyles.totalValue}>{formatCurrency(total, saleCurrency)}</Text>
             </LinearGradient>
           </View>
 
@@ -669,6 +772,32 @@ const createStyles = (colors, spacing, borderRadius, typography) => StyleSheet.c
   totalsContainer: {
     marginTop: 10,
     marginBottom: 20,
+  },
+  currencyRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  currencyOption: {
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.borderMuted,
+    backgroundColor: colors.surfaceDim,
+    marginRight: 8,
+  },
+  currencyOptionActive: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  currencyOptionText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.onSurface,
+  },
+  currencyOptionTextActive: {
+    color: '#ffffff',
   },
   summaryRow: {
     flexDirection: 'row',

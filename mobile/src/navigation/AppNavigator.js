@@ -33,6 +33,9 @@ import CustomerProductDetailScreen from '../screens/customer/CustomerProductDeta
 import AuditLogsScreen from '../screens/users/AuditLogsScreen';
 import QrCodeDisplayScreen from '../screens/common/QrCodeDisplayScreen';
 import SalesReportsScreen from '../screens/reports/SalesReportsScreen';
+import ProvidersScreen from '../screens/providers/ProvidersScreen';
+import NewProviderScreen from '../screens/providers/NewProviderScreen';
+import ProviderDetailScreen from '../screens/providers/ProviderDetailScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -136,6 +139,7 @@ function MainTabs() {
         <>
           <Tab.Screen name="Inicio" component={HomeScreen} />
           <Tab.Screen name="Productos" component={ProductsScreen} />
+          <Tab.Screen name="Proveedores" component={ProvidersScreen} />
           <Tab.Screen name="Ventas" component={SalesScreen} />
           <Tab.Screen name="Clientes" component={CustomersScreen} />
           <Tab.Screen name="Usuarios" component={UsersScreen} />
@@ -230,6 +234,17 @@ function AppNavigator() {
         name="NewProduct"
         component={NewProductScreen}
         options={({ route }) => ({ title: route.params?.product ? 'Editar Producto' : 'Registrar Producto' })}
+      />
+      <Stack.Screen
+        name="NewProvider"
+        component={NewProviderScreen}
+        options={{ title: 'Registrar Proveedor' }}
+      />
+
+      <Stack.Screen
+        name="ProviderDetail"
+        component={ProviderDetailScreen}
+        options={{ title: 'Proveedor' }}
       />
       <Stack.Screen
         name="Categories"

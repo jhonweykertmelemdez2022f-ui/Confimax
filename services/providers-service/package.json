@@ -5,7 +5,8 @@
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
-    "dev": "nodemon src/index.js"
+    "dev": "nodemon src/index.js",
+    "test": "jest --runInBand"
   },
   "dependencies": {
     "cors": "^2.8.5",
@@ -16,5 +17,11 @@
     "jsonwebtoken": "^9.0.0",
     "rate-limiter-flexible": "^2.4.5",
     "uuid": "^9.0.0"
+  }
+  ,
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "supertest": "^6.4.3",
+    "nodemon": "^2.0.22"
   }
 }

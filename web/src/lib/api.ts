@@ -436,6 +436,38 @@ class ApiClient {
     return this.request(`/purchases${queryString}`);
   }
 
+  async getSupplier(id: string) {
+    return this.request(`/suppliers/${id}`);
+  }
+  
+  async recordPurchase(supplierId: string, data: any) {
+    return this.request(`/purchases/suppliers/${supplierId}`, { method: 'POST', body: JSON.stringify(data) });
+  }
+
+  async getExpiringInvoices(days: number = 7) {
+    return this.request(`/purchases/expiring?days=${days}`);
+  }
+
+  async createSupplier(data: any) {
+    return this.request('/suppliers', { method: 'POST', body: JSON.stringify(data) });
+  }
+
+  async updateSupplier(id: string, data: any) {
+    return this.request(`/suppliers/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+  }
+
+  async deleteSupplier(id: string) {
+    return this.request(`/suppliers/${id}`, { method: 'DELETE' });
+  }
+
+  async addSupplierProduct(supplierId: string, data: any) {
+    return this.request(`/suppliers/${supplierId}/products`, { method: 'POST', body: JSON.stringify(data) });
+  }
+
+  async getSupplierProducts(supplierId: string) {
+    return this.request(`/suppliers/${supplierId}/products`);
+  }
+
   async createUser(data: { username: string; email: string; password?: string; role: string; active?: boolean }) {
     return this.request('/auth/users', {
       method: 'POST',
