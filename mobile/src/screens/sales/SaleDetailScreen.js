@@ -184,13 +184,13 @@ function SaleDetailScreen({route, navigation}) {
 
       <View style={dynamicStyles.section}>
         <Text style={dynamicStyles.label}>DETALLE DE LA COMPRA</Text>
-        {(sale.items || []).map((item, index) => (
+        {((sale.items || sale.sale_items || sale.order_items) || []).map((item, index) => (
           <View key={index} style={dynamicStyles.itemRow}>
             <View style={dynamicStyles.itemLeft}>
-              <Text style={dynamicStyles.itemQty}>{item.quantity || item.qty}x</Text>
-              <Text style={dynamicStyles.itemName}>{item.product_name || item.name}</Text>
+              <Text style={dynamicStyles.itemQty}>{item.quantity || item.qty || item.quantity_sold}x</Text>
+              <Text style={dynamicStyles.itemName}>{item.product_name || item.name || item.product?.name}</Text>
             </View>
-            <Text style={dynamicStyles.itemPrice}>${item.unit_price || item.price}</Text>
+            <Text style={dynamicStyles.itemPrice}>${item.unit_price || item.price || 0}</Text>
           </View>
         ))}
 

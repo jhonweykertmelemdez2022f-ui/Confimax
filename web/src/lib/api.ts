@@ -373,6 +373,14 @@ class ApiClient {
     return this.request(`/customers/${id}`);
   }
 
+  async getExpiringCredits(days: number = 7) {
+    return this.request(`/credits/expiring?days=${days}`);
+  }
+
+  async getOverdueCredits() {
+    return this.request('/credits/overdue');
+  }
+
   async createCustomer(data: {
     name: string;
     email: string;
@@ -415,6 +423,17 @@ class ApiClient {
   async getAuditLogs(params?: { limit?: number; offset?: number; operation?: string; entity?: string }) {
     const queryString = params ? `?${new URLSearchParams(params as any).toString()}` : '';
     return this.request(`/backend/audit${queryString}`, { method: 'GET' });
+  }
+
+  // Suppliers / Providers
+  async getSuppliers(params?: { limit?: number; offset?: number }) {
+    const queryString = params ? `?${new URLSearchParams(params as any).toString()}` : '';
+    return this.request(`/suppliers${queryString}`);
+  }
+
+  async getPurchases(params?: { limit?: number; offset?: number; supplier_id?: string }) {
+    const queryString = params ? `?${new URLSearchParams(params as any).toString()}` : '';
+    return this.request(`/purchases${queryString}`);
   }
 
   async createUser(data: { username: string; email: string; password?: string; role: string; active?: boolean }) {

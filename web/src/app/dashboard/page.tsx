@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
+import { generateCombinedPdfAll } from "@/lib/pdfGenerator";
 import { gsap } from "gsap";
 import Link from "next/link";
 
@@ -130,9 +131,18 @@ export default function DashboardOverviewPage() {
         <div className="crosshair-tl" />
         <div className="crosshair-tr" />
         
-        <div className="flex items-center gap-3 mb-6 sm:mb-8">
+        <div className="flex items-center gap-3 mb-6 sm:mb-8 justify-between">
           <span className="material-symbols-outlined text-[24px] text-data-blue">bolt</span>
           <h2 className="font-headline-lg-mobile text-xl sm:text-2xl uppercase tracking-tighter text-slate-900 dark:text-white">ACCIONES RÁPIDAS</h2>
+          {user?.role === 'admin' && (
+            <button
+              onClick={() => generateCombinedPdfAll(api)}
+              className="ml-4 inline-flex items-center gap-2 px-3 py-2 border border-slate-900 dark:border-white text-sm rounded hover:bg-slate-900/5"
+            >
+              <span className="material-symbols-outlined">print</span>
+              Exportar PDF
+            </button>
+          )}
         </div>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">

@@ -103,8 +103,9 @@ export const inventoryAPI = {
 };
 
 export const salesAPI = {
-  createSale: (saleData) => api.post('/sales', saleData),
-  createCustomerSale: (saleData) => api.post('/sales/customer', saleData),
+  // allow optional currency and taxRate in sale creation so frontends can request conversion
+  createSale: (saleData, options = {}) => api.post('/sales', { ...saleData, currency: options.currency, taxRate: options.taxRate }),
+  createCustomerSale: (saleData, options = {}) => api.post('/sales/customer', { ...saleData, currency: options.currency, taxRate: options.taxRate }),
   createPayment: (paymentData) => api.post('/sales/payments', paymentData),
   getSales: (params) => api.get('/sales', { params }),
   getSale: (id) => api.get(`/sales/${id}`),
@@ -117,6 +118,29 @@ export const salesAPI = {
   convertPrice: (params) => api.get('/sales/convert', { params }),
 };
 
+// Proveedores / Suppliers module
+export const providersAPI = {
+  // CRUD proveedores
+  getProviders: (params) => api.get('/suppliers', { params }),
+  getProvider: (id) => api.get(`/suppliers/${id}`),
+  createProvider: (data) => api.post('/suppliers', data),
+  updateProvider: (id, data) => api.put(`/suppliers/${id}`, data),
+  deleteProvider: (id) => api.delete(`/suppliers/${id}`),
+
+  // Productos que ofrece el proveedor
+  getProviderProducts: (providerId) => api.get(`/suppliers/${providerId}/products`),
+  addProviderProduct: (providerId, data) => api.post(`/suppliers/${providerId}/products`, data),
+  updateProviderProduct: (providerId, productId, data) => api.put(`/suppliers/${providerId}/products/${productId}`, data),
+  deleteProviderProduct: (providerId, productId) => api.delete(`/suppliers/${providerId}/products/${productId}`),
+
+  // Compras registradas a proveedor (con IVA)
+  recordPurchase: (providerId, data) => api.post(`/purchases/suppliers/${providerId}`, data),
+  getPurchases: (params) => api.get('/purchases', { params }),
+
+  // Alertas de factura por vencer
+  getExpiringInvoices: (days = 7) => api.get('/purchases/expiring', { params: { days } }),
+};
+
 export const customersAPI = {
   getCustomers: (params) => api.get('/customers', { params }),
   getCustomer: (id) => api.get(`/customers/${id}`),
@@ -126,6 +150,8 @@ export const customersAPI = {
   deleteCustomer: (id) => api.delete(`/customers/${id}`),
   getCustomerDebt: (id) => api.get(`/customers/${id}/debt`),
   getCustomerCredits: (id) => api.get(`/customers/${id}/credits`),
+  getExpiringCredits: (days) => api.get('/credits/expiring', { params: { days } }),
+  getOverdueCredits: () => api.get('/credits/overdue'),
 };
 
 export const notificationsAPI = {

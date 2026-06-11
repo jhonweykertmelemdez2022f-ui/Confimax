@@ -5,6 +5,7 @@ import { Package, Users, ShoppingCart, RefreshCw, Settings, UserPlus, Info, Shop
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../../theme';
 import { inventoryAPI, salesAPI, customersAPI } from '../../services/api';
+import { generateCombinedPdfForAdmin } from '../../services/pdfService';
 import { useIsFocused } from '@react-navigation/native';
 
 function FadeInUpCard({ children, delay = 0, duration = 400 }) {
@@ -122,7 +123,8 @@ function HomeScreen({ navigation }) {
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({ products: 0, sales: 0, customers: 0 });
   const [activities, setActivities] = useState([]);
-  const [alerts, setAlerts] = useState({ lowStock: [], expiring: [] });
+  const [exportingPdf, setExportingPdf] = useState(false);
+const [alerts, setAlerts] = useState({ lowStock: [], expiringProducts: [], expiringInvoices: [] });
 
   useEffect(() => {
     loadHomeData();
@@ -136,7 +138,13 @@ function HomeScreen({ navigation }) {
         customersAPI.getCustomers().catch(() => ({ data: [] })),
         inventoryAPI.getLowStock(30).catch((err) => { console.log('Error getLowStock:', err); return { data: [] }; }),
         inventoryAPI.getExpiring(7).catch((err) => { console.log('Error getExpiring:', err); return { data: [] }; }),
-      ];
+      ]; 
+
+      if (['admin', 'manager', 'vendor'].includes(user?.role)) {
+        promises.push(customersAPI.getExpiringCredits(7).catch((err) => { console.log('Error getExpiringCredits:', err); return { data: [] }; }));
+      } else {
+        promises.push(Promise.resolve({ data: [] }));
+      }
 
       const results = await Promise.all(promises);
       
@@ -152,7 +160,8 @@ function HomeScreen({ navigation }) {
 
       setAlerts({
         lowStock: results[3]?.data || [],
-        expiring: results[4]?.data || []
+        expiringProducts: results[4]?.data || [],
+        expiringInvoices: results[5]?.data || []
       });
 
       console.log('Alerts loaded:', {
@@ -382,6 +391,17 @@ function HomeScreen({ navigation }) {
     },
   });
 
+  const handleExportPdf = async () => {
+    setExportingPdf(true);
+    try {
+      await generateCombinedPdfForAdmin();
+    } catch (e) {
+      console.log('Error exporting PDF:', e);
+    } finally {
+      setExportingPdf(false);
+    }
+  };
+
   if (loading) {
     return (
       <View style={styles.center}>
@@ -470,16 +490,24 @@ function HomeScreen({ navigation }) {
                   Reportes
                 </Text>
               </TouchableOpacity>
+              <TouchableOpacity
+                onPress={handleExportPdf}
+                style={[styles.adminButton, styles.adminButtonSecondary]}
+              >
+                <Text style={[styles.adminButtonText, styles.adminButtonTextSecondary]}>
+                  {exportingPdf ? 'Generando...' : 'Exportar PDF'}
+                </Text>
+              </TouchableOpacity>
             </View>
           </View>
         </FadeInUpCard>
       )}
 
-      {(alerts.lowStock.length > 0 || alerts.expiring.length > 0) && (
+      {(alerts.lowStock.length > 0 || alerts.expiringProducts.length > 0 || alerts.expiringInvoices.length > 0) && (
         <FadeInUpCard delay={380} duration={400}>
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Alertas de Inventario</Text>
+              <Text style={styles.sectionTitle}>Alertas de Inventario y Crédito</Text>
             </View>
 
             {alerts.lowStock.length > 0 && (
@@ -497,18 +525,34 @@ function HomeScreen({ navigation }) {
               </View>
             )}
 
-            {alerts.expiring.length > 0 && (
+            {alerts.expiringProducts.length > 0 && (
               <View style={[styles.activityCard, { borderColor: '#fecaca', borderWidth: 1 }]}>
                 <View style={styles.adminHeader}>
                   <Clock size={20} color="#dc2626" />
                   <Text style={[styles.adminTitle, { color: '#dc2626', fontSize: 16 }]}>Próximos a Expirar (≤ 7 días)</Text>
                 </View>
-                {alerts.expiring.slice(0, 5).map((item, i) => (
-                  <View key={`exp-${item.id}`} style={[styles.activityItem, i === Math.min(alerts.expiring.length, 5) - 1 && styles.activityItemLast]}>
+{alerts.expiringProducts.slice(0, 5).map((item, i) => (
+                  <View key={`exp-${item.id}`} style={[styles.activityItem, i === Math.min(alerts.expiringProducts.length, 5) - 1 && styles.activityItemLast]}>
                     <Text style={styles.activityText} numberOfLines={1}>{item.name || item.sku}</Text>
-                    <Text style={[styles.activityAmount, { color: '#dc2626' }]}>
+                    <Text style={[styles.activityAmount, { color: '#dc2626' }]}> 
                       {new Date(item.expiration_date).toLocaleDateString()}
                     </Text>
+                  </View>
+                ))}
+              </View>
+            )}
+
+            {alerts.expiringInvoices.length > 0 && (
+              <View style={[styles.activityCard, { borderColor: '#fee2e2', borderWidth: 1 }]}> 
+                <View style={styles.adminHeader}>
+                  <Clock size={20} color="#dc2626" />
+                  <Text style={[styles.adminTitle, { color: '#dc2626', fontSize: 16 }]}>Facturas próximas a vencer</Text>
+                </View>
+                {alerts.expiringInvoices.slice(0, 5).map((item, i) => (
+                  <View key={`inv-${item.id}`} style={[styles.activityItem, i === Math.min(alerts.expiringInvoices.length, 5) - 1 && styles.activityItemLast]}>
+                    <Text style={styles.activityText} numberOfLines={1}>{item.customer_name || item.customer || 'Cliente'}</Text>
+                    <Text style={[styles.activityAmount, { color: '#dc2626' }]}>{item.balance ? `$${item.balance}` : 'Monto pendiente'}</Text>
+                    <Text style={styles.activityText}>{item.payment_due_date ? new Date(item.payment_due_date).toLocaleDateString() : 'Sin fecha'}</Text>
                   </View>
                 ))}
               </View>

@@ -23,14 +23,14 @@ router.get(
 router.get(
   '/expiring',
   authenticate,
-  authorize('admin', 'manager'),
+  authorize('admin', 'manager', 'vendor'),
   creditController.getExpiringCredits
 );
 
 router.get(
   '/overdue',
   authenticate,
-  authorize('admin', 'manager'),
+  authorize('admin', 'manager', 'vendor'),
   creditController.getOverdueCredits
 );
 

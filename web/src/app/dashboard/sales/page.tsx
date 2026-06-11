@@ -35,6 +35,8 @@ interface Sale {
   currency?: string;
   notes?: string;
   items?: SaleItem[];
+  sale_items?: SaleItem[];
+  order_items?: SaleItem[];
   created_at: string;
   updated_at: string;
 }
@@ -773,7 +775,7 @@ export default function SalesPage() {
                      </tr>
                    </thead>
                    <tbody className="divide-y divide-slate-900/10 dark:divide-white/10 border-b border-slate-900/10 dark:border-white/10">
-                     {(selectedSale.items || []).map((item, idx) => (
+                     {(selectedSale.items || selectedSale.sale_items || selectedSale.order_items || []).map((item, idx) => (
                        <tr key={idx}>
                          <td className="p-2 font-body-md uppercase">{getSaleItemLabel(item)}</td>
                          <td className="p-2 font-data-label text-center">{getSaleItemQuantity(item)}</td>
