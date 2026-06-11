@@ -330,32 +330,32 @@ export default function ProvidersPage() {
           )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="p-4 border border-slate-900 dark:border-white rounded-lg bg-white dark:bg-surface-bright">
+            <div className="p-4 border border-slate-800 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100">
               <h2 className="font-semibold mb-3">Crear / editar proveedor</h2>
               <div className="space-y-3">
-                <input value={providerForm.company_name} onChange={(e) => setProviderForm({ ...providerForm, company_name: e.target.value })} className="w-full px-4 py-3 min-h-[44px] bg-white dark:bg-surface-bright border border-slate-900 dark:border-white font-data-label text-sm outline-none focus:ring-1 focus:ring-data-blue" placeholder="Razón social" />
-                <textarea value={providerForm.description} onChange={(e) => setProviderForm({ ...providerForm, description: e.target.value })} className="w-full px-4 py-3 bg-white dark:bg-surface-bright border border-slate-900 dark:border-white font-data-label text-sm outline-none focus:ring-1 focus:ring-data-blue" placeholder="Descripción" rows={3} />
-                <input value={providerForm.sells} onChange={(e) => setProviderForm({ ...providerForm, sells: e.target.value })} className="w-full px-4 py-3 min-h-[44px] bg-white dark:bg-surface-bright border border-slate-900 dark:border-white font-data-label text-sm outline-none focus:ring-1 focus:ring-data-blue" placeholder="Qué vende" />
-                <input value={providerForm.contact_name} onChange={(e) => setProviderForm({ ...providerForm, contact_name: e.target.value })} className="w-full px-4 py-3 min-h-[44px] bg-white dark:bg-surface-bright border border-slate-900 dark:border-white font-data-label text-sm outline-none focus:ring-1 focus:ring-data-blue" placeholder="Nombre del vendedor" />
-                <input value={providerForm.contact_id} onChange={(e) => setProviderForm({ ...providerForm, contact_id: e.target.value })} className="w-full px-4 py-3 min-h-[44px] bg-white dark:bg-surface-bright border border-slate-900 dark:border-white font-data-label text-sm outline-none focus:ring-1 focus:ring-data-blue" placeholder="Cédula del vendedor" />
-                <input value={providerForm.phone} onChange={(e) => setProviderForm({ ...providerForm, phone: e.target.value })} className="w-full px-4 py-3 min-h-[44px] bg-white dark:bg-surface-bright border border-slate-900 dark:border-white font-data-label text-sm outline-none focus:ring-1 focus:ring-data-blue" placeholder="Teléfono" />
-                <input value={providerForm.rif} onChange={(e) => setProviderForm({ ...providerForm, rif: e.target.value })} className="w-full px-4 py-3 min-h-[44px] bg-white dark:bg-surface-bright border border-slate-900 dark:border-white font-data-label text-sm outline-none focus:ring-1 focus:ring-data-blue" placeholder="RIF" />
-                <button onClick={handleSaveProvider} className="min-h-[44px] px-4 py-2 border border-slate-900 dark:border-white bg-white dark:bg-surface-bright text-slate-900 dark:text-white font-data-label text-xs uppercase tracking-widest hover:bg-slate-900 hover:text-white dark:hover:bg-white dark:hover:text-slate-900 transition-colors w-full">{selectedProvider ? 'Actualizar proveedor' : 'Crear proveedor'}</button>
+                <input value={providerForm.company_name} onChange={(e) => setProviderForm({ ...providerForm, company_name: e.target.value })} className="w-full px-4 py-3 min-h-[44px] bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 font-data-label text-sm outline-none focus:ring-1 focus:ring-data-blue placeholder:text-slate-500 dark:placeholder:text-slate-500" placeholder="Razón social" />
+                <textarea value={providerForm.description} onChange={(e) => setProviderForm({ ...providerForm, description: e.target.value })} className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 font-data-label text-sm outline-none focus:ring-1 focus:ring-data-blue placeholder:text-slate-500 dark:placeholder:text-slate-500" placeholder="Descripción" rows={3} />
+                <input value={providerForm.sells} onChange={(e) => setProviderForm({ ...providerForm, sells: e.target.value })} className="w-full px-4 py-3 min-h-[44px] bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 font-data-label text-sm outline-none focus:ring-1 focus:ring-data-blue placeholder:text-slate-500 dark:placeholder:text-slate-500" placeholder="Qué vende" />
+                <input value={providerForm.contact_name} onChange={(e) => setProviderForm({ ...providerForm, contact_name: e.target.value })} className="w-full px-4 py-3 min-h-[44px] bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 font-data-label text-sm outline-none focus:ring-1 focus:ring-data-blue placeholder:text-slate-500 dark:placeholder:text-slate-500" placeholder="Nombre del vendedor" />
+                <input value={providerForm.contact_id} onChange={(e) => setProviderForm({ ...providerForm, contact_id: e.target.value })} className="w-full px-4 py-3 min-h-[44px] bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 font-data-label text-sm outline-none focus:ring-1 focus:ring-data-blue placeholder:text-slate-500 dark:placeholder:text-slate-500" placeholder="Cédula del vendedor" />
+                <input value={providerForm.phone} onChange={(e) => setProviderForm({ ...providerForm, phone: e.target.value })} className="w-full px-4 py-3 min-h-[44px] bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 font-data-label text-sm outline-none focus:ring-1 focus:ring-data-blue placeholder:text-slate-500 dark:placeholder:text-slate-500" placeholder="Teléfono" />
+                <input value={providerForm.rif} onChange={(e) => setProviderForm({ ...providerForm, rif: e.target.value })} className="w-full px-4 py-3 min-h-[44px] bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 font-data-label text-sm outline-none focus:ring-1 focus:ring-data-blue placeholder:text-slate-500 dark:placeholder:text-slate-500" placeholder="RIF" />
+                <button onClick={handleSaveProvider} className="min-h-[44px] px-4 py-2 border border-slate-800 dark:border-slate-700 bg-slate-900 dark:bg-slate-800 text-white font-data-label text-xs uppercase tracking-widest hover:bg-slate-700 transition-colors w-full">{selectedProvider ? 'Actualizar proveedor' : 'Crear proveedor'}</button>
                 {selectedProvider && (
-                  <button onClick={() => handleDeleteProvider(selectedProvider.id)} className="min-h-[44px] px-4 py-2 border border-slate-900 dark:border-white bg-white dark:bg-surface-bright text-slate-900 dark:text-white font-data-label text-xs uppercase tracking-widest hover:bg-slate-900 hover:text-white dark:hover:bg-white dark:hover:text-slate-900 transition-colors w-full">Eliminar proveedor</button>
+                  <button onClick={() => handleDeleteProvider(selectedProvider.id)} className="min-h-[44px] px-4 py-2 border border-slate-800 dark:border-slate-700 bg-slate-900 dark:bg-slate-800 text-white font-data-label text-xs uppercase tracking-widest hover:bg-slate-700 transition-colors w-full">Eliminar proveedor</button>
                 )}
               </div>
             </div>
 
-            <div className="p-4 border border-slate-900 dark:border-white rounded-lg bg-white dark:bg-surface-bright">
-              <h2 className="font-semibold mb-3">Listado de proveedores</h2>
-              <div className="mb-3">
-                <input value={searchQuery} onChange={(e) => handleSearch(e.target.value)} placeholder="Buscar proveedores..." className="w-full px-3 py-2 border rounded" />
+              <div className="p-4 border border-slate-800 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100">
+                <h2 className="font-semibold mb-3">Listado de proveedores</h2>
+                <div className="mb-3">
+                  <input value={searchQuery} onChange={(e) => handleSearch(e.target.value)} placeholder="Buscar proveedores..." className="w-full px-3 py-2 border rounded bg-slate-100 dark:bg-slate-900 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder:text-slate-500 dark:placeholder:text-slate-500" />
               </div>
               {loading ? <div>Cargando...</div> : (
                 <div className="space-y-3 max-h-[520px] overflow-y-auto">
                   {providers.map((providerItem) => (
-                    <button key={providerItem.id} onClick={() => handleSelectProvider(providerItem)} className="w-full text-left p-3 border border-slate-900 dark:border-white rounded-lg hover:bg-slate-100 dark:hover:bg-surface-dim transition-colors">
+                    <button key={providerItem.id} onClick={() => handleSelectProvider(providerItem)} className="w-full text-left p-3 border border-slate-700 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                       <div className="font-bold">{providerItem.company_name}</div>
                       <div className="text-xs text-slate-500">{providerItem.contact_name || 'Sin contacto'} · {providerItem.phone || 'Sin teléfono'}</div>
                       <div className="text-xs text-slate-500">{providerItem.rif || 'Sin RIF'}</div>
@@ -369,15 +369,13 @@ export default function ProvidersPage() {
 
         <div className="w-full lg:w-[38%] space-y-4">
           {selectedProvider ? (
-            <div className="p-4 border border-slate-900 dark:border-white rounded-lg bg-white dark:bg-surface-bright">
+            <div className="p-4 border border-slate-800 dark:border-slate-700 rounded-lg bg-slate-950 text-slate-100">
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <h2 className="font-semibold text-lg">{selectedProvider.company_name}</h2>
-                  <p className="text-sm text-slate-500">{selectedProvider.description || 'Sin descripción'}</p>
+                  <p className="text-sm text-slate-400">{selectedProvider.description || 'Sin descripción'}</p>
                 </div>
-                <span className="text-xs uppercase tracking-widest bg-slate-100 px-2 py-1 rounded">Proveedor</span>
-              </div>
-
+                <span className="text-xs uppercase tracking-widest bg-slate-800 text-slate-100 px-2 py-1 rounded">Proveedor</span>
               <div className="space-y-4">
                 <div>
                   <p className="text-xs uppercase text-slate-500">Contacto</p>
@@ -416,14 +414,14 @@ export default function ProvidersPage() {
                 </div>
                 <div className="space-y-3">
                   <div>
-                    <input value={productQuery} onChange={(e) => handleSearchProducts(e.target.value)} placeholder="Buscar producto en inventario..." className="w-full px-4 py-3 min-h-[44px] bg-white dark:bg-slate-800 border border-slate-900 dark:border-slate-600 font-data-label text-sm text-slate-900 dark:text-slate-100 outline-none" />
-                      {productSearchLoading && <div className="text-sm text-slate-500 dark:text-slate-300">Buscando...</div>}
+                    <input value={productQuery} onChange={(e) => handleSearchProducts(e.target.value)} placeholder="Buscar producto en inventario..." className="w-full px-4 py-3 min-h-[44px] bg-slate-900 border border-slate-700 text-slate-100 placeholder:text-slate-500 focus:ring-1 focus:ring-data-blue outline-none" />
+                      {productSearchLoading && <div className="text-sm text-slate-300">Buscando...</div>}
                     {productResults.length > 0 && (
-                      <div className="mt-2 border rounded bg-white">
+                      <div className="mt-2 border rounded bg-slate-900 border-slate-700">
                         {productResults.slice(0,8).map(p => (
-                              <div key={p.id} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer" onClick={() => { setSelectedSearchProduct(p); setProductResults([]); setProductQuery(p.name); }}>
-                                <div className="font-semibold text-slate-900 dark:text-slate-100">{p.name}</div>
-                                <div className="text-xs text-slate-500 dark:text-slate-300">SKU: {p.sku || 'N/A'} · {p.category_name || ''}</div>
+                              <div key={p.id} className="p-2 hover:bg-slate-800 cursor-pointer" onClick={() => { setSelectedSearchProduct(p); setProductResults([]); setProductQuery(p.name); }}>
+                                <div className="font-semibold text-slate-100">{p.name}</div>
+                                <div className="text-xs text-slate-400">SKU: {p.sku || 'N/A'} · {p.category_name || ''}</div>
                               </div>
                         ))}
                       </div>
@@ -431,12 +429,12 @@ export default function ProvidersPage() {
                   </div>
 
                   <div className="grid grid-cols-3 gap-2">
-                    <input value={selectedSearchProduct ? selectedSearchProduct.name : ''} readOnly className="col-span-2 px-3 py-2 border bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-600" placeholder="Producto seleccionado" />
-                    <input defaultValue={1} type="number" id="selected_qty" className="px-3 py-2 border bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-600" placeholder="Qty" />
+                    <input value={selectedSearchProduct ? selectedSearchProduct.name : ''} readOnly className="col-span-2 px-3 py-2 border bg-slate-900 text-slate-100 border-slate-700" placeholder="Producto seleccionado" />
+                    <input defaultValue={1} type="number" id="selected_qty" className="px-3 py-2 border bg-slate-900 text-slate-100 border-slate-700" placeholder="Qty" />
                   </div>
                   <div className="space-y-2">
-                    <div className="text-sm text-slate-500 dark:text-slate-300">Precio unitario (editable)</div>
-                    <input defaultValue={selectedSearchProduct?.price || ''} type="number" id="selected_price" className="w-full px-4 py-3 min-h-[44px] border bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-600" placeholder="Precio unitario" />
+                    <div className="text-sm text-slate-300">Precio unitario (editable)</div>
+                    <input defaultValue={selectedSearchProduct?.price || ''} type="number" id="selected_price" className="w-full px-4 py-3 min-h-[44px] border bg-slate-900 text-slate-100 border-slate-700" placeholder="Precio unitario" />
                     <button onClick={() => {
                       if (!selectedSearchProduct) { setErrorMsg('Selecciona un producto antes de agregarlo.'); setTimeout(() => setErrorMsg(''), 3000); return; }
                       const qtyInput: any = document.getElementById('selected_qty');
@@ -444,18 +442,18 @@ export default function ProvidersPage() {
                       const qty = parseInt(qtyInput?.value || '1', 10) || 1;
                       const price = parseFloat(priceInput?.value || selectedSearchProduct.price || 0) || 0;
                       handleAddItemToPurchase(selectedSearchProduct, qty, price);
-                    }} className="min-h-[44px] px-4 py-2 border bg-white">Agregar producto al pedido</button>
+                    }} className="min-h-[44px] px-4 py-2 border bg-slate-800 text-white hover:bg-slate-700 transition-colors">Agregar producto al pedido</button>
                   </div>
                   <div>
-                    {purchaseItems.length === 0 ? <div className="text-sm text-slate-500 dark:text-slate-300">No hay items agregados.</div> : (
+                    {purchaseItems.length === 0 ? <div className="text-sm text-slate-300">No hay items agregados.</div> : (
                       <div className="space-y-2">
                         {purchaseItems.map(it => (
-                          <div key={it.product_id} className="p-2 border rounded flex justify-between items-center bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600">
+                          <div key={it.product_id} className="p-2 border rounded flex justify-between items-center bg-slate-900 border-slate-700">
                             <div>
-                              <div className="font-semibold text-slate-900 dark:text-slate-100">{it.name}</div>
-                              <div className="text-xs text-slate-500 dark:text-slate-300">SKU: {it.sku} · Qty: {it.qty} · Unit: {it.unit_price}</div>
+                              <div className="font-semibold text-slate-100">{it.name}</div>
+                              <div className="text-xs text-slate-400">SKU: {it.sku} · Qty: {it.qty} · Unit: {it.unit_price}</div>
                             </div>
-                            <button onClick={() => handleRemovePurchaseItem(it.product_id)} className="text-red-500">Eliminar</button>
+                            <button onClick={() => handleRemovePurchaseItem(it.product_id)} className="text-red-400 hover:text-red-300">Eliminar</button>
                           </div>
                         ))}
                       </div>
@@ -466,11 +464,11 @@ export default function ProvidersPage() {
 
               <div className="mt-6">
                 <h3 className="font-semibold mb-3">Registrar compra</h3>
-                <input value={purchaseForm.total} onChange={(e) => setPurchaseForm({ ...purchaseForm, total: e.target.value })} className="w-full px-4 py-3 min-h-[44px] bg-white dark:bg-surface-bright border border-slate-900 dark:border-white font-data-label text-sm outline-none focus:ring-1 focus:ring-data-blue mb-3" placeholder="Total" type="number" />
-                <input value={purchaseForm.tax} onChange={(e) => setPurchaseForm({ ...purchaseForm, tax: e.target.value })} className="w-full px-4 py-3 min-h-[44px] bg-white dark:bg-surface-bright border border-slate-900 dark:border-white font-data-label text-sm outline-none focus:ring-1 focus:ring-data-blue mb-3" placeholder="IVA" type="number" />
-                <input value={purchaseForm.due_date} onChange={(e) => setPurchaseForm({ ...purchaseForm, due_date: e.target.value })} className="w-full px-4 py-3 min-h-[44px] bg-white dark:bg-surface-bright border border-slate-900 dark:border-white font-data-label text-sm outline-none focus:ring-1 focus:ring-data-blue mb-3" placeholder="Vence (YYYY-MM-DD)" />
-                <textarea value={purchaseForm.items} onChange={(e) => setPurchaseForm({ ...purchaseForm, items: e.target.value })} className="w-full px-4 py-3 bg-white dark:bg-surface-bright border border-slate-900 dark:border-white font-data-label text-sm outline-none focus:ring-1 focus:ring-data-blue mb-3" placeholder="Items separados por coma" rows={3} />
-                <button onClick={handleRecordPurchase} className="min-h-[44px] px-4 py-2 border border-slate-900 dark:border-white bg-white dark:bg-surface-bright text-slate-900 dark:text-white font-data-label text-xs uppercase tracking-widest hover:bg-slate-900 hover:text-white dark:hover:bg-white dark:hover:text-slate-900 transition-colors w-full">Registrar compra</button>
+                <input value={purchaseForm.total} onChange={(e) => setPurchaseForm({ ...purchaseForm, total: e.target.value })} className="w-full px-4 py-3 min-h-[44px] bg-slate-900 text-slate-100 border border-slate-700 font-data-label text-sm outline-none focus:ring-1 focus:ring-data-blue mb-3 placeholder:text-slate-500" placeholder="Total" type="number" />
+                <input value={purchaseForm.tax} onChange={(e) => setPurchaseForm({ ...purchaseForm, tax: e.target.value })} className="w-full px-4 py-3 min-h-[44px] bg-slate-900 text-slate-100 border border-slate-700 font-data-label text-sm outline-none focus:ring-1 focus:ring-data-blue mb-3 placeholder:text-slate-500" placeholder="IVA" type="number" />
+                <input value={purchaseForm.due_date} onChange={(e) => setPurchaseForm({ ...purchaseForm, due_date: e.target.value })} className="w-full px-4 py-3 min-h-[44px] bg-slate-900 text-slate-100 border border-slate-700 font-data-label text-sm outline-none focus:ring-1 focus:ring-data-blue mb-3 placeholder:text-slate-500" placeholder="Vence (YYYY-MM-DD)" />
+                <textarea value={purchaseForm.items} onChange={(e) => setPurchaseForm({ ...purchaseForm, items: e.target.value })} className="w-full px-4 py-3 bg-slate-900 text-slate-100 border border-slate-700 font-data-label text-sm outline-none focus:ring-1 focus:ring-data-blue mb-3 placeholder:text-slate-500" placeholder="Items separados por coma" rows={3} />
+                <button onClick={handleRecordPurchase} className="min-h-[44px] px-4 py-2 border border-slate-700 bg-slate-800 text-white font-data-label text-xs uppercase tracking-widest hover:bg-slate-700 transition-colors w-full">Registrar compra</button>
               </div>
 
               <div className="mt-6">
