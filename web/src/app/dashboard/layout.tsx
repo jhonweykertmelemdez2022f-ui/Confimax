@@ -54,6 +54,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   if (user?.role === "admin" || user?.name?.toLowerCase() === "fabiana") {
     links.push({ name: "Usuarios", href: "/dashboard/users", icon: "admin_panel_settings" });
     links.push({ name: "Auditoría", href: "/dashboard/audit", icon: "history" });
+    // Proveedores visible solo para administradores
+    links.push({ name: "Proveedores", href: "/dashboard/providers", icon: "local_shipping" });
   }
 
   return (

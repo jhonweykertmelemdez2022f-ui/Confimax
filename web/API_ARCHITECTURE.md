@@ -28,7 +28,7 @@ El cliente API está configurado en `src/lib/api.ts` y se conecta a través del 
 NEXT_PUBLIC_API_URL=http://localhost:3000/api
 
 # Producción
-NEXT_PUBLIC_API_URL=https://confimax.bitforges.com/api
+NEXT_PUBLIC_API_URL=https://confimax-api-gateway-i0ms.onrender.com/api
 ```
 
 ### Rutas del API Gateway

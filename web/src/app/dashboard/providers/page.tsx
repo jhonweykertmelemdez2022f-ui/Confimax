@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
 import { generateCombinedPdfAll } from "@/lib/pdfGenerator";
@@ -10,6 +11,7 @@ const currencySymbol = (currency: string) => currency === 'VES' ? 'Bs.' : curren
 
 export default function ProvidersPage() {
   const { user } = useAuth();
+  const router = useRouter();
   const [providers, setProviders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedProvider, setSelectedProvider] = useState<any>(null);
@@ -35,6 +37,13 @@ export default function ProvidersPage() {
     load();
     loadExpiringInvoices();
   }, []);
+
+  useEffect(() => {
+    // Bloquear acceso si el usuario no es admin ni Fabiana
+    if (user && user.role !== 'admin' && user?.name?.toLowerCase() !== 'fabiana') {
+      router.push('/dashboard');
+    }
+  }, [user, router]);
 
   const load = async () => {
     setLoading(true);

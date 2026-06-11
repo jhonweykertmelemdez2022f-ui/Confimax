@@ -15,8 +15,9 @@
  *   /api/notifications/* -> notifications-service:3005
  */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 
-  (typeof window !== 'undefined' ? 'https://confimax-api-gateway-tfxa.onrender.com' : 'http://api-gateway:8080/api');
+const ENV_API_URL = process.env.NEXT_PUBLIC_API_URL;
+const DEFAULT_BROWSER_API_URL = 'https://confimax-api-gateway-i0ms.onrender.com/api';
+const API_BASE_URL = ENV_API_URL ? ENV_API_URL.replace(/\/+$/, '') : DEFAULT_BROWSER_API_URL;
 
 interface ApiResponse<T> {
   data?: T;

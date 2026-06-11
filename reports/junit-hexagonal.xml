@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="jest tests" tests="20" failures="8" errors="0" time="4.214">
+  <testsuite name="Domain: User Entity (Arquitectura Hexagonal)" errors="0" failures="1" skipped="0" timestamp="2026-06-11T01:14:59" time="1.621" tests="6">
+    <testcase classname="Domain: User Entity (Arquitectura Hexagonal) validateUser() debe validar un usuario válido" name="Domain: User Entity (Arquitectura Hexagonal) validateUser() debe validar un usuario válido" time="0.011">
+    </testcase>
+    <testcase classname="Domain: User Entity (Arquitectura Hexagonal) validateUser() debe rechazar username menor a 3 caracteres" name="Domain: User Entity (Arquitectura Hexagonal) validateUser() debe rechazar username menor a 3 caracteres" time="0.001">
+    </testcase>
+    <testcase classname="Domain: User Entity (Arquitectura Hexagonal) validateUser() debe rechazar email inválido" name="Domain: User Entity (Arquitectura Hexagonal) validateUser() debe rechazar email inválido" time="0.002">
+    </testcase>
+    <testcase classname="Domain: User Entity (Arquitectura Hexagonal) validateUser() debe rechazar password débil" name="Domain: User Entity (Arquitectura Hexagonal) validateUser() debe rechazar password débil" time="0.001">
+    </testcase>
+    <testcase classname="Domain: User Entity (Arquitectura Hexagonal) createUser() debe crear usuario con UUID válido" name="Domain: User Entity (Arquitectura Hexagonal) createUser() debe crear usuario con UUID válido" time="0.003">
+    </testcase>
+    <testcase classname="Domain: User Entity (Arquitectura Hexagonal) createUser() debe hashear password correctamente" name="Domain: User Entity (Arquitectura Hexagonal) createUser() debe hashear password correctamente" time="0">
+      <failure>Error: Invalid user data: Role debe ser admin, vendor o customer
+    at createUser (D:\Proyectos\Confimax\services\auth-service\src\domain\user.entity.js:46:11)
+    at Object.createUser (D:\Proyectos\Confimax\tests\hexagonal\auth-service\domain\user.entity.test.js:94:26)
+    at Promise.then.completed (D:\Proyectos\Confimax\node_modules\jest-circus\build\utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (D:\Proyectos\Confimax\node_modules\jest-circus\build\utils.js:231:10)
+    at _callCircusTest (D:\Proyectos\Confimax\node_modules\jest-circus\build\run.js:316:40)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at _runTest (D:\Proyectos\Confimax\node_modules\jest-circus\build\run.js:252:3)
+    at _runTestsForDescribeBlock (D:\Proyectos\Confimax\node_modules\jest-circus\build\run.js:126:9)
+    at _runTestsForDescribeBlock (D:\Proyectos\Confimax\node_modules\jest-circus\build\run.js:121:9)
+    at _runTestsForDescribeBlock (D:\Proyectos\Confimax\node_modules\jest-circus\build\run.js:121:9)
+    at run (D:\Proyectos\Confimax\node_modules\jest-circus\build\run.js:71:3)
+    at runAndTransformResultsToJestFormat (D:\Proyectos\Confimax\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapterInit.js:122:21)
+    at jestAdapter (D:\Proyectos\Confimax\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:79:19)
+    at runTestInternal (D:\Proyectos\Confimax\node_modules\jest-runner\build\runTest.js:367:16)
+    at runTest (D:\Proyectos\Confimax\node_modules\jest-runner\build\runTest.js:444:34)
+    at Object.worker (D:\Proyectos\Confimax\node_modules\jest-runner\build\testWorker.js:106:12)</failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="Application: Auth Use Cases (Arquitectura Hexagonal)" errors="0" failures="0" skipped="0" timestamp="2026-06-11T01:14:59" time="1.645" tests="7">
+    <testcase classname="Application: Auth Use Cases (Arquitectura Hexagonal) login() debe autenticar usuario válido y retornar token" name="Application: Auth Use Cases (Arquitectura Hexagonal) login() debe autenticar usuario válido y retornar token" time="0.015">
+    </testcase>
+    <testcase classname="Application: Auth Use Cases (Arquitectura Hexagonal) login() debe rechazar usuario inactivo" name="Application: Auth Use Cases (Arquitectura Hexagonal) login() debe rechazar usuario inactivo" time="0.013">
+    </testcase>
+    <testcase classname="Application: Auth Use Cases (Arquitectura Hexagonal) login() debe rechazar credenciales inválidas" name="Application: Auth Use Cases (Arquitectura Hexagonal) login() debe rechazar credenciales inválidas" time="0.001">
+    </testcase>
+    <testcase classname="Application: Auth Use Cases (Arquitectura Hexagonal) register() debe registrar nuevo usuario correctamente" name="Application: Auth Use Cases (Arquitectura Hexagonal) register() debe registrar nuevo usuario correctamente" time="0.003">
+    </testcase>
+    <testcase classname="Application: Auth Use Cases (Arquitectura Hexagonal) register() debe rechazar email duplicado" name="Application: Auth Use Cases (Arquitectura Hexagonal) register() debe rechazar email duplicado" time="0.001">
+    </testcase>
+    <testcase classname="Application: Auth Use Cases (Arquitectura Hexagonal) getUserById() debe retornar usuario por ID" name="Application: Auth Use Cases (Arquitectura Hexagonal) getUserById() debe retornar usuario por ID" time="0.001">
+    </testcase>
+    <testcase classname="Application: Auth Use Cases (Arquitectura Hexagonal) getUserById() debe lanzar error si usuario no existe" name="Application: Auth Use Cases (Arquitectura Hexagonal) getUserById() debe lanzar error si usuario no existe" time="0.001">
+    </testcase>
+  </testsuite>
+  <testsuite name="Integración: Arquitectura Completa (Redis + MongoDB + PostgreSQL)" errors="0" failures="7" skipped="0" timestamp="2026-06-11T01:14:59" time="3.452" tests="7">
+    <testcase classname="Integración: Arquitectura Completa (Redis + MongoDB + PostgreSQL) PostgreSQL: Single Database con 4 Schemas todos los schemas existen" name="Integración: Arquitectura Completa (Redis + MongoDB + PostgreSQL) PostgreSQL: Single Database con 4 Schemas todos los schemas existen" time="0.012">
+      <failure>Error: DATABASE_URL no está definido en las variables de entorno
+    at getPostgres (D:\Proyectos\Confimax\tests\hexagonal\postgres-connection.js:31:11)
+    at Object.getPostgres (D:\Proyectos\Confimax\tests\hexagonal\integration\multi-schema.integration.test.js:35:11)
+    at Promise.then.completed (D:\Proyectos\Confimax\node_modules\jest-circus\build\utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (D:\Proyectos\Confimax\node_modules\jest-circus\build\utils.js:231:10)
+    at _callCircusHook (D:\Proyectos\Confimax\node_modules\jest-circus\build\run.js:281:40)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at _runTestsForDescribeBlock (D:\Proyectos\Confimax\node_modules\jest-circus\build\run.js:95:7)
+    at _runTestsForDescribeBlock (D:\Proyectos\Confimax\node_modules\jest-circus\build\run.js:121:9)
+    at run (D:\Proyectos\Confimax\node_modules\jest-circus\build\run.js:71:3)
+    at runAndTransformResultsToJestFormat (D:\Proyectos\Confimax\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapterInit.js:122:21)
+    at jestAdapter (D:\Proyectos\Confimax\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:79:19)
+    at runTestInternal (D:\Proyectos\Confimax\node_modules\jest-runner\build\runTest.js:367:16)
+    at runTest (D:\Proyectos\Confimax\node_modules\jest-runner\build\runTest.js:444:34)
+    at Object.worker (D:\Proyectos\Confimax\node_modules\jest-runner\build\testWorker.js:106:12)</failure>
+    </testcase>
+    <testcase classname="Integración: Arquitectura Completa (Redis + MongoDB + PostgreSQL) PostgreSQL: Single Database con 4 Schemas cada schema tiene sus tablas correspondientes" name="Integración: Arquitectura Completa (Redis + MongoDB + PostgreSQL) PostgreSQL: Single Database con 4 Schemas cada schema tiene sus tablas correspondientes" time="0">
+      <failure>Error: DATABASE_URL no está definido en las variables de entorno
+    at getPostgres (D:\Proyectos\Confimax\tests\hexagonal\postgres-connection.js:31:11)
+    at Object.getPostgres (D:\Proyectos\Confimax\tests\hexagonal\integration\multi-schema.integration.test.js:35:11)
+    at Promise.then.completed (D:\Proyectos\Confimax\node_modules\jest-circus\build\utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (D:\Proyectos\Confimax\node_modules\jest-circus\build\utils.js:231:10)
+    at _callCircusHook (D:\Proyectos\Confimax\node_modules\jest-circus\build\run.js:281:40)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at _runTestsForDescribeBlock (D:\Proyectos\Confimax\node_modules\jest-circus\build\run.js:95:7)
+    at _runTestsForDescribeBlock (D:\Proyectos\Confimax\node_modules\jest-circus\build\run.js:121:9)
+    at run (D:\Proyectos\Confimax\node_modules\jest-circus\build\run.js:71:3)
+    at runAndTransformResultsToJestFormat (D:\Proyectos\Confimax\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapterInit.js:122:21)
+    at jestAdapter (D:\Proyectos\Confimax\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:79:19)
+    at runTestInternal (D:\Proyectos\Confimax\node_modules\jest-runner\build\runTest.js:367:16)
+    at runTest (D:\Proyectos\Confimax\node_modules\jest-runner\build\runTest.js:444:34)
+    at Object.worker (D:\Proyectos\Confimax\node_modules\jest-runner\build\testWorker.js:106:12)</failure>
+    </testcase>
+    <testcase classname="Integración: Arquitectura Completa (Redis + MongoDB + PostgreSQL) PostgreSQL: Single Database con 4 Schemas  Foreign Keys entre schemas son válidas" name="Integración: Arquitectura Completa (Redis + MongoDB + PostgreSQL) PostgreSQL: Single Database con 4 Schemas  Foreign Keys entre schemas son válidas" time="0">
+      <failure>Error: DATABASE_URL no está definido en las variables de entorno
+    at getPostgres (D:\Proyectos\Confimax\tests\hexagonal\postgres-connection.js:31:11)
+    at Object.getPostgres (D:\Proyectos\Confimax\tests\hexagonal\integration\multi-schema.integration.test.js:35:11)
+    at Promise.then.completed (D:\Proyectos\Confimax\node_modules\jest-circus\build\utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (D:\Proyectos\Confimax\node_modules\jest-circus\build\utils.js:231:10)
+    at _callCircusHook (D:\Proyectos\Confimax\node_modules\jest-circus\build\run.js:281:40)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at _runTestsForDescribeBlock (D:\Proyectos\Confimax\node_modules\jest-circus\build\run.js:95:7)
+    at _runTestsForDescribeBlock (D:\Proyectos\Confimax\node_modules\jest-circus\build\run.js:121:9)
+    at run (D:\Proyectos\Confimax\node_modules\jest-circus\build\run.js:71:3)
+    at runAndTransformResultsToJestFormat (D:\Proyectos\Confimax\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapterInit.js:122:21)
+    at jestAdapter (D:\Proyectos\Confimax\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:79:19)
+    at runTestInternal (D:\Proyectos\Confimax\node_modules\jest-runner\build\runTest.js:367:16)
+    at runTest (D:\Proyectos\Confimax\node_modules\jest-runner\build\runTest.js:444:34)
+    at Object.worker (D:\Proyectos\Confimax\node_modules\jest-runner\build\testWorker.js:106:12)</failure>
+    </testcase>
+    <testcase classname="Integración: Arquitectura Completa (Redis + MongoDB + PostgreSQL) Redis: Caché de productos debe almacenar y recuperar de caché" name="Integración: Arquitectura Completa (Redis + MongoDB + PostgreSQL) Redis: Caché de productos debe almacenar y recuperar de caché" time="0">
+      <failure>Error: DATABASE_URL no está definido en las variables de entorno
+    at getPostgres (D:\Proyectos\Confimax\tests\hexagonal\postgres-connection.js:31:11)
+    at Object.getPostgres (D:\Proyectos\Confimax\tests\hexagonal\integration\multi-schema.integration.test.js:35:11)
+    at Promise.then.completed (D:\Proyectos\Confimax\node_modules\jest-circus\build\utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (D:\Proyectos\Confimax\node_modules\jest-circus\build\utils.js:231:10)
+    at _callCircusHook (D:\Proyectos\Confimax\node_modules\jest-circus\build\run.js:281:40)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at _runTestsForDescribeBlock (D:\Proyectos\Confimax\node_modules\jest-circus\build\run.js:95:7)
+    at _runTestsForDescribeBlock (D:\Proyectos\Confimax\node_modules\jest-circus\build\run.js:121:9)
+    at run (D:\Proyectos\Confimax\node_modules\jest-circus\build\run.js:71:3)
+    at runAndTransformResultsToJestFormat (D:\Proyectos\Confimax\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapterInit.js:122:21)
+    at jestAdapter (D:\Proyectos\Confimax\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:79:19)
+    at runTestInternal (D:\Proyectos\Confimax\node_modules\jest-runner\build\runTest.js:367:16)
+    at runTest (D:\Proyectos\Confimax\node_modules\jest-runner\build\runTest.js:444:34)
+    at Object.worker (D:\Proyectos\Confimax\node_modules\jest-runner\build\testWorker.js:106:12)</failure>
+    </testcase>
+    <testcase classname="Integración: Arquitectura Completa (Redis + MongoDB + PostgreSQL) Redis: Caché de productos expiración de caché funciona" name="Integración: Arquitectura Completa (Redis + MongoDB + PostgreSQL) Redis: Caché de productos expiración de caché funciona" time="0.001">
+      <failure>Error: DATABASE_URL no está definido en las variables de entorno
+    at getPostgres (D:\Proyectos\Confimax\tests\hexagonal\postgres-connection.js:31:11)
+    at Object.getPostgres (D:\Proyectos\Confimax\tests\hexagonal\integration\multi-schema.integration.test.js:35:11)
+    at Promise.then.completed (D:\Proyectos\Confimax\node_modules\jest-circus\build\utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (D:\Proyectos\Confimax\node_modules\jest-circus\build\utils.js:231:10)
+    at _callCircusHook (D:\Proyectos\Confimax\node_modules\jest-circus\build\run.js:281:40)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at _runTestsForDescribeBlock (D:\Proyectos\Confimax\node_modules\jest-circus\build\run.js:95:7)
+    at _runTestsForDescribeBlock (D:\Proyectos\Confimax\node_modules\jest-circus\build\run.js:121:9)
+    at run (D:\Proyectos\Confimax\node_modules\jest-circus\build\run.js:71:3)
+    at runAndTransformResultsToJestFormat (D:\Proyectos\Confimax\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapterInit.js:122:21)
+    at jestAdapter (D:\Proyectos\Confimax\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:79:19)
+    at runTestInternal (D:\Proyectos\Confimax\node_modules\jest-runner\build\runTest.js:367:16)
+    at runTest (D:\Proyectos\Confimax\node_modules\jest-runner\build\runTest.js:444:34)
+    at Object.worker (D:\Proyectos\Confimax\node_modules\jest-runner\build\testWorker.js:106:12)</failure>
+    </testcase>
+    <testcase classname="Integración: Arquitectura Completa (Redis + MongoDB + PostgreSQL) MongoDB: Logs y eventos debe insertar y consultar logs" name="Integración: Arquitectura Completa (Redis + MongoDB + PostgreSQL) MongoDB: Logs y eventos debe insertar y consultar logs" time="0">
+      <failure>Error: DATABASE_URL no está definido en las variables de entorno
+    at getPostgres (D:\Proyectos\Confimax\tests\hexagonal\postgres-connection.js:31:11)
+    at Object.getPostgres (D:\Proyectos\Confimax\tests\hexagonal\integration\multi-schema.integration.test.js:35:11)
+    at Promise.then.completed (D:\Proyectos\Confimax\node_modules\jest-circus\build\utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (D:\Proyectos\Confimax\node_modules\jest-circus\build\utils.js:231:10)
+    at _callCircusHook (D:\Proyectos\Confimax\node_modules\jest-circus\build\run.js:281:40)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at _runTestsForDescribeBlock (D:\Proyectos\Confimax\node_modules\jest-circus\build\run.js:95:7)
+    at _runTestsForDescribeBlock (D:\Proyectos\Confimax\node_modules\jest-circus\build\run.js:121:9)
+    at run (D:\Proyectos\Confimax\node_modules\jest-circus\build\run.js:71:3)
+    at runAndTransformResultsToJestFormat (D:\Proyectos\Confimax\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapterInit.js:122:21)
+    at jestAdapter (D:\Proyectos\Confimax\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:79:19)
+    at runTestInternal (D:\Proyectos\Confimax\node_modules\jest-runner\build\runTest.js:367:16)
+    at runTest (D:\Proyectos\Confimax\node_modules\jest-runner\build\runTest.js:444:34)
+    at Object.worker (D:\Proyectos\Confimax\node_modules\jest-runner\build\testWorker.js:106:12)</failure>
+    </testcase>
+    <testcase classname="Integración: Arquitectura Completa (Redis + MongoDB + PostgreSQL) Flujo completo: Venta con sincronización flujo: Crear usuario → Crear producto → Crear venta → Log en MongoDB" name="Integración: Arquitectura Completa (Redis + MongoDB + PostgreSQL) Flujo completo: Venta con sincronización flujo: Crear usuario → Crear producto → Crear venta → Log en MongoDB" time="0">
+      <failure>Error: DATABASE_URL no está definido en las variables de entorno
+    at getPostgres (D:\Proyectos\Confimax\tests\hexagonal\postgres-connection.js:31:11)
+    at Object.getPostgres (D:\Proyectos\Confimax\tests\hexagonal\integration\multi-schema.integration.test.js:35:11)
+    at Promise.then.completed (D:\Proyectos\Confimax\node_modules\jest-circus\build\utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (D:\Proyectos\Confimax\node_modules\jest-circus\build\utils.js:231:10)
+    at _callCircusHook (D:\Proyectos\Confimax\node_modules\jest-circus\build\run.js:281:40)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at _runTestsForDescribeBlock (D:\Proyectos\Confimax\node_modules\jest-circus\build\run.js:95:7)
+    at _runTestsForDescribeBlock (D:\Proyectos\Confimax\node_modules\jest-circus\build\run.js:121:9)
+    at run (D:\Proyectos\Confimax\node_modules\jest-circus\build\run.js:71:3)
+    at runAndTransformResultsToJestFormat (D:\Proyectos\Confimax\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapterInit.js:122:21)
+    at jestAdapter (D:\Proyectos\Confimax\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:79:19)
+    at runTestInternal (D:\Proyectos\Confimax\node_modules\jest-runner\build\runTest.js:367:16)
+    at runTest (D:\Proyectos\Confimax\node_modules\jest-runner\build\runTest.js:444:34)
+    at Object.worker (D:\Proyectos\Confimax\node_modules\jest-runner\build\testWorker.js:106:12)</failure>
+    </testcase>
+    <testcase classname=" Test execution failure: could be caused by test hooks like &apos;afterAll&apos;." name=" Test execution failure: could be caused by test hooks like &apos;afterAll&apos;." time="0">
+      <failure>{&quot;message&quot;:&quot;&quot;,&quot;stack&quot;:&quot;TypeError: Cannot read properties of undefined (reading &apos;close&apos;)\n    at Object.close (D:\\Proyectos\\Confimax\\tests\\hexagonal\\integration\\multi-schema.integration.test.js:48:23)\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)&quot;}</failure>
+    </testcase>
+  </testsuite>
+</testsuites>

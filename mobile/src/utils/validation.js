@@ -9,10 +9,7 @@ const passwordPattern = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8}$/
 
 export const validateLoginPassword = (password) => {
   if (!password) return 'La contraseña es requerida';
-  if (password.length !== 8) return 'La contraseña debe tener exactamente 8 caracteres';
-  if (!passwordPattern.test(password)) {
-    return 'La contraseña debe tener mayúsculas, minúsculas, números y signos';
-  }
+  if (password.length < 6) return 'La contraseña debe tener al menos 6 caracteres';
   return null;
 };
 
