@@ -233,13 +233,13 @@ console.log(`[GATEWAY] 🧩 Running in MICROSERVICES MODE`);
   // Providers service (suppliers & purchases)
   app.use('/api/suppliers', authenticateGateway, createServiceProxy('providers', {
     target: SERVICES.providers.target,
-    pathRewrite: { '^/api/suppliers': '' },
+    pathRewrite: { '^/api/suppliers': '/suppliers' },
     changeOrigin: true,
   }));
 
   app.use('/api/purchases', authenticateGateway, createServiceProxy('providers', {
     target: SERVICES.providers.target,
-    pathRewrite: { '^/api/purchases': '' },
+    pathRewrite: { '^/api/purchases': '/purchases' },
     changeOrigin: true,
   }));
 
