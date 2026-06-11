@@ -2,6 +2,12 @@ const path = require('path');
 const sharedPath = process.env.SHARED_MODULES_PATH || path.resolve(__dirname, '../../..', 'shared');
 const { query, transaction } = require(path.join(sharedPath, 'database'));
 const { v4: uuidv4 } = require('uuid');
+const axios = require('axios');
+
+// Inventory service URL (try external, then internal service name)
+const inventoryUrl = (process.env.INVENTORY_SERVICE_URL && process.env.INVENTORY_SERVICE_URL.trim())
+  || (process.env.INVENTORY_SERVICE_INTERNAL_URL && process.env.INVENTORY_SERVICE_INTERNAL_URL.trim())
+  || 'http://confimax-inventory-service:10000';
 
 const listProviders = async (params) => {
   const res = await query('SELECT * FROM suppliers ORDER BY company_name LIMIT 100');
@@ -58,7 +64,27 @@ const addProviderProduct = async (providerId, data) => {
   const text = `INSERT INTO supplier_products (id, supplier_id, name, sku, price, created_at) VALUES ($1,$2,$3,$4,$5, now()) RETURNING *`;
   const values = [id, providerId, data.name, data.sku || null, data.price || 0];
   const res = await query(text, values);
-  return res.rows[0];
+  const created = res.rows[0];
+
+  // Try to create the product in inventory to keep catalog in sync.
+  // Non-blocking: if inventory is unavailable or SKU exists, just log and continue.
+  (async () => {
+    try {
+      const payload = {
+        name: data.name,
+        sku: data.sku,
+        price: data.price,
+        stock_quantity: data.stock_quantity || 0,
+      };
+      await axios.post(`${inventoryUrl}/products`, payload, { timeout: 5000 });
+      console.log('[PROVIDERS] Created product in inventory for SKU', data.sku);
+    } catch (err) {
+      // If SKU already exists or inventory returns error, ignore but log
+      console.warn('[PROVIDERS] Could not create product in inventory:', err.message || err.toString());
+    }
+  })();
+
+  return created;
 };
 
 const updateProviderProduct = async (providerId, productId, data) => {

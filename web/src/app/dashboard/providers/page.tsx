@@ -14,6 +14,7 @@ export default function ProvidersPage() {
   const router = useRouter();
   const [providers, setProviders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
   const [selectedProvider, setSelectedProvider] = useState<any>(null);
   const [providerForm, setProviderForm] = useState({
     company_name: '',
@@ -55,6 +56,24 @@ export default function ProvidersPage() {
       console.error(e);
       setErrorMsg('No se pudieron cargar los proveedores.');
       setTimeout(() => setErrorMsg(''), 4000);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSearch = async (q: string) => {
+    setSearchQuery(q);
+    setLoading(true);
+    try {
+      if (!q || q.trim() === '') {
+        await load();
+        return;
+      }
+      const res = await api.searchSuppliers(q.trim());
+      const data = res?.data || res || [];
+      setProviders(Array.isArray(data) ? data : (data.data || []));
+    } catch (err) {
+      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -273,6 +292,9 @@ export default function ProvidersPage() {
 
             <div className="p-4 border border-slate-900 dark:border-white rounded-lg bg-white dark:bg-surface-bright">
               <h2 className="font-semibold mb-3">Listado de proveedores</h2>
+              <div className="mb-3">
+                <input value={searchQuery} onChange={(e) => handleSearch(e.target.value)} placeholder="Buscar proveedores..." className="w-full px-3 py-2 border rounded" />
+              </div>
               {loading ? <div>Cargando...</div> : (
                 <div className="space-y-3 max-h-[520px] overflow-y-auto">
                   {providers.map((providerItem) => (

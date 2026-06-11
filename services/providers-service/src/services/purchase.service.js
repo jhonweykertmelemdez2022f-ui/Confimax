@@ -5,8 +5,14 @@ const { v4: uuidv4 } = require('uuid');
 
 const recordPurchase = async (providerId, data, user) => {
   const id = uuidv4();
+  const total = parseFloat(data.total) || 0;
+  // If tax amount not provided, apply default 16% IVA on the subtotal
+  const taxAmount = (data.tax !== undefined && data.tax !== null)
+    ? parseFloat(data.tax) || 0
+    : Math.round((total * 0.16) * 100) / 100;
+
   const text = `INSERT INTO purchases (id, supplier_id, total, tax, items, due_date, created_by, created_at) VALUES ($1,$2,$3,$4,$5,$6,$7, now()) RETURNING *`;
-  const values = [id, providerId, data.total, data.tax || 0, JSON.stringify(data.items || []), data.due_date || null, user?.id || null];
+  const values = [id, providerId, total, taxAmount, JSON.stringify(data.items || []), data.due_date || null, user?.id || null];
   const res = await query(text, values);
   return res.rows[0];
 };

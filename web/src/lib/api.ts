@@ -432,6 +432,11 @@ class ApiClient {
     return this.request(`/suppliers${queryString}`);
   }
 
+  async searchSuppliers(q: string, limit: number = 50) {
+    const qs = `?q=${encodeURIComponent(q)}&limit=${limit}`;
+    return this.request(`/suppliers/search${qs}`);
+  }
+
   async getPurchases(params?: { limit?: number; offset?: number; supplier_id?: string }) {
     const queryString = params ? `?${new URLSearchParams(params as any).toString()}` : '';
     return this.request(`/purchases${queryString}`);
