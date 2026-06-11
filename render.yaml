@@ -105,6 +105,9 @@ services:
           type: web
           envVarKey: RENDER_EXTERNAL_URL
 
+      - key: PROVIDERS_SERVICE_INTERNAL_URL
+        value: "http://confimax-providers-service:10000"
+
       - key: NOTIFICATIONS_SERVICE_URL
         fromService:
           name: confimax-notifications-service

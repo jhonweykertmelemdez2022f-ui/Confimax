@@ -30,6 +30,17 @@ const PORT = process.env.GATEWAY_PORT || process.env.PORT || 8080;
 // ============================================================
 // CONFIGURACION DE SERVICIOS DESTINO
 // ============================================================
+const providersTarget = (process.env.PROVIDERS_SERVICE_URL && process.env.PROVIDERS_SERVICE_URL.trim())
+  || (process.env.PROVIDERS_SERVICE_INTERNAL_URL && process.env.PROVIDERS_SERVICE_INTERNAL_URL.trim())
+  || 'http://confimax-providers-service:10000';
+
+console.log('[GATEWAY] Providers service URL:', process.env.PROVIDERS_SERVICE_URL || '<<not set>>');
+console.log('[GATEWAY] Providers internal URL:', process.env.PROVIDERS_SERVICE_INTERNAL_URL || '<<not set>>');
+
+if (!process.env.PROVIDERS_SERVICE_URL) {
+  console.warn('[GATEWAY] WARNING: PROVIDERS_SERVICE_URL is not set. Falling back to', providersTarget);
+}
+
 const SERVICES = {
   auth: {
     target: process.env.AUTH_SERVICE_URL || 'http://auth-service:3001',
@@ -68,7 +79,7 @@ const SERVICES = {
   },
 
   providers: {
-    target: process.env.PROVIDERS_SERVICE_URL || 'http://providers-service:3010',
+    target: providersTarget,
     pathRewrite: { '^/api/suppliers': '' },
     changeOrigin: true,
   },
